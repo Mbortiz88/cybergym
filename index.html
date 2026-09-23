@@ -6,9 +6,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Matheus Ortiz Fitness">
-    <!-- Ícone personalizado para a Tela de Início do iPhone -->
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2549/2549900.png">
-    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/2549/2549900.png">
+    <!-- Ícone personalizado apontando para a sua imagem no GitHub -->
+    <link rel="apple-touch-icon" href="https://mbortiz88.github.io/cybergym/logo.png">
+    <link rel="icon" type="image/png" href="https://mbortiz88.github.io/cybergym/logo.png">
     <title>Matheus Ortiz Fitness // CyberGym OS</title>
     <link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;700&family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
@@ -78,16 +78,20 @@
         }
 
         .dumbbell-img {
-            width: 36px;
-            height: 36px;
+            width: 44px;
+            height: 44px;
             object-fit: contain;
             filter: drop-shadow(0 0 12px var(--primary)) brightness(1.2);
             animation: cyber-pulse 2s infinite alternate;
+            background: rgba(0,0,0,0.4);
+            border-radius: 8px;
+            padding: 2px;
+            border: 1px solid var(--border-color);
         }
 
         @keyframes cyber-pulse {
             0% { transform: scale(1); filter: drop-shadow(0 0 8px var(--primary)) brightness(1.2); }
-            100% { transform: scale(1.12); filter: drop-shadow(0 0 20px var(--primary)) brightness(1.4); }
+            100% { transform: scale(1.1); filter: drop-shadow(0 0 18px var(--primary)) brightness(1.4); }
         }
 
         h1 {
@@ -423,10 +427,10 @@
 
     <header>
         <div class="logo-container">
-            <img class="dumbbell-img" src="https://cdn-icons-png.flaticon.com/512/2549/2549900.png" alt="Haltere">
+            <img class="dumbbell-img" src="logo.png" alt="Logo">
             <h1>Matheus Ortiz <span>Fitness</span></h1>
         </div>
-        <div class="subtitle">Cyberpunk Performance Matrix // OS v3.7</div>
+        <div class="subtitle">Cyberpunk Performance Matrix // OS v3.9</div>
     </header>
 
     <div class="days-container" id="daysMenu"></div>
