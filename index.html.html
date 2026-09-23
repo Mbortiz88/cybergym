@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <!-- Meta tags para iPhone (Tela cheia e ignorar zoom) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>CyberGym | Matheus</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Teko:wght@400;600&family=Share+Tech+Mono&display=swap');
+        
+        * { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        :root {
+            --red: #ff2a2a;
+            --red-dim: rgba(255, 42, 42, 0.2);
+            --neon-green: #00ff00;
+            --green-dim: rgba(0, 255, 0, 0.15);
+            --dark-glass: rgba(15, 15, 15, 0.85);
+            --gray: #aaa;
+        }
+
+        body {
+            /* Respeitar a safe-area do iPhone (Notch) no topo */
+            margin: 0; 
+            padding: max(15px, env(safe-area-inset-top)) 10px 220px 10px;
+            font-family: 'Share Tech Mono', monospace;
+            background: url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1470&auto=format&fit=crop') no-repeat center center fixed;
+            background-size: cover;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 5, 5, 0.88);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-family: 'Teko', sans-serif; color: var(--red);
+            text-align: center; font-size: 3.5rem; 
+            margin: 0 0 20px 0; line-height: 1; 
+            text-shadow: 0 0 15px rgba(255, 42, 42, 0.7);
+            letter-spacing: 2px;
+        }
+
+        .tabs {
+            display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .tabs button {
+            background: rgba(20, 20, 20, 0.9); border: 1px solid #444; color: #fff;
+            padding: 8px 10px; font-family: 'Teko', sans-serif; font-size: 1.2rem;
+            border-radius: 8px; white-space: nowrap; transition: 0.3s;
+            flex: 1 1 auto; text-align: center;
+        }
+        .tabs button.active { 
+            background: var(--red); color: #000; font-weight: bold; 
+            border-color: var(--red); box-shadow: 0 0 10px var(--red-dim);
+        }
+
+        .card {
+            background: var(--dark-glass); border-left: 4px solid var(--red);
+            padding: 15px 10px; margin-bottom: 15px; border-radius: 8px;
+            box-shadow: 0 8px 25px 0 rgba(0, 0, 0, 0.6);
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .cardio-box { border-left-color: #ff9900; }
+        .cardio-box h2 {
+            color: #ff9900; margin: 0 0 10px 0; font-family: 'Teko', sans-serif; 
+            font-size: 1.6rem; letter-spacing: 1px; border-bottom: 1px solid rgba(255,153,0,0.2); padding-bottom: 5px;
+        }
+        .cardio-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        
+        .input-group label { display: block; font-size: 0.75rem; color: var(--gray); margin-bottom: 5px; }
+        .input-group input {
+            width: 100%; background: rgba(0,0,0,0.7); border: 1px solid #444; color: #fff;
+            padding: 0 10px; font-family: 'Share Tech Mono', monospace; border-radius: 6px;
+            font-size: 1rem; min-height: 44px; outline: none; transition: 0.3s;
+        }
+
+        .card h3 {
+            color: #fff; margin: 0 0 15px 0; font-family: 'Teko', sans-serif; 
+            font-size: 1.7rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;
+        }
+        
+        /* CORREÇÃO DO LAYOUT (FLEX-WRAP: NOWRAP) PARA NÃO EMPILHAR */
+        .set-row {
+            display: flex; 
+            flex-wrap: nowrap; /* Força tudo na mesma linha */
+            justify-content: space-between; 
+            align-items: center; 
+            background: rgba(0,0,0,0.6); 
+            padding: 10px 5px; 
+            margin-bottom: 10px; 
+            border-radius: 8px; 
+            gap: 4px; 
+            border-left: 4px solid transparent; 
+            transition: all 0.3s ease;
+        }
+        
+        .set-row.completed {
+            background: var(--green-dim);
+            border-left: 4px solid var(--neon-green);
+        }
+
+        .set-label { color: var(--gray); font-weight: bold; width: 22px; font-size: 1rem; flex-shrink: 0;}
+        .set-row.completed .set-label { color: var(--neon-green); text-shadow: 0 0 5px var(--neon-green); }
+        
+        .stepper-group { 
+            display: flex; flex-direction: column; align-items: center; 
+            flex: 1; min-width: 0; /* Permite encolher se necessário */
+        }
+        .stepper-label { font-size: 0.65rem; color: var(--gray); margin-bottom: 3px; text-transform: uppercase; }
+        
+        /* COMPACTAÇÃO DOS BOTÕES PARA CABER NA TELA DO IPHONE */
+        .controls { 
+            display: flex; align-items: center; background: #000; 
+            border: 1px solid #333; border-radius: 6px; overflow: hidden; 
+        }
+        .controls button {
+            background: #1a1a1a; border: none; color: var(--red);
+            width: 32px; height: 36px; font-size: 1.3rem; font-weight: bold;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+        }
+        .controls input {
+            background: transparent; border: none; color: #fff;
+            width: 38px; height: 36px; text-align: center; font-size: 1.1rem; 
+            font-family: 'Share Tech Mono', monospace; outline: none; padding: 0;
+        }
+
+        .check-btn {
+            background: #111; border: 2px solid #555; color: transparent;
+            width: 38px; height: 38px; border-radius: 50%; display: flex; 
+            align-items: center; justify-content: center; font-size: 1.3rem; 
+            cursor: pointer; flex-shrink: 0; transition: all 0.3s ease;
+        }
+        .check-btn.done { 
+            border-color: var(--neon-green); background: var(--neon-green); 
+            color: #000; box-shadow: 0 0 10px rgba(0, 255, 0, 0.4);
+        }
+
+        .btn-exportar {
+            width: 100%; background: linear-gradient(135deg, #a00000, var(--red)); color: #fff; border: none;
+            padding: 0 20px; font-family: 'Teko', sans-serif; font-size: 2rem;
+            font-weight: bold; border-radius: 8px; margin-top: 10px; min-height: 60px;
+            box-shadow: 0 6px 20px rgba(255, 42, 42, 0.4); cursor: pointer;
+        }
+
+        /* TIMER COM MARGEM PARA FUGIR DO BANNER DO TIINY HOST */
+        .timer-bar {
+            position: fixed; 
+            bottom: max(45px, env(safe-area-inset-bottom)); /* Foge da barra inferior e do banner */
+            left: 0; width: 100%; 
+            background: rgba(5, 5, 5, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border-top: 2px solid var(--red); border-bottom: 2px solid var(--red); padding: 10px; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            z-index: 100; box-shadow: 0 -5px 20px rgba(0,0,0,0.8);
+        }
+        .timer-display { font-size: 2.2rem; font-weight: bold; color: var(--red); margin-bottom: 6px; line-height: 1; text-shadow: 0 0 8px rgba(255,42,42,0.5);}
+        .timer-buttons { display: flex; gap: 8px; justify-content: center; width: 100%; max-width: 500px;}
+        .timer-buttons button {
+            flex: 1; min-height: 44px;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 6px;
+            font-family: 'Share Tech Mono', monospace; font-size: 1.1rem; cursor: pointer;
+        }
+        .timer-buttons button:active { background: #fff; color: #000; }
+
+        .toast {
+            visibility: hidden; background: var(--neon-green); color: #000; text-align: center;
+            border-radius: 8px; padding: 15px; position: fixed; z-index: 9999;
+            left: 5%; right: 5%; top: max(20px, env(safe-area-inset-top)); font-family: 'Teko', sans-serif;
+            font-size: 1.5rem; opacity: 0; transition: 0.3s; box-shadow: 0 4px 20px rgba(0, 255, 0, 0.5);
+            font-weight: bold;
+        }
+        .toast.show { visibility: visible; opacity: 1; transform: translateY(5px); }
+    </style>
+</head>
+<body>
+
+    <div class="overlay"></div>
+    <div id="toast" class="toast">✔️ TREINO COPIADO!</div>
+
+    <div class="container">
+        
+        <h1>CYBERGYM // MATHEUS</h1>
+
+        <div class="tabs" id="menu-dias">
+            <button class="active" onclick="mudarDia('terca', this)">TER (PUSH)</button>
+            <button onclick="mudarDia('quarta', this)">QUA (PULL+BIC)</button>
+            <button onclick="mudarDia('quinta', this)">QUI (LOWER)</button>
+            <button onclick="mudarDia('sexta', this)">SEX (UPPER+BIC)</button>
+            <button onclick="mudarDia('domingo', this)">DOM (FULL+BIC)</button>
+        </div>
+
+        <div class="card cardio-box">
+            <h2>⚡ CONTROLE DE CARDIO</h2>
+            <div class="cardio-grid">
+                <div class="input-group">
+                    <label>APARELHO / TEMPO</label>
+                    <input type="text" id="c_desc" placeholder="Ex: Esteira 20min" onchange="salvarSeguro(diaAtual+'_c_desc', this.value)">
+                </div>
+                <div class="input-group">
+                    <label>DISTÂNCIA / KCAL</label>
+                    <input type="text" id="c_dados" placeholder="Ex: 2.5km/200kcal" onchange="salvarSeguro(diaAtual+'_c_dados', this.value)">
+                </div>
+            </div>
+        </div>
+
+        <div id="lista-exercicios"></div>
+
+        <button class="btn-exportar" onclick="copiarRelatorio()">📋 COPIAR TREINO</button>
+    </div>
+
+    <div class="timer-bar">
+        <div class="timer-display" id="display-tempo">00:00</div>
+        <div class="timer-buttons">
+            <button onclick="iniciarCronometro(60)">60s</button>
+            <button onclick="iniciarCronometro(90)">90s</button>
+            <button onclick="iniciarCronometro(120)">120s</button>
+            <button style="border-color:var(--red); color:var(--red); font-weight:bold;" onclick="pararCronometro()">PARAR</button>
+        </div>
+    </div>
+
+    <script>
+        function lerSeguro(chave, padrao) {
+            try { return localStorage.getItem(chave) || padrao; } 
+            catch(e) { return padrao; }
+        }
+        function salvarSeguro(chave, valor) {
+            try { localStorage.setItem(chave, valor); } 
+            catch(e) { console.warn("Memória bloqueada."); }
+        }
+
+        const treinos = {
+            terca: [
+                { nome: "Supino Reto Barra", series: 3 },
+                { nome: "Supino Inclinado Halter", series: 3 },
+                { nome: "Desenvolvimento Máquina", series: 2 },
+                { nome: "Elevação Lateral", series: 4 },
+                { nome: "Peck Deck", series: 2 },
+                { nome: "Tríceps Corda", series: 3 },
+                { nome: "Tríceps Testa Polia", series: 2 }
+            ],
+            quarta: [
+                { nome: "Puxada Alta", series: 3 },
+                { nome: "Remada Baixa / Serrote", series: 3 },
+                { nome: "Pulldown Corda", series: 2 },
+                { nome: "Crucifixo Inverso", series: 3 },
+                { nome: "Rosca Direta (W)", series: 3 },
+                { nome: "Rosca Scott Máquina", series: 3 }
+            ],
+            quinta: [
+                { nome: "Hack Squat", series: 3 },
+                { nome: "Leg Press 45°", series: 3 },
+                { nome: "Extensora Unilateral", series: 2 },
+                { nome: "Flexora Sentada", series: 3 },
+                { nome: "Panturrilha Sentada", series: 4 },
+                { nome: "Abdômen Máquina", series: 3 }
+            ],
+            sexta: [
+                { nome: "Supino Inclinado", series: 3 },
+                { nome: "Remada Baixa", series: 3 },
+                { nome: "Crossover", series: 2 },
+                { nome: "Elevação Lateral", series: 3 },
+                { nome: "Rosca Inclinada Halteres", series: 3 },
+                { nome: "Rosca Martelo", series: 3 }
+            ],
+            domingo: [
+                { nome: "Stiff / Romeno", series: 3 },
+                { nome: "Leg Press Unilateral", series: 3 },
+                { nome: "Panturrilha Smith", series: 4 },
+                { nome: "Chest Press (Leve)", series: 2 },
+                { nome: "Remada Máquina (Leve)", series: 2 },
+                { nome: "Rosca Polia Alta / 21", series: 3 }
+            ]
+        };
+
+        let diaAtual = 'terca';
+
+        function renderizar(dia) {
+            diaAtual = dia;
+            const container = document.getElementById('lista-exercicios');
+            container.innerHTML = '';
+
+            document.getElementById('c_desc').value = lerSeguro(dia + '_c_desc', '');
+            document.getElementById('c_dados').value = lerSeguro(dia + '_c_dados', '');
+
+            treinos[dia].forEach((ex, i) => {
+                let html = `<div class="card"><h3>${ex.nome}</h3>`;
+                for(let s = 1; s <= ex.series; s++) {
+                    let chave = `${dia}_e${i}_s${s}`;
+                    let p = lerSeguro(chave + '_p', '0');
+                    let r = lerSeguro(chave + '_r', '10');
+                    let isDone = lerSeguro(chave + '_done', 'false') === 'true';
+                    
+                    let checkedBtnClass = isDone ? 'done' : '';
+                    let checkedRowClass = isDone ? 'completed' : '';
+                    let checkedIcon = isDone ? '✔' : '';
+
+                    html += `
+                    <div class="set-row ${checkedRowClass}" id="row_${chave}">
+                        <div class="set-label">S${s}</div>
+                        
+                        <div class="stepper-group">
+                            <div class="stepper-label">KG</div>
+                            <div class="controls">
+                                <button onclick="alt('${chave}_p',-1)">-</button>
+                                <input type="number" id="${chave}_p" value="${p}" onchange="salvarSeguro('${chave}_p', this.value)">
+                                <button onclick="alt('${chave}_p',1)">+</button>
+                            </div>
+                        </div>
+
+                        <div class="stepper-group">
+                            <div class="stepper-label">REPS</div>
+                            <div class="controls">
+                                <button onclick="alt('${chave}_r',-1)">-</button>
+                                <input type="number" id="${chave}_r" value="${r}" onchange="salvarSeguro('${chave}_r', this.value)">
+                                <button onclick="alt('${chave}_r',1)">+</button>
+                            </div>
+                        </div>
+
+                        <div class="check-btn ${checkedBtnClass}" id="btn_${chave}" onclick="toggleCheck('${chave}')">${checkedIcon}</div>
+                    </div>`;
+                }
+                html += `</div>`;
+                container.innerHTML += html;
+            });
+        }
+
+        function alt(id, delta) {
+            let inp = document.getElementById(id);
+            let val = parseInt(inp.value) || 0;
+            val = Math.max(0, val + delta);
+            inp.value = val;
+            salvarSeguro(id, val);
+        }
+
+        function toggleCheck(chave) {
+            iniciarAudio(); 
+            let btn = document.getElementById('btn_' + chave);
+            let row = document.getElementById('row_' + chave);
+            let isDone = btn.classList.contains('done');
+            
+            if(!isDone) {
+                btn.classList.add('done');
+                btn.innerText = '✔';
+                row.classList.add('completed');
+                salvarSeguro(chave + '_done', 'true');
+                iniciarCronometro(90);
+            } else {
+                btn.classList.remove('done');
+                btn.innerText = '';
+                row.classList.remove('completed');
+                salvarSeguro(chave + '_done', 'false');
+            }
+        }
+
+        function mudarDia(dia, btn) {
+            document.querySelectorAll('#menu-dias button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            salvarSeguro(diaAtual + '_c_desc', document.getElementById('c_desc').value);
+            salvarSeguro(diaAtual + '_c_dados', document.getElementById('c_dados').value);
+            renderizar(dia);
+        }
+
+        let tempoID;
+        let audioCtx = null;
+
+        function iniciarAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if(AudioContext) audioCtx = new AudioContext();
+            }
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function iniciarCronometro(seg) {
+            iniciarAudio();
+            clearInterval(tempoID);
+            let t = seg;
+            attRelogio(t);
+            tempoID = setInterval(() => {
+                t--;
+                attRelogio(t);
+                if(t <= 0) {
+                    clearInterval(tempoID);
+                    tocarCampainha();
+                }
+            }, 1000);
+        }
+
+        function pararCronometro() {
+            clearInterval(tempoID);
+            document.getElementById('display-tempo').innerText = "00:00";
+        }
+
+        function attRelogio(s) {
+            let m = Math.floor(s / 60).toString().padStart(2, '0');
+            let sec = (s % 60).toString().padStart(2, '0');
+            document.getElementById('display-tempo').innerText = `${m}:${sec}`;
+        }
+
+        function tocarCampainha() {
+            if(!audioCtx) return;
+            try {
+                function b(f, t) {
+                    let osc = audioCtx.createOscillator(), g = audioCtx.createGain();
+                    osc.frequency.value = f; osc.connect(g); g.connect(audioCtx.destination);
+                    osc.start(audioCtx.currentTime + t);
+                    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + t + 0.6);
+                    osc.stop(audioCtx.currentTime + t + 0.6);
+                }
+                b(600,0); b(840,0); b(1200,0); 
+                b(600,0.4); b(840,0.4); b(1200,0.4);
+            } catch(e) {}
+        }
+
+        function copiarRelatorio() {
+            salvarSeguro(diaAtual + '_c_desc', document.getElementById('c_desc').value);
+            salvarSeguro(diaAtual + '_c_dados', document.getElementById('c_dados').value);
+
+            let txt = `*TREINO CYBERGYM (${diaAtual.toUpperCase()})*\n\n`;
+            let cDesc = document.getElementById('c_desc').value;
+            let cDados = document.getElementById('c_dados').value;
+            if(cDesc || cDados) txt += `🔥 *Cardio:* ${cDesc} | ${cDados}\n\n`;
+
+            treinos[diaAtual].forEach((ex, i) => {
+                let hasData = false;
+                let exStr = `* ${ex.nome}:\n`;
+                for(let s = 1; s <= ex.series; s++) {
+                    let chave = `${diaAtual}_e${i}_s${s}`;
+                    let inputP = document.getElementById(`${chave}_p`);
+                    let inputR = document.getElementById(`${chave}_r`);
+                    let btnCheck = document.getElementById(`btn_${chave}`);
+                    let p = inputP ? inputP.value : '0';
+                    let r = inputR ? inputR.value : '0';
+                    let check = (btnCheck && btnCheck.classList.contains('done')) ? ' (OK)' : '';
+                    exStr += `  - Série ${s}: ${p}kg x ${r} reps${check}\n`;
+                    hasData = true;
+                }
+                if(hasData) txt += exStr;
+            });
+
+            let tempInput = document.createElement("textarea");
+            tempInput.value = txt;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            tempInput.setSelectionRange(0, 99999);
+            try {
+                document.execCommand("copy");
+                mostrarToast();
+            } catch(e) { console.error("Falha ao copiar", e); }
+            document.body.removeChild(tempInput);
+        }
+
+        function mostrarToast() {
+            let toast = document.getElementById("toast");
+            toast.className = "toast show";
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderizar('terca');
+            document.body.addEventListener('touchstart', iniciarAudio, { once: true });
+            document.body.addEventListener('click', iniciarAudio, { once: true });
+        });
+    </script>
+</body>
+</html>
