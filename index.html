@@ -6,19 +6,19 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Matheus Ortiz Fitness">
-    <title>Matheus Ortiz Fitness</title>
+    <title>Matheus Ortiz Fitness // CyberGym</title>
     <link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;700&family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #ff1e1e;
-            --primary-glow: rgba(255, 30, 30, 0.5);
+            --primary: #ff1e3c;
+            --primary-glow: rgba(255, 30, 60, 0.6);
             --success: #00ff66;
-            --success-glow: rgba(0, 255, 102, 0.4);
-            --bg-dark: #0a0a0c;
-            --card-bg: rgba(20, 20, 26, 0.75);
-            --border-color: rgba(255, 255, 255, 0.1);
+            --success-glow: rgba(0, 255, 102, 0.5);
+            --bg-dark: #070709;
+            --card-bg: rgba(16, 16, 22, 0.85);
+            --border-color: rgba(255, 30, 60, 0.25);
             --text-main: #ffffff;
-            --text-muted: #a0a0a5;
+            --text-muted: #8b8b9e;
         }
 
         * {
@@ -31,82 +31,131 @@
 
         body {
             background-color: var(--bg-dark);
-            background-image: linear-gradient(rgba(10, 10, 12, 0.88), rgba(10, 10, 12, 0.88)), url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1000&auto=format&fit=crop');
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(255, 30, 60, 0.12) 0%, transparent 60%),
+                linear-gradient(rgba(7, 7, 9, 0.92), rgba(7, 7, 9, 0.96)), 
+                url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1000&auto=format&fit=crop');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
             color: var(--text-main);
-            padding: env(safe-area-inset-top, 15px) 12px 40px 12px;
+            padding: env(safe-area-inset-top, 20px) 12px 50px 12px;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
         }
 
+        /* Efeito de Scanner Cyberpunk no Fundo */
+        body::after {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+            background-size: 100% 4px;
+            z-index: 999;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
         header {
             width: 100%;
             max-width: 500px;
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             padding-top: 10px;
+            position: relative;
         }
 
         .logo-container {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            margin-bottom: 5px;
+            gap: 12px;
+            margin-bottom: 6px;
         }
 
         .dumbbell-icon {
-            font-size: 26px;
-            filter: drop-shadow(0 0 8px var(--primary-glow));
+            font-size: 30px;
+            filter: drop-shadow(0 0 12px var(--primary));
+            animation: pulse-icon 2s infinite alternate;
+        }
+
+        @keyframes pulse-icon {
+            0% { transform: scale(1); filter: drop-shadow(0 0 8px var(--primary)); }
+            100% { transform: scale(1.1); filter: drop-shadow(0 0 18px var(--primary)); }
         }
 
         h1 {
             font-family: 'Teko', sans-serif;
-            font-size: 32px;
+            font-size: 36px;
             letter-spacing: 2px;
-            color: var(--primary);
-            text-shadow: 0 0 12px var(--primary-glow);
+            color: #fff;
+            text-shadow: 0 0 15px var(--primary-glow);
             text-transform: uppercase;
             line-height: 1;
         }
 
-        /* Menu de Dias */
+        h1 span {
+            color: var(--primary);
+        }
+
+        .subtitle {
+            font-size: 10px;
+            letter-spacing: 4px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        /* Menu de Dias Futurista */
         .days-container {
             display: flex;
             flex-wrap: wrap;
-            gap: 6px;
+            gap: 8px;
             justify-content: center;
             width: 100%;
             max-width: 500px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         .day-btn {
-            background: rgba(20, 20, 26, 0.8);
-            border: 1px solid var(--border-color);
+            background: rgba(16, 16, 22, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             color: var(--text-muted);
-            padding: 8px 12px;
+            padding: 10px 14px;
             border-radius: 8px;
             font-family: 'Teko', sans-serif;
-            font-size: 16px;
-            letter-spacing: 1px;
+            font-size: 18px;
+            letter-spacing: 1.5px;
             cursor: pointer;
-            transition: all 0.2s ease;
-            backdrop-filter: blur(5px);
-            flex: 1 1 calc(33% - 6px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(8px);
+            flex: 1 1 calc(31% - 8px);
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .day-btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: 0.5s;
+        }
+
+        .day-btn:active::before {
+            left: 100%;
         }
 
         .day-btn.active {
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary), #b3001b);
             color: #fff;
             border-color: var(--primary);
-            box-shadow: 0 0 12px var(--primary-glow);
+            box-shadow: 0 0 20px var(--primary-glow);
             font-weight: 700;
+            transform: translateY(-2px);
         }
 
         /* Container do Treino */
@@ -115,152 +164,187 @@
             max-width: 500px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 14px;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .cardio-box {
             background: var(--card-bg);
-            border: 1px solid var(--border-color);
+            border: 1px solid rgba(255, 100, 100, 0.3);
             border-radius: 12px;
-            padding: 12px 15px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            padding: 14px 18px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.6);
             display: flex;
             align-items: center;
             justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cardio-box::after {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; height: 100%; width: 4px;
+            background: #ff334b;
+            box-shadow: 0 0 10px #ff334b;
         }
 
         .cardio-title {
             font-family: 'Teko', sans-serif;
-            font-size: 20px;
-            color: #ff5555;
-            letter-spacing: 1px;
+            font-size: 22px;
+            color: #ff5566;
+            letter-spacing: 1.5px;
         }
 
         .cardio-stats {
             font-size: 13px;
-            color: var(--text-muted);
+            color: #fff;
             font-weight: 600;
+            text-shadow: 0 0 8px rgba(255,255,255,0.3);
         }
 
         .exercise-card {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 14px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            border-radius: 14px;
+            padding: 16px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.6);
             transition: all 0.3s ease;
         }
 
         .exercise-name {
             font-family: 'Teko', sans-serif;
-            font-size: 24px;
-            letter-spacing: 1px;
+            font-size: 26px;
+            letter-spacing: 1.5px;
             color: #fff;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             border-bottom: 1px solid rgba(255,255,255,0.08);
-            padding-bottom: 4px;
+            padding-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .exercise-name span {
+            font-size: 12px;
+            font-family: 'Montserrat', sans-serif;
+            color: var(--text-muted);
+            background: rgba(255,255,255,0.05);
+            padding: 2px 8px;
+            border-radius: 4px;
         }
 
         .sets-list {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
         }
 
         .set-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 8px 10px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 10px 12px;
+            border-radius: 10px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .set-row.completed {
-            background: rgba(0, 255, 102, 0.1);
+            background: rgba(0, 255, 102, 0.08);
             border-color: rgba(0, 255, 102, 0.4);
+            box-shadow: inset 0 0 15px rgba(0, 255, 102, 0.05);
         }
 
         .set-label {
             font-family: 'Teko', sans-serif;
-            font-size: 18px;
+            font-size: 20px;
             color: var(--text-muted);
-            width: 30px;
+            width: 32px;
+            font-weight: 700;
         }
 
         .set-controls {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
         }
 
         .control-group {
             display: flex;
             align-items: center;
-            background: rgba(255,255,255,0.05);
-            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 8px;
             overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.08);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .control-group span {
             font-size: 9px;
-            color: #888;
+            color: #777;
             text-transform: uppercase;
             padding: 0 4px;
+            font-weight: 700;
         }
 
         .btn-adjust {
-            background: rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.08);
             border: none;
             color: #fff;
-            width: 28px;
-            height: 28px;
-            font-size: 14px;
+            width: 30px;
+            height: 30px;
+            font-size: 16px;
             font-weight: bold;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: background 0.15s;
         }
 
         .btn-adjust:active {
             background: var(--primary);
+            transform: scale(0.92);
         }
 
         .val-display {
-            width: 32px;
+            width: 34px;
             text-align: center;
-            font-size: 13px;
-            font-weight: 600;
+            font-size: 14px;
+            font-weight: 700;
             color: #fff;
         }
 
         .check-btn {
-            width: 32px;
-            height: 32px;
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
-            border: 2px solid rgba(255,255,255,0.2);
+            border: 2px solid rgba(255, 255, 255, 0.2);
             background: transparent;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             color: transparent;
-            font-size: 14px;
+            font-size: 15px;
         }
 
         .check-btn.checked {
             background: var(--success);
             border-color: var(--success);
             color: #000;
-            box-shadow: 0 0 10px var(--success-glow);
+            box-shadow: 0 0 15px var(--success-glow);
             font-weight: bold;
+            transform: scale(1.05);
         }
 
         /* Botões de Ação Inferiores */
@@ -268,49 +352,54 @@
             width: 100%;
             max-width: 500px;
             display: flex;
-            gap: 10px;
-            margin-top: 15px;
+            gap: 12px;
+            margin-top: 20px;
         }
 
         .action-btn {
             flex: 1;
-            padding: 12px;
-            border-radius: 10px;
+            padding: 14px;
+            border-radius: 12px;
             font-family: 'Teko', sans-serif;
-            font-size: 18px;
-            letter-spacing: 1px;
+            font-size: 20px;
+            letter-spacing: 1.5px;
             cursor: pointer;
             border: none;
             text-transform: uppercase;
-            transition: all 0.2s;
+            transition: all 0.25s ease;
+        }
+
+        .action-btn:active {
+            transform: scale(0.97);
         }
 
         .btn-copy {
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary), #b3001b);
             color: #fff;
-            box-shadow: 0 4px 15px var(--primary-glow);
+            box-shadow: 0 6px 20px var(--primary-glow);
         }
 
         .btn-reset {
-            background: rgba(255,255,255,0.08);
+            background: rgba(255, 255, 255, 0.05);
             color: var(--text-muted);
-            border: 1px solid var(--border-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        /* Notificação Toast */
+        /* Notificação Toast Tech */
         #toast {
             position: fixed;
-            bottom: 20px;
-            background: #fff;
+            bottom: 30px;
+            background: rgba(0, 255, 102, 0.95);
             color: #000;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border-radius: 30px;
-            font-weight: 600;
-            font-size: 13px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
-            transform: translateY(100px);
-            transition: transform 0.3s ease;
+            font-weight: 700;
+            font-size: 14px;
+            box-shadow: 0 8px 25px var(--success-glow);
+            transform: translateY(120px);
+            transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             z-index: 1000;
+            letter-spacing: 0.5px;
         }
 
         #toast.show {
@@ -323,8 +412,9 @@
     <header>
         <div class="logo-container">
             <span class="dumbbell-icon">🏋️‍♂️</span>
-            <h1>Matheus Ortiz Fitness</h1>
+            <h1>Matheus Ortiz <span>Fitness</span></h1>
         </div>
+        <div class="subtitle">System OS // Performance Matrix</div>
     </header>
 
     <div class="days-container" id="daysMenu"></div>
@@ -336,7 +426,7 @@
         <button class="action-btn btn-copy" onclick="copyWorkoutReport()">Copiar Relatório</button>
     </div>
 
-    <div id="toast">Treino copiado com sucesso!</div>
+    <div id="toast">RELATÓRIO COPIADO COM SUCESSO!</div>
 
     <script>
         const workoutData = {
@@ -430,7 +520,7 @@
             const cardioBox = document.createElement('div');
             cardioBox.className = 'cardio-box';
             cardioBox.innerHTML = `
-                <div class="cardio-title">CARDIO</div>
+                <div class="cardio-title">CARDIO SESSION</div>
                 <div class="cardio-stats">${dayData.cardio}</div>
             `;
             container.appendChild(cardioBox);
@@ -470,7 +560,10 @@
                 });
 
                 card.innerHTML = `
-                    <div class="exercise-name">${ex.name}</div>
+                    <div class="exercise-name">
+                        ${ex.name}
+                        <span>EX ${exIdx + 1}</span>
+                    </div>
                     <div class="sets-list">${setsHtml}</div>
                 `;
                 container.appendChild(card);
@@ -505,7 +598,7 @@
         }
 
         function resetWorkout() {
-            if(confirm("Deseja realmente zerar os dados deste dia?")) {
+            if(confirm("Deseja realmente reiniciar os registros deste dia?")) {
                 const dayData = workoutData[currentDay];
                 dayData.exercises.forEach((ex, exIdx) => {
                     ex.sets.forEach((set, setIdx) => {
@@ -541,7 +634,7 @@
             toast.classList.add('show');
             setTimeout(() => {
                 toast.classList.remove('show');
-            }, 2000);
+            }, 2200);
         }
 
         window.onload = initApp;
