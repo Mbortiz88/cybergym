@@ -2,482 +2,549 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <!-- Meta tags para iPhone (Tela cheia e ignorar zoom) -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>CyberGym | Matheus</title>
+    <meta name="apple-mobile-web-app-title" content="Matheus Ortiz Fitness">
+    <title>Matheus Ortiz Fitness</title>
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;700&family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Teko:wght@400;600&family=Share+Tech+Mono&display=swap');
-        
-        * { 
-            box-sizing: border-box; 
-            -webkit-tap-highlight-color: transparent;
-        }
-        
         :root {
-            --red: #ff2a2a;
-            --red-dim: rgba(255, 42, 42, 0.2);
-            --neon-green: #00ff00;
-            --green-dim: rgba(0, 255, 0, 0.15);
-            --dark-glass: rgba(15, 15, 15, 0.85);
-            --gray: #aaa;
+            --primary: #ff1e1e;
+            --primary-glow: rgba(255, 30, 30, 0.5);
+            --success: #00ff66;
+            --success-glow: rgba(0, 255, 102, 0.4);
+            --bg-dark: #0a0a0c;
+            --card-bg: rgba(20, 20, 26, 0.75);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-main: #ffffff;
+            --text-muted: #a0a0a5;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Montserrat', sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            /* Respeitar a safe-area do iPhone (Notch) no topo */
-            margin: 0; 
-            padding: max(15px, env(safe-area-inset-top)) 10px 220px 10px;
-            font-family: 'Share Tech Mono', monospace;
-            background: url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1470&auto=format&fit=crop') no-repeat center center fixed;
+            background-color: var(--bg-dark);
+            background-image: linear-gradient(rgba(10, 10, 12, 0.88), rgba(10, 10, 12, 0.88)), url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1000&auto=format&fit=crop');
             background-size: cover;
-            color: #fff;
-            overflow-x: hidden;
+            background-position: center;
+            background-attachment: fixed;
+            color: var(--text-main);
+            padding: env(safe-area-inset-top, 15px) 12px 40px 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
         }
 
-        .overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(10, 5, 5, 0.88);
-            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-            z-index: -1;
+        header {
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            margin-bottom: 15px;
+            padding-top: 10px;
         }
 
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+
+        .dumbbell-icon {
+            font-size: 26px;
+            filter: drop-shadow(0 0 8px var(--primary-glow));
         }
 
         h1 {
-            font-family: 'Teko', sans-serif; color: var(--red);
-            text-align: center; font-size: 3.5rem; 
-            margin: 0 0 20px 0; line-height: 1; 
-            text-shadow: 0 0 15px rgba(255, 42, 42, 0.7);
+            font-family: 'Teko', sans-serif;
+            font-size: 32px;
             letter-spacing: 2px;
+            color: var(--primary);
+            text-shadow: 0 0 12px var(--primary-glow);
+            text-transform: uppercase;
+            line-height: 1;
         }
 
-        .tabs {
-            display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;
-            margin-bottom: 20px;
-        }
-        
-        .tabs button {
-            background: rgba(20, 20, 20, 0.9); border: 1px solid #444; color: #fff;
-            padding: 8px 10px; font-family: 'Teko', sans-serif; font-size: 1.2rem;
-            border-radius: 8px; white-space: nowrap; transition: 0.3s;
-            flex: 1 1 auto; text-align: center;
-        }
-        .tabs button.active { 
-            background: var(--red); color: #000; font-weight: bold; 
-            border-color: var(--red); box-shadow: 0 0 10px var(--red-dim);
+        /* Menu de Dias */
+        .days-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 15px;
         }
 
-        .card {
-            background: var(--dark-glass); border-left: 4px solid var(--red);
-            padding: 15px 10px; margin-bottom: 15px; border-radius: 8px;
-            box-shadow: 0 8px 25px 0 rgba(0, 0, 0, 0.6);
-            border-top: 1px solid rgba(255,255,255,0.05);
+        .day-btn {
+            background: rgba(20, 20, 26, 0.8);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-family: 'Teko', sans-serif;
+            font-size: 16px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(5px);
+            flex: 1 1 calc(33% - 6px);
+            text-align: center;
         }
 
-        .cardio-box { border-left-color: #ff9900; }
-        .cardio-box h2 {
-            color: #ff9900; margin: 0 0 10px 0; font-family: 'Teko', sans-serif; 
-            font-size: 1.6rem; letter-spacing: 1px; border-bottom: 1px solid rgba(255,153,0,0.2); padding-bottom: 5px;
-        }
-        .cardio-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        
-        .input-group label { display: block; font-size: 0.75rem; color: var(--gray); margin-bottom: 5px; }
-        .input-group input {
-            width: 100%; background: rgba(0,0,0,0.7); border: 1px solid #444; color: #fff;
-            padding: 0 10px; font-family: 'Share Tech Mono', monospace; border-radius: 6px;
-            font-size: 1rem; min-height: 44px; outline: none; transition: 0.3s;
+        .day-btn.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+            box-shadow: 0 0 12px var(--primary-glow);
+            font-weight: 700;
         }
 
-        .card h3 {
-            color: #fff; margin: 0 0 15px 0; font-family: 'Teko', sans-serif; 
-            font-size: 1.7rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;
+        /* Container do Treino */
+        .workout-container {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
-        
-        /* CORREÇÃO DO LAYOUT (FLEX-WRAP: NOWRAP) PARA NÃO EMPILHAR */
-        .set-row {
-            display: flex; 
-            flex-wrap: nowrap; /* Força tudo na mesma linha */
-            justify-content: space-between; 
-            align-items: center; 
-            background: rgba(0,0,0,0.6); 
-            padding: 10px 5px; 
-            margin-bottom: 10px; 
-            border-radius: 8px; 
-            gap: 4px; 
-            border-left: 4px solid transparent; 
+
+        .cardio-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .cardio-title {
+            font-family: 'Teko', sans-serif;
+            font-size: 20px;
+            color: #ff5555;
+            letter-spacing: 1px;
+        }
+
+        .cardio-stats {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .exercise-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
             transition: all 0.3s ease;
         }
-        
-        .set-row.completed {
-            background: var(--green-dim);
-            border-left: 4px solid var(--neon-green);
+
+        .exercise-name {
+            font-family: 'Teko', sans-serif;
+            font-size: 24px;
+            letter-spacing: 1px;
+            color: #fff;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding-bottom: 4px;
         }
 
-        .set-label { color: var(--gray); font-weight: bold; width: 22px; font-size: 1rem; flex-shrink: 0;}
-        .set-row.completed .set-label { color: var(--neon-green); text-shadow: 0 0 5px var(--neon-green); }
-        
-        .stepper-group { 
-            display: flex; flex-direction: column; align-items: center; 
-            flex: 1; min-width: 0; /* Permite encolher se necessário */
+        .sets-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
-        .stepper-label { font-size: 0.65rem; color: var(--gray); margin-bottom: 3px; text-transform: uppercase; }
-        
-        /* COMPACTAÇÃO DOS BOTÕES PARA CABER NA TELA DO IPHONE */
-        .controls { 
-            display: flex; align-items: center; background: #000; 
-            border: 1px solid #333; border-radius: 6px; overflow: hidden; 
+
+        .set-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 8px 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
         }
-        .controls button {
-            background: #1a1a1a; border: none; color: var(--red);
-            width: 32px; height: 36px; font-size: 1.3rem; font-weight: bold;
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
+
+        .set-row.completed {
+            background: rgba(0, 255, 102, 0.1);
+            border-color: rgba(0, 255, 102, 0.4);
         }
-        .controls input {
-            background: transparent; border: none; color: #fff;
-            width: 38px; height: 36px; text-align: center; font-size: 1.1rem; 
-            font-family: 'Share Tech Mono', monospace; outline: none; padding: 0;
+
+        .set-label {
+            font-family: 'Teko', sans-serif;
+            font-size: 18px;
+            color: var(--text-muted);
+            width: 30px;
+        }
+
+        .set-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            background: rgba(255,255,255,0.05);
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .control-group span {
+            font-size: 9px;
+            color: #888;
+            text-transform: uppercase;
+            padding: 0 4px;
+        }
+
+        .btn-adjust {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #fff;
+            width: 28px;
+            height: 28px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-adjust:active {
+            background: var(--primary);
+        }
+
+        .val-display {
+            width: 32px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
         }
 
         .check-btn {
-            background: #111; border: 2px solid #555; color: transparent;
-            width: 38px; height: 38px; border-radius: 50%; display: flex; 
-            align-items: center; justify-content: center; font-size: 1.3rem; 
-            cursor: pointer; flex-shrink: 0; transition: all 0.3s ease;
-        }
-        .check-btn.done { 
-            border-color: var(--neon-green); background: var(--neon-green); 
-            color: #000; box-shadow: 0 0 10px rgba(0, 255, 0, 0.4);
-        }
-
-        .btn-exportar {
-            width: 100%; background: linear-gradient(135deg, #a00000, var(--red)); color: #fff; border: none;
-            padding: 0 20px; font-family: 'Teko', sans-serif; font-size: 2rem;
-            font-weight: bold; border-radius: 8px; margin-top: 10px; min-height: 60px;
-            box-shadow: 0 6px 20px rgba(255, 42, 42, 0.4); cursor: pointer;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.2);
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            color: transparent;
+            font-size: 14px;
         }
 
-        /* TIMER COM MARGEM PARA FUGIR DO BANNER DO TIINY HOST */
-        .timer-bar {
-            position: fixed; 
-            bottom: max(45px, env(safe-area-inset-bottom)); /* Foge da barra inferior e do banner */
-            left: 0; width: 100%; 
-            background: rgba(5, 5, 5, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            border-top: 2px solid var(--red); border-bottom: 2px solid var(--red); padding: 10px; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            z-index: 100; box-shadow: 0 -5px 20px rgba(0,0,0,0.8);
-        }
-        .timer-display { font-size: 2.2rem; font-weight: bold; color: var(--red); margin-bottom: 6px; line-height: 1; text-shadow: 0 0 8px rgba(255,42,42,0.5);}
-        .timer-buttons { display: flex; gap: 8px; justify-content: center; width: 100%; max-width: 500px;}
-        .timer-buttons button {
-            flex: 1; min-height: 44px;
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 6px;
-            font-family: 'Share Tech Mono', monospace; font-size: 1.1rem; cursor: pointer;
-        }
-        .timer-buttons button:active { background: #fff; color: #000; }
-
-        .toast {
-            visibility: hidden; background: var(--neon-green); color: #000; text-align: center;
-            border-radius: 8px; padding: 15px; position: fixed; z-index: 9999;
-            left: 5%; right: 5%; top: max(20px, env(safe-area-inset-top)); font-family: 'Teko', sans-serif;
-            font-size: 1.5rem; opacity: 0; transition: 0.3s; box-shadow: 0 4px 20px rgba(0, 255, 0, 0.5);
+        .check-btn.checked {
+            background: var(--success);
+            border-color: var(--success);
+            color: #000;
+            box-shadow: 0 0 10px var(--success-glow);
             font-weight: bold;
         }
-        .toast.show { visibility: visible; opacity: 1; transform: translateY(5px); }
+
+        /* Botões de Ação Inferiores */
+        .actions-container {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            font-family: 'Teko', sans-serif;
+            font-size: 18px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            border: none;
+            text-transform: uppercase;
+            transition: all 0.2s;
+        }
+
+        .btn-copy {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 4px 15px var(--primary-glow);
+        }
+
+        .btn-reset {
+            background: rgba(255,255,255,0.08);
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+        }
+
+        /* Notificação Toast */
+        #toast {
+            position: fixed;
+            bottom: 20px;
+            background: #fff;
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 13px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            transform: translateY(100px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        #toast.show {
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
 
-    <div class="overlay"></div>
-    <div id="toast" class="toast">✔️ TREINO COPIADO!</div>
-
-    <div class="container">
-        
-        <h1>CYBERGYM // MATHEUS</h1>
-
-        <div class="tabs" id="menu-dias">
-            <button class="active" onclick="mudarDia('terca', this)">TER (PUSH)</button>
-            <button onclick="mudarDia('quarta', this)">QUA (PULL+BIC)</button>
-            <button onclick="mudarDia('quinta', this)">QUI (LOWER)</button>
-            <button onclick="mudarDia('sexta', this)">SEX (UPPER+BIC)</button>
-            <button onclick="mudarDia('domingo', this)">DOM (FULL+BIC)</button>
+    <header>
+        <div class="logo-container">
+            <span class="dumbbell-icon">🏋️‍♂️</span>
+            <h1>Matheus Ortiz Fitness</h1>
         </div>
+    </header>
 
-        <div class="card cardio-box">
-            <h2>⚡ CONTROLE DE CARDIO</h2>
-            <div class="cardio-grid">
-                <div class="input-group">
-                    <label>APARELHO / TEMPO</label>
-                    <input type="text" id="c_desc" placeholder="Ex: Esteira 20min" onchange="salvarSeguro(diaAtual+'_c_desc', this.value)">
-                </div>
-                <div class="input-group">
-                    <label>DISTÂNCIA / KCAL</label>
-                    <input type="text" id="c_dados" placeholder="Ex: 2.5km/200kcal" onchange="salvarSeguro(diaAtual+'_c_dados', this.value)">
-                </div>
-            </div>
-        </div>
+    <div class="days-container" id="daysMenu"></div>
 
-        <div id="lista-exercicios"></div>
+    <div class="workout-container" id="workoutView"></div>
 
-        <button class="btn-exportar" onclick="copiarRelatorio()">📋 COPIAR TREINO</button>
+    <div class="actions-container">
+        <button class="action-btn btn-reset" onclick="resetWorkout()">Zerar Dados</button>
+        <button class="action-btn btn-copy" onclick="copyWorkoutReport()">Copiar Relatório</button>
     </div>
 
-    <div class="timer-bar">
-        <div class="timer-display" id="display-tempo">00:00</div>
-        <div class="timer-buttons">
-            <button onclick="iniciarCronometro(60)">60s</button>
-            <button onclick="iniciarCronometro(90)">90s</button>
-            <button onclick="iniciarCronometro(120)">120s</button>
-            <button style="border-color:var(--red); color:var(--red); font-weight:bold;" onclick="pararCronometro()">PARAR</button>
-        </div>
-    </div>
+    <div id="toast">Treino copiado com sucesso!</div>
 
     <script>
-        function lerSeguro(chave, padrao) {
-            try { return localStorage.getItem(chave) || padrao; } 
-            catch(e) { return padrao; }
-        }
-        function salvarSeguro(chave, valor) {
-            try { localStorage.setItem(chave, valor); } 
-            catch(e) { console.warn("Memória bloqueada."); }
-        }
-
-        const treinos = {
-            terca: [
-                { nome: "Supino Reto Barra", series: 3 },
-                { nome: "Supino Inclinado Halter", series: 3 },
-                { nome: "Desenvolvimento Máquina", series: 2 },
-                { nome: "Elevação Lateral", series: 4 },
-                { nome: "Peck Deck", series: 2 },
-                { nome: "Tríceps Corda", series: 3 },
-                { nome: "Tríceps Testa Polia", series: 2 }
-            ],
-            quarta: [
-                { nome: "Puxada Alta", series: 3 },
-                { nome: "Remada Baixa / Serrote", series: 3 },
-                { nome: "Pulldown Corda", series: 2 },
-                { nome: "Crucifixo Inverso", series: 3 },
-                { nome: "Rosca Direta (W)", series: 3 },
-                { nome: "Rosca Scott Máquina", series: 3 }
-            ],
-            quinta: [
-                { nome: "Hack Squat", series: 3 },
-                { nome: "Leg Press 45°", series: 3 },
-                { nome: "Extensora Unilateral", series: 2 },
-                { nome: "Flexora Sentada", series: 3 },
-                { nome: "Panturrilha Sentada", series: 4 },
-                { nome: "Abdômen Máquina", series: 3 }
-            ],
-            sexta: [
-                { nome: "Supino Inclinado", series: 3 },
-                { nome: "Remada Baixa", series: 3 },
-                { nome: "Crossover", series: 2 },
-                { nome: "Elevação Lateral", series: 3 },
-                { nome: "Rosca Inclinada Halteres", series: 3 },
-                { nome: "Rosca Martelo", series: 3 }
-            ],
-            domingo: [
-                { nome: "Stiff / Romeno", series: 3 },
-                { nome: "Leg Press Unilateral", series: 3 },
-                { nome: "Panturrilha Smith", series: 4 },
-                { nome: "Chest Press (Leve)", series: 2 },
-                { nome: "Remada Máquina (Leve)", series: 2 },
-                { nome: "Rosca Polia Alta / 21", series: 3 }
-            ]
+        const workoutData = {
+            "TER": {
+                name: "TER (PUSH)",
+                cardio: "🔥 Cardio: 20min | 2,5km / 160 Kcal",
+                exercises: [
+                    { name: "Supino Reto Barra", sets: [{kg: 60, reps: 10}, {kg: 65, reps: 8}, {kg: 65, reps: 8}] },
+                    { name: "Supino Inclinado Halter", sets: [{kg: 55, reps: 10}, {kg: 60, reps: 8}, {kg: 60, reps: 8}] },
+                    { name: "Desenvolvimento Máquina", sets: [{kg: 50, reps: 10}, {kg: 60, reps: 8}] },
+                    { name: "Elevação Lateral", sets: [{kg: 15, reps: 10}, {kg: 10, reps: 10}, {kg: 10, reps: 8}, {kg: 10, reps: 8}] },
+                    { name: "Peck Deck", sets: [{kg: 65, reps: 10}, {kg: 70, reps: 8}] },
+                    { name: "Tríceps Corda", sets: [{kg: 60, reps: 10}, {kg: 65, reps: 8}, {kg: 70, reps: 8}] },
+                    { name: "Tríceps Testa Polia", sets: [{kg: 40, reps: 10}, {kg: 45, reps: 8}] }
+                ]
+            },
+            "QUA": {
+                name: "QUA (PULL+BIC)",
+                cardio: "🔥 Cardio: 15min | 1,2km / 100 Kcal",
+                exercises: [
+                    { name: "Puxada Alta", sets: [{kg: 40, reps: 10}, {kg: 45, reps: 8}, {kg: 50, reps: 8}] },
+                    { name: "Remada Baixa / Serrote", sets: [{kg: 60, reps: 10}, {kg: 65, reps: 8}, {kg: 70, reps: 8}] },
+                    { name: "Pulldown Corda", sets: [{kg: 50, reps: 10}, {kg: 55, reps: 10}] },
+                    { name: "Crucifixo Inverso", sets: [{kg: 40, reps: 10}, {kg: 45, reps: 10}, {kg: 50, reps: 8}] },
+                    { name: "Rosca Direta (W)", sets: [{kg: 30, reps: 10}, {kg: 35, reps: 10}, {kg: 35, reps: 8}] },
+                    { name: "Rosca Scott Máquina", sets: [{kg: 40, reps: 10}, {kg: 45, reps: 8}, {kg: 50, reps: 8}] }
+                ]
+            },
+            "QUI": {
+                name: "QUI (LOWER)",
+                cardio: "🔥 Cardio: 15min | 1,5km / 120 Kcal",
+                exercises: [
+                    { name: "Hack Squat", sets: [{kg: 0, reps: 10}, {kg: 0, reps: 10}, {kg: 0, reps: 10}] },
+                    { name: "Leg Press 45º", sets: [{kg: 0, reps: 10}, {kg: 0, reps: 10}, {kg: 0, reps: 10}] },
+                    { name: "Cadeira Extensora", sets: [{kg: 0, reps: 12}, {kg: 0, reps: 12}, {kg: 0, reps: 12}] },
+                    { name: "Mesa Flexora", sets: [{kg: 0, reps: 12}, {kg: 0, reps: 12}, {kg: 0, reps: 12}] },
+                    { name: "Elevação Pélvica", sets: [{kg: 0, reps: 10}, {kg: 0, reps: 10}] },
+                    { name: "Panturrilhas em Pé", sets: [{kg: 0, reps: 15}, {kg: 0, reps: 15}, {kg: 0, reps: 15}] }
+                ]
+            },
+            "SEX": {
+                name: "SEX (UPPER+BIC)",
+                cardio: "🔥 Cardio: 15min | 1,2km / 100 Kcal",
+                exercises: [
+                    { name: "Supino Reto", sets: [{kg: 0, reps: 10}, {kg: 0, reps: 10}, {kg: 0, reps: 10}] },
+                    { name: "Remada Curvada", sets: [{kg: 0, reps: 10}, {kg: 0, reps: 10}, {kg: 0, reps: 10}] },
+                    { name: "Desenvolvimento", sets: [{kg: 0, reps: 10}, {kg: 0, reps: 10}] },
+                    { name: "Rosca Alternada", sets: [{kg: 0, reps: 10}, {kg: 0, reps: 10}, {kg: 0, reps: 10}] },
+                    { name: "Tríceps Francês", sets: [{kg: 0, reps: 10}, {kg: 0, reps: 10}, {kg: 0, reps: 10}] }
+                ]
+            },
+            "DOM": {
+                name: "DOM (FULLBODY)",
+                cardio: "🔥 Cardio: 20min | 2,0km / 150 Kcal",
+                exercises: [
+                    { name: "Leg Press", sets: [{kg: 0, reps: 10}, {kg: 0, reps: 10}, {kg: 0, reps: 10}] },
+                    { name: "Supino Reto", sets: [{kg: 0, reps: 10}, {kg: 0, reps: 10}, {kg: 0, reps: 10}] },
+                    { name: "Puxada Alta", sets: [{kg: 0, reps: 10}, {kg: 0, reps: 10}, {kg: 0, reps: 10}] },
+                    { name: "Elevação Lateral", sets: [{kg: 0, reps: 12}, {kg: 0, reps: 12}] },
+                    { name: "Rosca Direta", sets: [{kg: 0, reps: 10}, {kg: 0, reps: 10}] }
+                ]
+            }
         };
 
-        let diaAtual = 'terca';
+        let currentDay = "TER";
 
-        function renderizar(dia) {
-            diaAtual = dia;
-            const container = document.getElementById('lista-exercicios');
+        function initApp() {
+            const daysMenu = document.getElementById('daysMenu');
+            daysMenu.innerHTML = '';
+
+            Object.keys(workoutData).forEach(dayKey => {
+                const btn = document.createElement('button');
+                btn.className = `day-btn ${dayKey === currentDay ? 'active' : ''}`;
+                btn.innerText = workoutData[dayKey].name.split(' ')[0];
+                btn.onclick = () => {
+                    currentDay = dayKey;
+                    initApp();
+                };
+                daysMenu.appendChild(btn);
+            });
+
+            renderWorkout();
+        }
+
+        function renderWorkout() {
+            const container = document.getElementById('workoutView');
             container.innerHTML = '';
 
-            document.getElementById('c_desc').value = lerSeguro(dia + '_c_desc', '');
-            document.getElementById('c_dados').value = lerSeguro(dia + '_c_dados', '');
+            const dayData = workoutData[currentDay];
 
-            treinos[dia].forEach((ex, i) => {
-                let html = `<div class="card"><h3>${ex.nome}</h3>`;
-                for(let s = 1; s <= ex.series; s++) {
-                    let chave = `${dia}_e${i}_s${s}`;
-                    let p = lerSeguro(chave + '_p', '0');
-                    let r = lerSeguro(chave + '_r', '10');
-                    let isDone = lerSeguro(chave + '_done', 'false') === 'true';
-                    
-                    let checkedBtnClass = isDone ? 'done' : '';
-                    let checkedRowClass = isDone ? 'completed' : '';
-                    let checkedIcon = isDone ? '✔' : '';
+            const cardioBox = document.createElement('div');
+            cardioBox.className = 'cardio-box';
+            cardioBox.innerHTML = `
+                <div class="cardio-title">CARDIO</div>
+                <div class="cardio-stats">${dayData.cardio}</div>
+            `;
+            container.appendChild(cardioBox);
 
-                    html += `
-                    <div class="set-row ${checkedRowClass}" id="row_${chave}">
-                        <div class="set-label">S${s}</div>
-                        
-                        <div class="stepper-group">
-                            <div class="stepper-label">KG</div>
-                            <div class="controls">
-                                <button onclick="alt('${chave}_p',-1)">-</button>
-                                <input type="number" id="${chave}_p" value="${p}" onchange="salvarSeguro('${chave}_p', this.value)">
-                                <button onclick="alt('${chave}_p',1)">+</button>
+            dayData.exercises.forEach((ex, exIdx) => {
+                const card = document.createElement('div');
+                card.className = 'exercise-card';
+                
+                let setsHtml = '';
+                ex.sets.forEach((set, setIdx) => {
+                    const storageKey = `gym_${currentDay}_ex${exIdx}_set${setIdx}`;
+                    const saved = JSON.parse(localStorage.getItem(storageKey)) || { kg: set.kg, reps: set.reps, checked: false };
+
+                    setsHtml += `
+                        <div class="set-row ${saved.checked ? 'completed' : ''}" id="row_${exIdx}_${setIdx}">
+                            <div class="set-label">S${setIdx + 1}</div>
+                            
+                            <div class="set-controls">
+                                <div class="control-group">
+                                    <span>KG</span>
+                                    <button class="btn-adjust" onclick="updateVal(${exIdx}, ${setIdx}, 'kg', -5)">-</button>
+                                    <div class="val-display" id="kg_${exIdx}_${setIdx}">${saved.kg}</div>
+                                    <button class="btn-adjust" onclick="updateVal(${exIdx}, ${setIdx}, 'kg', 5)">+</button>
+                                </div>
+
+                                <div class="control-group">
+                                    <span>REPS</span>
+                                    <button class="btn-adjust" onclick="updateVal(${exIdx}, ${setIdx}, 'reps', -1)">-</button>
+                                    <div class="val-display" id="reps_${exIdx}_${setIdx}">${saved.reps}</div>
+                                    <button class="btn-adjust" onclick="updateVal(${exIdx}, ${setIdx}, 'reps', 1)">+</button>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="stepper-group">
-                            <div class="stepper-label">REPS</div>
-                            <div class="controls">
-                                <button onclick="alt('${chave}_r',-1)">-</button>
-                                <input type="number" id="${chave}_r" value="${r}" onchange="salvarSeguro('${chave}_r', this.value)">
-                                <button onclick="alt('${chave}_r',1)">+</button>
-                            </div>
+                            <button class="check-btn ${saved.checked ? 'checked' : ''}" id="check_${exIdx}_${setIdx}" onclick="toggleCheck(${exIdx}, ${setIdx})">✓</button>
                         </div>
+                    `;
+                });
 
-                        <div class="check-btn ${checkedBtnClass}" id="btn_${chave}" onclick="toggleCheck('${chave}')">${checkedIcon}</div>
-                    </div>`;
-                }
-                html += `</div>`;
-                container.innerHTML += html;
+                card.innerHTML = `
+                    <div class="exercise-name">${ex.name}</div>
+                    <div class="sets-list">${setsHtml}</div>
+                `;
+                container.appendChild(card);
             });
         }
 
-        function alt(id, delta) {
-            let inp = document.getElementById(id);
-            let val = parseInt(inp.value) || 0;
-            val = Math.max(0, val + delta);
-            inp.value = val;
-            salvarSeguro(id, val);
+        function updateVal(exIdx, setIdx, field, delta) {
+            const display = document.getElementById(`${field}_${exIdx}_${setIdx}`);
+            let val = parseInt(display.innerText) + delta;
+            if (val < 0) val = 0;
+            display.innerText = val;
+            saveState(exIdx, setIdx);
         }
 
-        function toggleCheck(chave) {
-            iniciarAudio(); 
-            let btn = document.getElementById('btn_' + chave);
-            let row = document.getElementById('row_' + chave);
-            let isDone = btn.classList.contains('done');
+        function toggleCheck(exIdx, setIdx) {
+            const checkBtn = document.getElementById(`check_${exIdx}_${setIdx}`);
+            const row = document.getElementById(`row_${exIdx}_${setIdx}`);
             
-            if(!isDone) {
-                btn.classList.add('done');
-                btn.innerText = '✔';
-                row.classList.add('completed');
-                salvarSeguro(chave + '_done', 'true');
-                iniciarCronometro(90);
-            } else {
-                btn.classList.remove('done');
-                btn.innerText = '';
-                row.classList.remove('completed');
-                salvarSeguro(chave + '_done', 'false');
+            checkBtn.classList.toggle('checked');
+            row.classList.toggle('completed');
+            
+            saveState(exIdx, setIdx);
+        }
+
+        function saveState(exIdx, setIdx) {
+            const kg = parseInt(document.getElementById(`kg_${exIdx}_${setIdx}`).innerText);
+            const reps = parseInt(document.getElementById(`reps_${exIdx}_${setIdx}`).innerText);
+            const checked = document.getElementById(`check_${exIdx}_${setIdx}`).classList.contains('checked');
+
+            const storageKey = `gym_${currentDay}_ex${exIdx}_set${setIdx}`;
+            localStorage.setItem(storageKey, JSON.stringify({ kg, reps, checked }));
+        }
+
+        function resetWorkout() {
+            if(confirm("Deseja realmente zerar os dados deste dia?")) {
+                const dayData = workoutData[currentDay];
+                dayData.exercises.forEach((ex, exIdx) => {
+                    ex.sets.forEach((set, setIdx) => {
+                        localStorage.removeItem(`gym_${currentDay}_ex${exIdx}_set${setIdx}`);
+                    });
+                });
+                renderWorkout();
             }
         }
 
-        function mudarDia(dia, btn) {
-            document.querySelectorAll('#menu-dias button').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            salvarSeguro(diaAtual + '_c_desc', document.getElementById('c_desc').value);
-            salvarSeguro(diaAtual + '_c_dados', document.getElementById('c_dados').value);
-            renderizar(dia);
-        }
+        function copyWorkoutReport() {
+            const dayData = workoutData[currentDay];
+            let report = `*TREINO CYBERGYM (${dayData.name.split(' ')[0]})*\n\n${dayData.cardio}\n`;
 
-        let tempoID;
-        let audioCtx = null;
-
-        function iniciarAudio() {
-            if (!audioCtx) {
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                if(AudioContext) audioCtx = new AudioContext();
-            }
-            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-        }
-
-        function iniciarCronometro(seg) {
-            iniciarAudio();
-            clearInterval(tempoID);
-            let t = seg;
-            attRelogio(t);
-            tempoID = setInterval(() => {
-                t--;
-                attRelogio(t);
-                if(t <= 0) {
-                    clearInterval(tempoID);
-                    tocarCampainha();
-                }
-            }, 1000);
-        }
-
-        function pararCronometro() {
-            clearInterval(tempoID);
-            document.getElementById('display-tempo').innerText = "00:00";
-        }
-
-        function attRelogio(s) {
-            let m = Math.floor(s / 60).toString().padStart(2, '0');
-            let sec = (s % 60).toString().padStart(2, '0');
-            document.getElementById('display-tempo').innerText = `${m}:${sec}`;
-        }
-
-        function tocarCampainha() {
-            if(!audioCtx) return;
-            try {
-                function b(f, t) {
-                    let osc = audioCtx.createOscillator(), g = audioCtx.createGain();
-                    osc.frequency.value = f; osc.connect(g); g.connect(audioCtx.destination);
-                    osc.start(audioCtx.currentTime + t);
-                    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + t + 0.6);
-                    osc.stop(audioCtx.currentTime + t + 0.6);
-                }
-                b(600,0); b(840,0); b(1200,0); 
-                b(600,0.4); b(840,0.4); b(1200,0.4);
-            } catch(e) {}
-        }
-
-        function copiarRelatorio() {
-            salvarSeguro(diaAtual + '_c_desc', document.getElementById('c_desc').value);
-            salvarSeguro(diaAtual + '_c_dados', document.getElementById('c_dados').value);
-
-            let txt = `*TREINO CYBERGYM (${diaAtual.toUpperCase()})*\n\n`;
-            let cDesc = document.getElementById('c_desc').value;
-            let cDados = document.getElementById('c_dados').value;
-            if(cDesc || cDados) txt += `🔥 *Cardio:* ${cDesc} | ${cDados}\n\n`;
-
-            treinos[diaAtual].forEach((ex, i) => {
-                let hasData = false;
-                let exStr = `* ${ex.nome}:\n`;
-                for(let s = 1; s <= ex.series; s++) {
-                    let chave = `${diaAtual}_e${i}_s${s}`;
-                    let inputP = document.getElementById(`${chave}_p`);
-                    let inputR = document.getElementById(`${chave}_r`);
-                    let btnCheck = document.getElementById(`btn_${chave}`);
-                    let p = inputP ? inputP.value : '0';
-                    let r = inputR ? inputR.value : '0';
-                    let check = (btnCheck && btnCheck.classList.contains('done')) ? ' (OK)' : '';
-                    exStr += `  - Série ${s}: ${p}kg x ${r} reps${check}\n`;
-                    hasData = true;
-                }
-                if(hasData) txt += exStr;
+            dayData.exercises.forEach((ex, exIdx) => {
+                report += `\n* ${ex.name}:`;
+                ex.sets.forEach((set, setIdx) => {
+                    const kg = document.getElementById(`kg_${exIdx}_${setIdx}`).innerText;
+                    const reps = document.getElementById(`reps_${exIdx}_${setIdx}`).innerText;
+                    report += `\n  - Série ${setIdx + 1}: ${kg}kg x ${reps} reps (OK)`;
+                });
             });
 
-            let tempInput = document.createElement("textarea");
-            tempInput.value = txt;
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            tempInput.setSelectionRange(0, 99999);
-            try {
-                document.execCommand("copy");
-                mostrarToast();
-            } catch(e) { console.error("Falha ao copiar", e); }
-            document.body.removeChild(tempInput);
+            navigator.clipboard.writeText(report).then(() => {
+                showToast();
+            }).catch(err => {
+                console.error('Erro ao copiar', err);
+            });
         }
 
-        function mostrarToast() {
-            let toast = document.getElementById("toast");
-            toast.className = "toast show";
-            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            renderizar('terca');
-            document.body.addEventListener('touchstart', iniciarAudio, { once: true });
-            document.body.addEventListener('click', iniciarAudio, { once: true });
-        });
+        window.onload = initApp;
     </script>
 </body>
 </html>
