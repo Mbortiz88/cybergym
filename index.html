@@ -53,16 +53,36 @@
             min-height: 100vh;
         }
 
-        body::after {
+        /* 1. TEXTURA CRT FIXA (Linhas de Monitor Antigo) */
+        body::before {
             content: " ";
             display: block;
             position: fixed;
             top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%);
+            background: linear-gradient(rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.4) 50%);
             background-size: 100% 4px;
-            z-index: 10;
+            z-index: 9998;
             pointer-events: none;
-            opacity: 0.25;
+        }
+
+        /* 2. FEIXE DE VARREDURA HOLOGRÁFICO (Barra Scanner) */
+        body::after {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: -20vh; left: 0; right: 0; height: 15vh;
+            background: linear-gradient(to bottom, rgba(255,24,54,0) 0%, rgba(255,24,54,0.12) 50%, rgba(255,24,54,0) 100%);
+            box-shadow: 0 0 20px rgba(255,24,54,0.05);
+            z-index: 9999;
+            pointer-events: none;
+            animation: cyber-scan 6s linear infinite;
+        }
+
+        @keyframes cyber-scan {
+            0% { transform: translateY(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(120vh); opacity: 0; }
         }
 
         header {
@@ -95,6 +115,7 @@
             100% { transform: scale(1.1); filter: drop-shadow(0 0 18px var(--primary)); }
         }
 
+        /* GLITCH APRIMORADO COM SCREEN TEARING */
         h1 {
             font-family: 'Teko', sans-serif;
             font-size: 38px;
@@ -103,6 +124,31 @@
             text-shadow: 0 0 18px var(--primary-glow);
             text-transform: uppercase;
             line-height: 1;
+            position: relative;
+            animation: glitch-anim 5s infinite;
+        }
+
+        @keyframes glitch-anim {
+            0%, 9%, 11%, 19%, 21%, 69%, 71%, 100% { 
+                transform: skew(0deg); 
+                text-shadow: 0 0 18px var(--primary-glow); 
+                clip-path: none; 
+            }
+            10% { 
+                transform: skew(-10deg); 
+                text-shadow: 4px 0 #0ff, -4px 0 #ff003c; 
+                clip-path: inset(20% 0 60% 0); 
+            }
+            20% { 
+                transform: skew(10deg); 
+                text-shadow: -4px 0 #0ff, 4px 0 #ff003c; 
+                clip-path: inset(70% 0 10% 0); 
+            }
+            70% { 
+                transform: skew(0deg); 
+                text-shadow: 2px 0 var(--success), -2px 0 var(--primary); 
+                clip-path: inset(40% 0 40% 0); 
+            }
         }
 
         h1 span {
@@ -390,10 +436,15 @@
             transition: all 0.3s ease;
         }
 
+        @keyframes cyber-flash {
+            0% { background: rgba(0, 255, 102, 0.4); }
+            100% { background: rgba(0, 255, 102, 0.09); }
+        }
+
         .set-row.completed {
-            background: rgba(0, 255, 102, 0.09);
-            border-color: rgba(0, 255, 102, 0.5);
-            box-shadow: inset 0 0 20px rgba(0, 255, 102, 0.08), 0 0 10px rgba(0, 255, 102, 0.15);
+            animation: cyber-flash 0.6s ease-out forwards;
+            border-color: rgba(0, 255, 102, 0.6);
+            box-shadow: inset 0 0 20px rgba(0, 255, 102, 0.15), 0 0 15px rgba(0, 255, 102, 0.2);
         }
 
         .set-label {
@@ -493,6 +544,7 @@
             cursor: pointer;
             border: none;
             text-transform: uppercase;
+            z-index: 20;
         }
 
         .btn-copy {
@@ -519,7 +571,7 @@
             box-shadow: 0 8px 25px var(--success-glow);
             transform: translateY(200px);
             transition: transform 0.3s ease;
-            z-index: 1000;
+            z-index: 10000;
         }
 
         #toast.show {
@@ -536,7 +588,7 @@
             </svg>
             <h1>Matheus Ortiz <span>Fitness</span></h1>
         </div>
-        <div class="subtitle">Cyberpunk Performance Matrix // OS v6.5</div>
+        <div class="subtitle">Cyberpunk Performance Matrix // OS v7.2</div>
     </header>
 
     <div class="days-container" id="daysMenu"></div>
@@ -566,10 +618,9 @@
         <button class="action-btn btn-copy" onclick="copyWorkoutReport()">Copiar Relatório</button>
     </div>
 
-    <div id="toast">RELATÓRIO COPIADO!</div>
+    <div id="toast">MENSAGEM AQUI</div>
 
     <script>
-        // DADOS ATUALIZADOS: Com o treino "EXTRA" de posteriores logo após o Domingo
         const workoutData = {
             "TER": {
                 name: "TER (PUSH+ABS)",
@@ -654,7 +705,6 @@
             Object.keys(workoutData).forEach(dayKey => {
                 const btn = document.createElement('button');
                 btn.className = `day-btn ${dayKey === currentDay ? 'active' : ''}`;
-                // Mostra as 3 primeiras letras do nome do botão (TER, QUA, QUI, SEX, DOM, EXT)
                 btn.innerText = workoutData[dayKey].name.split(' ')[0];
                 btn.onclick = () => { currentDay = dayKey; initApp(); };
                 daysMenu.appendChild(btn);
@@ -736,9 +786,23 @@
         }
 
         function toggleCheck(exIdx, setIdx) {
-            document.getElementById(`check_${exIdx}_${setIdx}`).classList.toggle('checked');
-            document.getElementById(`row_${exIdx}_${setIdx}`).classList.toggle('completed');
-            saveState(exIdx, setIdx);
+            const checkBtn = document.getElementById(`check_${exIdx}_${setIdx}`);
+            const row = document.getElementById(`row_${exIdx}_${setIdx}`);
+            
+            row.classList.remove('completed');
+            void row.offsetWidth; 
+            
+            checkBtn.classList.toggle('checked');
+            
+            if (checkBtn.classList.contains('checked')) {
+                row.classList.add('completed');
+                saveState(exIdx, setIdx);
+                
+                startTimer(60);
+                showToast("SÉRIE COMPUTADA // TIMER 60s INICIADO", 1500);
+            } else {
+                saveState(exIdx, setIdx);
+            }
         }
 
         function saveState(exIdx, setIdx) {
@@ -768,13 +832,14 @@
                     report += `\n  - Série ${setIdx + 1}: ${document.getElementById(`kg_${exIdx}_${setIdx}`).innerText}kg x ${document.getElementById(`reps_${exIdx}_${setIdx}`).innerText} reps (OK)`;
                 });
             });
-            navigator.clipboard.writeText(report).then(showToast);
+            navigator.clipboard.writeText(report).then(() => showToast("RELATÓRIO COPIADO!", 2200));
         }
 
-        function showToast() {
+        function showToast(msg, duration = 2200) {
             const toast = document.getElementById('toast');
+            toast.innerText = msg;
             toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 2200);
+            setTimeout(() => toast.classList.remove('show'), duration);
         }
 
         let timerInterval;
@@ -819,7 +884,7 @@
             display.innerText = "00:00:00";
             display.classList.add('alarm'); 
             
-            bellSound.play().catch(e => console.log("Áudio", e));
+            bellSound.play().catch(e => console.log("Áudio bloqueado", e));
             if(navigator.vibrate) navigator.vibrate([500, 200, 500]);
 
             setTimeout(() => {
