@@ -53,7 +53,7 @@
             min-height: 100vh;
         }
 
-        /* 1. TEXTURA CRT FIXA (Linhas de Monitor Antigo) */
+        /* 1. TEXTURA CRT FIXA */
         body::before {
             content: " ";
             display: block;
@@ -65,7 +65,7 @@
             pointer-events: none;
         }
 
-        /* 2. FEIXE DE VARREDURA HOLOGRÁFICO (Barra Scanner) */
+        /* 2. FEIXE DE VARREDURA HOLOGRÁFICO */
         body::after {
             content: " ";
             display: block;
@@ -115,7 +115,7 @@
             100% { transform: scale(1.1); filter: drop-shadow(0 0 18px var(--primary)); }
         }
 
-        /* GLITCH APRIMORADO COM SCREEN TEARING */
+        /* GLITCH APRIMORADO */
         h1 {
             font-family: 'Teko', sans-serif;
             font-size: 38px;
@@ -588,7 +588,7 @@
             </svg>
             <h1>Matheus Ortiz <span>Fitness</span></h1>
         </div>
-        <div class="subtitle">Cyberpunk Performance Matrix // OS v7.2</div>
+        <div class="subtitle">Cyberpunk Performance Matrix // OS v7.3</div>
     </header>
 
     <div class="days-container" id="daysMenu"></div>
@@ -698,6 +698,29 @@
         };
 
         let currentDay = "TER";
+        
+        // WAKE LOCK API (Impede a tela de apagar)
+        let wakeLock = null;
+
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log('Foco Total Ativado: Tela não vai apagar.');
+                }
+            } catch (err) {
+                console.log('Erro no Wake Lock:', err);
+            }
+        }
+
+        function releaseWakeLock() {
+            if (wakeLock !== null) {
+                wakeLock.release().then(() => {
+                    wakeLock = null;
+                    console.log('Foco Total Desativado.');
+                });
+            }
+        }
 
         function initApp() {
             const daysMenu = document.getElementById('daysMenu');
@@ -851,6 +874,7 @@
         function startTimer(seconds) {
             bellSound.load(); 
             clearInterval(timerInterval);
+            requestWakeLock(); // Pede para a tela não apagar
             
             endTime = Date.now() + (seconds * 1000);
             const display = document.getElementById('timerDisplay');
@@ -875,11 +899,14 @@
 
         function stopTimer() {
             clearInterval(timerInterval);
+            endTime = 0;
             document.getElementById('timerDisplay').innerText = "00:00:00";
             document.getElementById('timerDisplay').classList.remove('alarm');
+            releaseWakeLock(); // Libera a tela para apagar
         }
 
         function triggerAlarm() {
+            endTime = 0;
             const display = document.getElementById('timerDisplay');
             display.innerText = "00:00:00";
             display.classList.add('alarm'); 
@@ -889,8 +916,27 @@
 
             setTimeout(() => {
                 display.classList.remove('alarm');
+                releaseWakeLock(); // Libera a tela após o alarme
             }, 3000);
         }
+
+        // SINCRONIZAÇÃO DE RETORNO (VISIBILITY API)
+        // Se o usuário saiu do app e voltou, verifica se o tempo já acabou
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === 'visible') {
+                if (endTime > 0) {
+                    const now = Date.now();
+                    // Se o tempo passou enquanto estava minimizado
+                    if (now >= endTime) {
+                        clearInterval(timerInterval);
+                        triggerAlarm();
+                    } else {
+                        // Se o timer ainda está rolando, garante que a tela não vai apagar
+                        requestWakeLock();
+                    }
+                }
+            }
+        });
 
         window.onload = initApp;
     </script>
