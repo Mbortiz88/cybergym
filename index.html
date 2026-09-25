@@ -536,7 +536,7 @@
             </svg>
             <h1>Matheus Ortiz <span>Fitness</span></h1>
         </div>
-        <div class="subtitle">Cyberpunk Performance Matrix // OS v6.4</div>
+        <div class="subtitle">Cyberpunk Performance Matrix // OS v6.5</div>
     </header>
 
     <div class="days-container" id="daysMenu"></div>
@@ -569,7 +569,7 @@
     <div id="toast">RELATÓRIO COPIADO!</div>
 
     <script>
-        // DADOS ATUALIZADOS: Sexta com 2 exercícios de bíceps (Rosca Alternada e Rosca Martelo) e 1 de ombro (Elevação Lateral)
+        // DADOS ATUALIZADOS: Com o treino "EXTRA" de posteriores logo após o Domingo
         const workoutData = {
             "TER": {
                 name: "TER (PUSH+ABS)",
@@ -633,6 +633,16 @@
                     { name: "Rosca Direta", sets: [{kg: 0, reps: 10}, {kg: 0, reps: 10}] },
                     { name: "Abdominal Máquina", sets: [{kg: 40, reps: 15}, {kg: 45, reps: 12}, {kg: 45, reps: 12}] }
                 ]
+            },
+            "EXT": {
+                name: "EXTRA (POSTERIOR)",
+                cardio: { time: "15min", dist: "1,5km", kcal: "120 Kcal" },
+                exercises: [
+                    { name: "Mesa Flexora", sets: [{kg: 0, reps: 12}, {kg: 0, reps: 12}, {kg: 0, reps: 12}, {kg: 0, reps: 10}] },
+                    { name: "Stiff", sets: [{kg: 0, reps: 10}, {kg: 0, reps: 10}, {kg: 0, reps: 10}] },
+                    { name: "Elevação Pélvica", sets: [{kg: 0, reps: 10}, {kg: 0, reps: 10}, {kg: 0, reps: 10}] },
+                    { name: "Panturrilhas em Pé", sets: [{kg: 0, reps: 15}, {kg: 0, reps: 15}, {kg: 0, reps: 15}, {kg: 0, reps: 15}] }
+                ]
             }
         };
 
@@ -644,6 +654,7 @@
             Object.keys(workoutData).forEach(dayKey => {
                 const btn = document.createElement('button');
                 btn.className = `day-btn ${dayKey === currentDay ? 'active' : ''}`;
+                // Mostra as 3 primeiras letras do nome do botão (TER, QUA, QUI, SEX, DOM, EXT)
                 btn.innerText = workoutData[dayKey].name.split(' ')[0];
                 btn.onclick = () => { currentDay = dayKey; initApp(); };
                 daysMenu.appendChild(btn);
