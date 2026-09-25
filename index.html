@@ -224,7 +224,6 @@
             outline: none;
         }
 
-        /* --- ESTILO DO RELÓGIO DE PAREDE LED OTIMIZADO --- */
         #timerWrapper {
             width: 100%;
             margin: 5px 0;
@@ -537,7 +536,7 @@
             </svg>
             <h1>Matheus Ortiz <span>Fitness</span></h1>
         </div>
-        <div class="subtitle">Cyberpunk Performance Matrix // OS v6.1</div>
+        <div class="subtitle">Cyberpunk Performance Matrix // OS v6.4</div>
     </header>
 
     <div class="days-container" id="daysMenu"></div>
@@ -570,9 +569,10 @@
     <div id="toast">RELATÓRIO COPIADO!</div>
 
     <script>
+        // DADOS ATUALIZADOS: Sexta com 2 exercícios de bíceps (Rosca Alternada e Rosca Martelo) e 1 de ombro (Elevação Lateral)
         const workoutData = {
             "TER": {
-                name: "TER (PUSH)",
+                name: "TER (PUSH+ABS)",
                 cardio: { time: "20min", dist: "2,5km", kcal: "160 Kcal" },
                 exercises: [
                     { name: "Supino Reto Barra", sets: [{kg: 60, reps: 10}, {kg: 65, reps: 8}, {kg: 65, reps: 8}] },
@@ -581,7 +581,8 @@
                     { name: "Elevação Lateral", sets: [{kg: 15, reps: 10}, {kg: 10, reps: 10}, {kg: 10, reps: 8}, {kg: 10, reps: 8}] },
                     { name: "Peck Deck", sets: [{kg: 65, reps: 10}, {kg: 70, reps: 8}] },
                     { name: "Tríceps Corda", sets: [{kg: 60, reps: 10}, {kg: 65, reps: 8}, {kg: 70, reps: 8}] },
-                    { name: "Tríceps Testa Polia", sets: [{kg: 40, reps: 10}, {kg: 45, reps: 8}] }
+                    { name: "Tríceps Testa Polia", sets: [{kg: 40, reps: 10}, {kg: 45, reps: 8}] },
+                    { name: "Abdominal na Polia", sets: [{kg: 35, reps: 15}, {kg: 40, reps: 12}, {kg: 40, reps: 12}] }
                 ]
             },
             "QUA": {
@@ -597,7 +598,7 @@
                 ]
             },
             "QUI": {
-                name: "QUI (LOWER)",
+                name: "QUI (LOWER+ABS)",
                 cardio: { time: "15min", dist: "1,5km", kcal: "120 Kcal" },
                 exercises: [
                     { name: "Hack Squat", sets: [{kg: 0, reps: 10}, {kg: 0, reps: 10}, {kg: 0, reps: 10}] },
@@ -605,29 +606,32 @@
                     { name: "Cadeira Extensora", sets: [{kg: 0, reps: 12}, {kg: 0, reps: 12}, {kg: 0, reps: 12}] },
                     { name: "Mesa Flexora", sets: [{kg: 0, reps: 12}, {kg: 0, reps: 12}, {kg: 0, reps: 12}] },
                     { name: "Elevação Pélvica", sets: [{kg: 0, reps: 10}, {kg: 0, reps: 10}] },
-                    { name: "Panturrilhas em Pé", sets: [{kg: 0, reps: 15}, {kg: 0, reps: 15}, {kg: 0, reps: 15}] }
+                    { name: "Panturrilhas em Pé", sets: [{kg: 0, reps: 15}, {kg: 0, reps: 15}, {kg: 0, reps: 15}] },
+                    { name: "Elevação de Pernas", sets: [{kg: 0, reps: 15}, {kg: 0, reps: 12}, {kg: 0, reps: 12}] }
                 ]
             },
             "SEX": {
-                name: "SEX (UPPER+BIC)",
+                name: "SEX (PEITO/OMB/BRAÇO)",
                 cardio: { time: "15min", dist: "1,2km", kcal: "100 Kcal" },
                 exercises: [
                     { name: "Supino Reto", sets: [{kg: 0, reps: 10}, {kg: 0, reps: 10}, {kg: 0, reps: 10}] },
-                    { name: "Remada Curvada", sets: [{kg: 0, reps: 10}, {kg: 0, reps: 10}, {kg: 0, reps: 10}] },
-                    { name: "Desenvolvimento", sets: [{kg: 0, reps: 10}, {kg: 0, reps: 10}] },
+                    { name: "Crucifixo Inclinado", sets: [{kg: 0, reps: 10}, {kg: 0, reps: 10}, {kg: 0, reps: 10}] },
+                    { name: "Elevação Lateral", sets: [{kg: 0, reps: 12}, {kg: 0, reps: 12}, {kg: 0, reps: 12}] },
                     { name: "Rosca Alternada", sets: [{kg: 0, reps: 10}, {kg: 0, reps: 10}, {kg: 0, reps: 10}] },
+                    { name: "Rosca Martelo", sets: [{kg: 0, reps: 10}, {kg: 0, reps: 10}, {kg: 0, reps: 10}] },
                     { name: "Tríceps Francês", sets: [{kg: 0, reps: 10}, {kg: 0, reps: 10}, {kg: 0, reps: 10}] }
                 ]
             },
             "DOM": {
-                name: "DOM (FULLBODY)",
+                name: "DOM (FULL+ABS)",
                 cardio: { time: "20min", dist: "2,0km", kcal: "150 Kcal" },
                 exercises: [
                     { name: "Leg Press", sets: [{kg: 0, reps: 10}, {kg: 0, reps: 10}, {kg: 0, reps: 10}] },
                     { name: "Supino Reto", sets: [{kg: 0, reps: 10}, {kg: 0, reps: 10}, {kg: 0, reps: 10}] },
                     { name: "Puxada Alta", sets: [{kg: 0, reps: 10}, {kg: 0, reps: 10}, {kg: 0, reps: 10}] },
                     { name: "Elevação Lateral", sets: [{kg: 0, reps: 12}, {kg: 0, reps: 12}] },
-                    { name: "Rosca Direta", sets: [{kg: 0, reps: 10}, {kg: 0, reps: 10}] }
+                    { name: "Rosca Direta", sets: [{kg: 0, reps: 10}, {kg: 0, reps: 10}] },
+                    { name: "Abdominal Máquina", sets: [{kg: 40, reps: 15}, {kg: 45, reps: 12}, {kg: 45, reps: 12}] }
                 ]
             }
         };
@@ -762,11 +766,9 @@
             setTimeout(() => toast.classList.remove('show'), 2200);
         }
 
-        // --- SISTEMA DE TIMER LED COM MILÉSIMOS (60 FPS) --- //
         let timerInterval;
         let endTime = 0;
         
-        // NOVO SOM: Campainha de Ringue de Boxe real (Ding Ding Ding!)
         const bellSound = new Audio('https://gfxsounds.com/wp-content/uploads/2021/07/Boxing-bell-ring-three-times.mp3');
         bellSound.volume = 1.0;
 
