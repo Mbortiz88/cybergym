@@ -189,7 +189,6 @@
         margin-bottom: 12px;
       }
 
-      /* NAVEGAÇÃO DE TELAS (APP UX) */
       .app-screen {
         width: 100%;
         max-width: 500px;
@@ -204,7 +203,6 @@
         opacity: 1;
       }
 
-      /* HOME SCREEN (LISTA VERTICAL) */
       .menu-list {
         display: flex;
         flex-direction: column;
@@ -282,7 +280,6 @@
         color: var(--primary);
       }
 
-      /* WORKOUT SCREEN HEADERS */
       .workout-nav-bar {
         display: flex;
         align-items: center;
@@ -316,7 +313,6 @@
         letter-spacing: 1px;
       }
 
-      /* CARDS E FORMULÁRIOS (MANTIDOS DA V9) */
       .workout-container {
         display: flex;
         flex-direction: column;
@@ -738,7 +734,6 @@
         transition: left 0s;
       }
 
-      /* MODAL DE HISTÓRICO E CONTROLE DE CARGA */
       .modal-overlay {
         position: fixed;
         top: 0;
@@ -900,17 +895,13 @@
         </svg>
         <h1>Matheus Ortiz <span>Fitness</span></h1>
       </div>
-      <div class="subtitle">Cyberpunk Matrix // OS v10 - APP UI</div>
+      <div class="subtitle">Cyberpunk Matrix // OS v10.1</div>
     </header>
 
-    <!-- TELA INICIAL: LISTA DE TREINOS -->
     <div id="homeScreen" class="app-screen active">
-      <div class="menu-list" id="menuList">
-        <!-- Gerado via JS -->
-      </div>
+      <div class="menu-list" id="menuList"></div>
     </div>
 
-    <!-- TELA DE TREINO (DENTRO DO DIA SELECIONADO) -->
     <div id="workoutScreen" class="app-screen">
       <div class="workout-nav-bar">
         <button class="btn-back" onclick="goHome()">
@@ -969,7 +960,6 @@
       </div>
     </div>
 
-    <!-- Modal de Histórico e Carga -->
     <div class="modal-overlay" id="historyModal">
       <div class="modal-content">
         <div class="modal-header">
@@ -1010,7 +1000,7 @@
     <div id="toast">MENSAGEM AQUI</div>
 
     <script>
-      // O BD foi simplificado apenas para o seu treino rotineiro de 6 dias (PPL x2).
+      // ORDEM ATUALIZADA: Terça e Quarta invertidas conforme solicitado.
       const workoutData = {
         DOM: {
           dayName: "Domingo",
@@ -1146,61 +1136,6 @@
         },
         TER: {
           dayName: "Terça-feira",
-          region: "LOWER 1",
-          cardio: { time: "15min", dist: "1,5km", kcal: "120 Kcal" },
-          exercises: [
-            {
-              name: "Hack Squat",
-              sets: [
-                { kg: 0, reps: 10 },
-                { kg: 0, reps: 10 },
-                { kg: 0, reps: 10 },
-              ],
-            },
-            {
-              name: "Leg Press 45º",
-              sets: [
-                { kg: 0, reps: 10 },
-                { kg: 0, reps: 10 },
-                { kg: 0, reps: 10 },
-              ],
-            },
-            {
-              name: "Cadeira Extensora",
-              sets: [
-                { kg: 0, reps: 12 },
-                { kg: 0, reps: 12 },
-                { kg: 0, reps: 12 },
-              ],
-            },
-            {
-              name: "Cadeira Abdutora",
-              sets: [
-                { kg: 0, reps: 15 },
-                { kg: 0, reps: 12 },
-                { kg: 0, reps: 12 },
-              ],
-            },
-            {
-              name: "Panturrilhas em Pé",
-              sets: [
-                { kg: 0, reps: 15 },
-                { kg: 0, reps: 15 },
-                { kg: 0, reps: 15 },
-              ],
-            },
-            {
-              name: "Elevação de Pernas",
-              sets: [
-                { kg: 0, reps: 15 },
-                { kg: 0, reps: 12 },
-                { kg: 0, reps: 12 },
-              ],
-            },
-          ],
-        },
-        QUA: {
-          dayName: "Quarta-feira",
           region: "PUSH 2",
           cardio: { time: "15min", dist: "1,2km", kcal: "100 Kcal" },
           exercises: [
@@ -1251,6 +1186,61 @@
                 { kg: 0, reps: 10 },
                 { kg: 0, reps: 10 },
                 { kg: 0, reps: 10 },
+              ],
+            },
+          ],
+        },
+        QUA: {
+          dayName: "Quarta-feira",
+          region: "LOWER 1 (PERNAS)",
+          cardio: { time: "15min", dist: "1,5km", kcal: "120 Kcal" },
+          exercises: [
+            {
+              name: "Hack Squat",
+              sets: [
+                { kg: 0, reps: 10 },
+                { kg: 0, reps: 10 },
+                { kg: 0, reps: 10 },
+              ],
+            },
+            {
+              name: "Leg Press 45º",
+              sets: [
+                { kg: 0, reps: 10 },
+                { kg: 0, reps: 10 },
+                { kg: 0, reps: 10 },
+              ],
+            },
+            {
+              name: "Cadeira Extensora",
+              sets: [
+                { kg: 0, reps: 12 },
+                { kg: 0, reps: 12 },
+                { kg: 0, reps: 12 },
+              ],
+            },
+            {
+              name: "Cadeira Abdutora",
+              sets: [
+                { kg: 0, reps: 15 },
+                { kg: 0, reps: 12 },
+                { kg: 0, reps: 12 },
+              ],
+            },
+            {
+              name: "Panturrilhas em Pé",
+              sets: [
+                { kg: 0, reps: 15 },
+                { kg: 0, reps: 15 },
+                { kg: 0, reps: 15 },
+              ],
+            },
+            {
+              name: "Elevação de Pernas",
+              sets: [
+                { kg: 0, reps: 15 },
+                { kg: 0, reps: 12 },
+                { kg: 0, reps: 12 },
               ],
             },
           ],
@@ -1419,10 +1409,9 @@
             workoutData[dayKey].dayName;
           renderWorkout(dayKey);
 
-          // Força reflow para animação
           void document.getElementById("workoutScreen").offsetWidth;
           document.getElementById("workoutScreen").classList.add("active");
-        }, 300); // tempo para o fade out
+        }, 300);
       }
 
       function goHome() {
@@ -1434,8 +1423,6 @@
 
           void document.getElementById("homeScreen").offsetWidth;
           document.getElementById("homeScreen").classList.add("active");
-
-          // Para o timer se ele estiver rodando e você sair da tela
           stopTimer();
         }, 300);
       }
@@ -1444,7 +1431,6 @@
         const container = document.getElementById("workoutView");
         const timerWrapper = document.getElementById("timerWrapper");
 
-        // Reanexa o timer ao final se não estiver lá
         document
           .getElementById("workoutScreen")
           .insertBefore(
@@ -1455,8 +1441,6 @@
         container.innerHTML = "";
 
         const dayData = workoutData[dayKey];
-
-        // NOTA: Mantive '6dias' no localstorage key para garantir que você não perca os dados salvos anteriormente.
         const savedTime =
           localStorage.getItem(`gym_6dias_${dayKey}_cardio_time`) ||
           dayData.cardio.time;
