@@ -91,7 +91,6 @@
 
         .menu-list { display: flex; flex-direction: column; gap: 16px; width: 100%; }
         
-        /* NOVO DESIGN TECNOLÓGICO DOS BOTÕES */
         .menu-item {
             background: linear-gradient(145deg, rgba(16, 16, 24, 0.95) 0%, rgba(8, 8, 12, 0.95) 100%);
             border: 1px solid rgba(255, 24, 54, 0.15);
@@ -104,14 +103,12 @@
             box-shadow: 0 8px 25px rgba(0,0,0,0.6);
         }
         
-        /* Grelha Holográfica no fundo (invisível até ao hover) */
         .menu-item::before {
             content: ''; position: absolute; inset: 0;
             background-image: linear-gradient(rgba(255, 24, 54, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 24, 54, 0.05) 1px, transparent 1px);
             background-size: 8px 8px; opacity: 0; transition: opacity 0.4s;
         }
         
-        /* Efeito de feixe de luz a passar (Varrimento) */
         .menu-item::after {
             content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
             background: linear-gradient(90deg, transparent, rgba(255,24,54,0.25), transparent);
@@ -126,17 +123,13 @@
         }
         
         .menu-item:hover::before, .menu-item:active::before { opacity: 1; }
-        
-        .menu-item:hover::after, .menu-item:active::after { 
-            left: 200%; transition: left 0.7s ease-in-out; 
-        }
+        .menu-item:hover::after, .menu-item:active::after { left: 200%; transition: left 0.7s ease-in-out; }
         
         .menu-info { display: flex; flex-direction: column; gap: 8px; position: relative; z-index: 2; }
         
         .menu-day-name { 
             font-family: 'Teko', sans-serif; font-size: 28px; color: #ffffff; 
-            letter-spacing: 1.5px; line-height: 1; text-shadow: 0 2px 4px rgba(0,0,0,0.8); 
-            transition: color 0.3s; 
+            letter-spacing: 1.5px; line-height: 1; text-shadow: 0 2px 4px rgba(0,0,0,0.8); transition: color 0.3s; 
         }
         .menu-item:hover .menu-day-name { color: #fff; text-shadow: 0 0 12px var(--primary-glow); }
         
@@ -152,10 +145,8 @@
             font-weight: bold; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
         }
         .menu-item:hover .menu-chevron { 
-            color: var(--success); text-shadow: 0 0 15px var(--success-glow); 
-            transform: translateX(8px) scale(1.2); 
+            color: var(--success); text-shadow: 0 0 15px var(--success-glow); transform: translateX(8px) scale(1.2); 
         }
-        /* FIM DO NOVO DESIGN */
 
         .workout-nav-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
         .btn-back {
@@ -277,7 +268,7 @@
             </svg>
             <h1>Matheus Ortiz <span>Fitness</span></h1>
         </div>
-        <div class="subtitle">Cyberpunk Matrix // OS v10.2</div>
+        <div class="subtitle">Cyberpunk Matrix // OS v10.3</div>
     </header>
 
     <div id="homeScreen" class="app-screen active">
@@ -569,7 +560,8 @@
             
             if (checkBtn.classList.contains('checked')) {
                 row.classList.add('completed'); saveState(exIdx, setIdx);
-                startTimer(60); showToast("SÉRIE COMPUTADA // TIMER 60s INICIADO", 1500);
+                // TIMER AUTOMÁTICO REMOVIDO AQUI
+                showToast("SÉRIE COMPUTADA", 1500);
             } else {
                 saveState(exIdx, setIdx);
             }
