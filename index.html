@@ -13,7 +13,7 @@
     
     <title>Matheus Ortiz Fitness // CyberGym OS</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;700&family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;700&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.cdnfonts.com/css/digital-7-mono" rel="stylesheet">
     
     <style>
@@ -22,11 +22,16 @@
             --primary-glow: rgba(255, 24, 54, 0.7);
             --success: #00ff66;
             --success-glow: rgba(0, 255, 102, 0.6);
+            --accent-orange: #ff6a00;
             --bg-dark: #07070a;
             --card-bg: rgba(22, 22, 30, 0.7);
             --border-color: rgba(255, 24, 54, 0.2);
             --text-main: #ffffff;
             --text-muted: #9fa0b1;
+            
+            /* Identidade Visual Anatômica (Idêntica ao Gym WP) */
+            --body-base: #2a2b2e;
+            --body-muscle: #4a4c54;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -41,7 +46,7 @@
             background-position: center;
             background-attachment: fixed;
             color: var(--text-main);
-            padding: env(safe-area-inset-top, 20px) 12px 0px 12px;
+            padding: env(safe-area-inset-top, 20px) 12px 80px 12px;
             display: flex; flex-direction: column; align-items: center; min-height: 100vh;
             overflow-x: hidden;
         }
@@ -62,76 +67,73 @@
         .app-screen { width: 100%; max-width: 500px; z-index: 20; display: none; flex-direction: column; opacity: 0; transition: opacity 0.3s ease; }
         .app-screen.active { display: flex; opacity: 1; }
 
-        /* ========================================================= */
-        /* NOVO DESIGN DOS BOTÕES DO MENU (ESTILO APP PREMIUM)       */
-        /* ========================================================= */
-        .menu-list { display: flex; flex-direction: column; gap: 14px; width: 100%; padding-bottom: 30px; }
-        
-        .menu-item {
-            background: linear-gradient(145deg, #181824 0%, #101018 100%);
-            border: 1px solid rgba(255, 255, 255, 0.05); 
-            border-radius: 16px; /* Cantos bem arredondados */
-            padding: 22px 20px; 
-            display: flex; justify-content: space-between; align-items: center; cursor: pointer;
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s;
-            position: relative; overflow: hidden; 
-            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        /* NAVEGAÇÃO INFERIOR */
+        .main-nav-container {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: rgba(10, 10, 15, 0.92); backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            display: flex; justify-content: space-around;
+            padding: 12px 0 calc(12px + env(safe-area-inset-bottom, 0px));
+            z-index: 9000; box-shadow: 0 -5px 25px rgba(0,0,0,0.8);
         }
-        
-        /* Indicador lateral moderno (pílula) */
-        .menu-item::before {
-            content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-            height: 60%; width: 5px; border-radius: 0 6px 6px 0;
-            background: var(--primary);
-            box-shadow: 2px 0 10px var(--primary-glow);
-        }
-        
-        .menu-item:hover, .menu-item:active { 
-            background: linear-gradient(145deg, #1c1c2a 0%, #13131d 100%);
-            border-color: rgba(255, 24, 54, 0.3); 
-            transform: scale(1.02) translateY(-2px); 
-        }
-        
-        .menu-info { display: flex; flex-direction: column; gap: 10px; position: relative; z-index: 2; }
-        
-        .menu-day-name { 
-            font-family: 'Teko', sans-serif; font-size: 32px; color: #ffffff; 
-            letter-spacing: 1px; line-height: 1; text-shadow: 0 2px 4px rgba(0,0,0,0.5); 
-        }
-        
-        .menu-tags { display: flex; gap: 8px; align-items: center; flex-wrap: wrap;}
-        
-        .menu-region-badge { 
-            font-size: 10px; font-weight: 800; text-transform: uppercase; 
-            background: rgba(255, 24, 54, 0.15); color: #ff4d63; 
-            padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255, 24, 54, 0.3);
-            letter-spacing: 1px;
-        }
+        .nav-tab { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-muted); cursor: pointer; flex: 1; transition: all 0.2s; }
+        .nav-tab.active { color: var(--accent-orange); }
+        .nav-tab svg { width: 26px; height: 26px; stroke: currentColor; fill: none; stroke-width: 2; transition: transform 0.2s;}
+        .nav-tab.active svg { stroke: var(--accent-orange); transform: scale(1.1); }
+        .nav-label { font-size: 10px; font-weight: 700; letter-spacing: 0.5px; }
 
-        .menu-ex-count {
-            font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-muted);
-            background: rgba(255, 255, 255, 0.05); padding: 6px 10px; border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.1); letter-spacing: 0.5px;
-        }
-        
-        /* Botão circular direcional */
-        .menu-action {
-            width: 42px; height: 42px; border-radius: 50%; 
-            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
-            display: flex; align-items: center; justify-content: center;
-            transition: all 0.3s;
-        }
+        /* MENU INICIAL */
+        .menu-list { display: flex; flex-direction: column; gap: 14px; width: 100%; padding-bottom: 30px; }
+        .menu-item { background: linear-gradient(145deg, #181824 0%, #101018 100%); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 22px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s; position: relative; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+        .menu-item::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); height: 60%; width: 5px; border-radius: 0 6px 6px 0; background: var(--primary); box-shadow: 2px 0 10px var(--primary-glow); }
+        .menu-item:hover, .menu-item:active { background: linear-gradient(145deg, #1c1c2a 0%, #13131d 100%); border-color: rgba(255, 24, 54, 0.3); transform: scale(1.02) translateY(-2px); }
+        .menu-info { display: flex; flex-direction: column; gap: 10px; position: relative; z-index: 2; }
+        .menu-day-name { font-family: 'Teko', sans-serif; font-size: 32px; color: #ffffff; letter-spacing: 1px; line-height: 1; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .menu-tags { display: flex; gap: 8px; align-items: center; flex-wrap: wrap;}
+        .menu-region-badge { font-size: 10px; font-weight: 800; text-transform: uppercase; background: rgba(255, 24, 54, 0.15); color: #ff4d63; padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255, 24, 54, 0.3); letter-spacing: 1px;}
+        .menu-ex-count { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); background: rgba(255, 255, 255, 0.05); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1); letter-spacing: 0.5px;}
+        .menu-action { width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
         .menu-item:hover .menu-action { background: rgba(255, 24, 54, 0.15); border-color: var(--primary); }
         .menu-chevron { color: var(--text-muted); font-size: 18px; font-weight: bold; transition: color 0.3s;}
         .menu-item:hover .menu-chevron { color: var(--primary); }
+
+        /* ========================================================= */
+        /* MAPA DO CORPO - ESTILO GYM WP REALISTA                    */
+        /* ========================================================= */
+        .body-header-title { font-family: 'Teko', sans-serif; font-size: 38px; color: #fff; margin-bottom: 12px; line-height: 1; letter-spacing: 1px; }
+        .search-fake { background: #16161c; border-radius: 12px; padding: 14px 16px; color: var(--text-muted); font-size: 15px; font-weight: 500; display: flex; align-items: center; gap: 10px; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.05); }
+        
+        .body-map-wrapper { position: relative; width: 100%; max-width: 400px; height: 500px; margin: 0 auto; overflow: visible;}
+        .body-view { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .body-view.active { opacity: 1; pointer-events: auto; }
+        
+        /* Container SVG */
+        .body-svg-container { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 220px; height: 100%; pointer-events: none; }
+        
+        /* Labels */
+        .map-label { position: absolute; display: flex; align-items: center; white-space: nowrap; cursor: pointer; z-index: 10; padding: 4px 0; transition: transform 0.2s;}
+        .map-label:active { transform: scale(1.05); }
+        .map-label.left-side { flex-direction: row; left: 0%; }
+        .map-label.right-side { flex-direction: row-reverse; right: 0%; }
+        
+        .label-text { color: #fff; font-size: 13px; font-weight: 600; padding-bottom: 2px; text-shadow: 0 1px 4px rgba(0,0,0,0.8); }
+        .label-line { height: 1.5px; background: rgba(255,255,255,0.6); box-shadow: 0 1px 2px rgba(0,0,0,0.5);}
+        .map-label.left-side .label-line { margin-left: 6px; }
+        .map-label.right-side .label-line { margin-right: 6px; }
+        .label-dot { width: 5px; height: 5px; border-radius: 50%; background: #fff; box-shadow: 0 0 4px rgba(0,0,0,0.8); }
+        
+        /* Botão Girar Laranja */
+        .girar-wrapper { position: absolute; bottom: 0px; right: 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 20; }
+        .btn-girar { width: 56px; height: 56px; background: var(--accent-orange); border-radius: 50%; border: none; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(255, 106, 0, 0.4); cursor: pointer; transition: transform 0.2s; }
+        .btn-girar:active { transform: scale(0.92); }
+        .girar-text { font-size: 10px; color: var(--text-muted); font-weight: 800; letter-spacing: 1px; }
         /* ========================================================= */
 
-        /* TELA DE TREINO - GAVETA INTERNA */
+        /* GAVETA DE TREINO */
         .workout-nav-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; }
         .btn-back { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
         .btn-back:active { background: rgba(255, 255, 255, 0.1); transform: scale(0.95); }
         .workout-title { font-family: 'Teko', sans-serif; font-size: 30px; color: var(--primary); text-shadow: 0 0 10px var(--primary-glow); letter-spacing: 1px; line-height: 1;}
-
         .workout-container { display: flex; flex-direction: column; gap: 16px; width: 100%; padding-bottom: 140px; }
         
         .cardio-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 18px; backdrop-filter: blur(12px); box-shadow: 0 8px 30px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
@@ -142,36 +144,23 @@
         .cardio-input-group label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; letter-spacing: 0.5px;}
         .cardio-input-group input { background: transparent; border: none; color: #fff; font-size: 16px; font-weight: 800; width: 100%; outline: none; text-shadow: none; }
 
-        /* ESTILO TABELA DE ACADEMIA PRO */
         .exercise-card { background: var(--card-bg); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 20px 14px; backdrop-filter: blur(12px); box-shadow: 0 8px 30px rgba(0,0,0,0.4); transition: border-color 0.3s; }
         .exercise-card:hover { border-color: rgba(255, 255, 255, 0.2); }
         .exercise-name { font-family: 'Teko', sans-serif; font-size: 26px; letter-spacing: 1px; color: #ffffff; margin-bottom: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 10px; display: flex; align-items: center; }
-        
         .btn-history { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 8px; padding: 6px 10px; font-size: 12px; font-family: 'Montserrat', sans-serif; cursor: pointer; margin-left: auto; transition: all 0.2s; font-weight: 700; display: flex; align-items: center; gap: 4px;}
-        .btn-history:active { background: rgba(255,255,255,0.15); }
-        
         .sets-header { display: grid; grid-template-columns: 32px 1fr 1fr 36px; gap: 8px; padding: 0 4px 8px 4px; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 8px; font-size: 10px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; text-align: center;}
         .sets-list { display: flex; flex-direction: column; gap: 8px; }
-        
         .set-row { display: grid; grid-template-columns: 32px 1fr 1fr 36px; gap: 8px; align-items: center; background: rgba(0, 0, 0, 0.3); border: 1px solid transparent; padding: 8px 6px; border-radius: 10px; transition: all 0.3s ease; }
         @keyframes cyber-flash { 0% { background: rgba(0, 255, 102, 0.2); } 100% { background: rgba(0, 255, 102, 0.05); } }
         .set-row.completed { animation: cyber-flash 0.5s ease-out forwards; border-color: rgba(0, 255, 102, 0.3); }
-        
         .set-label { font-size: 13px; color: var(--text-muted); font-weight: 800; text-align: center; background: rgba(255,255,255,0.05); border-radius: 6px; padding: 6px 0; }
         .set-row.completed .set-label { background: rgba(0, 255, 102, 0.15); color: var(--success); }
-        
         .control-group { display: flex; align-items: center; justify-content: space-between; background: rgba(255, 255, 255, 0.03); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.08); overflow: hidden; }
-        .btn-adjust { background: transparent; border: none; color: var(--text-muted); width: 32px; height: 36px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: color 0.2s; }
-        .btn-adjust:active { color: #fff; background: rgba(255,255,255,0.1); }
-        
+        .btn-adjust { background: transparent; border: none; color: var(--text-muted); width: 32px; height: 36px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         input.val-input { width: 100%; text-align: center; font-size: 16px; font-weight: 800; color: #ffffff; background: transparent; border: none; padding: 0; outline: none; -moz-appearance: textfield; }
-        input.val-input:focus { color: var(--primary); }
-        input.val-input::-webkit-outer-spin-button, input.val-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        
         .check-btn { width: 34px; height: 34px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(0,0,0,0.5); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.25s ease; color: transparent; font-size: 16px; margin: 0 auto;}
         .check-btn.checked { background: var(--success); border-color: var(--success); color: #000; box-shadow: 0 0 12px var(--success-glow); }
 
-        /* HARDWARE TIMER */
         #timerWrapper { width: 100%; margin: 10px 0; }
         .hardware-timer { background: #0a0a0c; border: 1px solid #222; border-radius: 12px; padding: 8px 10px 18px 10px; box-shadow: inset 0 0 10px rgba(0,0,0,1), 0 4px 15px rgba(0,0,0,0.5); position: relative; display: flex; flex-direction: column; align-items: center; }
         .hardware-screen { background: #060000; width: 100%; border-radius: 6px; padding: 10px 0; border: 1px solid #1a0000; box-shadow: inset 0 0 15px rgba(0,0,0,1); text-align: center; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center; }
@@ -180,21 +169,10 @@
         .hardware-branding { position: absolute; bottom: 5px; width: 100%; display: flex; justify-content: space-between; padding: 0 16px; font-size: 9px; color: #666; font-weight: 800; letter-spacing: 1px; }
         .timer-controls-inline { display: flex; gap: 10px; justify-content: center; margin-top: 12px; width: 100%; }
         .timer-btn-inline { flex: 1; background: rgba(35, 35, 42, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); color: #ddd; font-family: 'Teko', sans-serif; font-size: 18px; padding: 8px 0; border-radius: 8px; cursor: pointer; transition: all 0.2s; letter-spacing: 1px;}
-        .timer-btn-inline:active { background: rgba(255,255,255,0.2); transform: scale(0.95); }
-        .timer-btn-inline.stop { background: rgba(255, 24, 54, 0.1); color: #ff4d63; border-color: rgba(255, 24, 54, 0.2); }
-
-        /* BARRA INFERIOR FLUTUANTE */
-        .bottom-actions-container {
-            position: fixed; bottom: 0; left: 0; width: 100%; 
-            background: rgba(7, 7, 10, 0.9); backdrop-filter: blur(15px);
-            border-top: 1px solid rgba(255,255,255,0.05); padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px));
-            display: flex; flex-direction: column; gap: 12px; z-index: 100;
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.9);
-        }
-        .secondary-actions { display: flex; gap: 12px; }
-        .action-btn { flex: 1; padding: 14px; border-radius: 10px; font-family: 'Teko', sans-serif; font-size: 20px; cursor: pointer; border: none; text-transform: uppercase; letter-spacing: 1px; transition: transform 0.1s;}
-        .action-btn:active { transform: scale(0.98); }
         
+        .bottom-actions-container { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(7, 7, 10, 0.9); backdrop-filter: blur(15px); border-top: 1px solid rgba(255,255,255,0.05); padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 12px; z-index: 100; box-shadow: 0 -10px 40px rgba(0,0,0,0.9); }
+        .secondary-actions { display: flex; gap: 12px; }
+        .action-btn { flex: 1; padding: 14px; border-radius: 10px; font-family: 'Teko', sans-serif; font-size: 20px; cursor: pointer; border: none; text-transform: uppercase; letter-spacing: 1px; }
         .btn-copy { background: rgba(255, 24, 54, 0.15); color: var(--primary); border: 1px solid rgba(255, 24, 54, 0.3); }
         .btn-reset { background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border: 1px solid rgba(255, 255, 255, 0.1); }
         .btn-save { background: linear-gradient(135deg, var(--primary), #8a0014); color: #fff; font-size: 24px; padding: 16px; box-shadow: 0 4px 15px rgba(255,24,54,0.4); border: 1px solid #ff5c73;}
@@ -202,21 +180,23 @@
         /* MODAL E TOASTS */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 100000; opacity: 0; pointer-events: none; transition: 0.3s ease; }
         .modal-overlay.active { opacity: 1; pointer-events: auto; }
-        .modal-content { background: rgba(22, 22, 30, 0.95); border: 1px solid var(--primary); border-radius: 16px; width: 90%; max-width: 400px; padding: 24px; box-shadow: 0 0 40px rgba(255,24,54,0.3); max-height: 85vh; display: flex; flex-direction: column; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; }
-        .modal-title { font-family: 'Teko', sans-serif; font-size: 28px; color: #fff; letter-spacing: 1px;}
-        .close-btn { background: transparent; border: none; color: var(--primary); font-size: 28px; cursor: pointer; font-weight: bold; }
-        .input-history-box { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 16px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 10px; }
-        .input-history-box label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
-        .input-row-flex { display: flex; gap: 10px; }
-        .input-row-flex input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 18px; font-weight: bold; padding: 10px; text-align: center; outline: none; }
-        .btn-add-weight { background: linear-gradient(135deg, var(--primary), #8a0014); color: #fff; border: none; border-radius: 8px; padding: 0 20px; font-family: 'Teko', sans-serif; font-size: 20px; cursor: pointer; letter-spacing: 1px; }
+        .modal-content { background: #16161e; border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; width: 90%; max-width: 380px; padding: 24px; box-shadow: 0 15px 40px rgba(0,0,0,0.8); max-height: 85vh; display: flex; flex-direction: column; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; }
+        .modal-title { font-family: 'Teko', sans-serif; font-size: 26px; color: #fff; letter-spacing: 1px; line-height: 1;}
+        .close-btn { background: transparent; border: none; color: var(--text-muted); font-size: 28px; cursor: pointer; transition: color 0.2s; line-height: 1; }
+        .input-history-box { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 12px; }
+        .input-history-box label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;}
+        .input-row-flex { display: flex; gap: 10px; width: 100%; }
+        .input-row-flex input { flex: 1; min-width: 0; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size: 16px; font-weight: bold; padding: 12px; text-align: center; outline: none; }
+        .btn-add-weight { flex-shrink: 0; background: var(--primary); color: #fff; border: none; border-radius: 8px; padding: 0 18px; font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 0.5px; }
+        .history-list-title { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 8px; letter-spacing: 0.5px;}
         .history-list { overflow-y: auto; display: flex; flex-direction: column; gap: 8px; max-height: 250px; padding-right: 4px;}
-        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; color: #fff; font-size: 15px; font-weight: 600;}
+        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; color: #fff; font-size: 15px; font-weight: 600;}
         .history-item span:first-child { color: var(--text-muted); font-size: 13px;}
-        .history-item span:last-child { color: var(--success); font-weight: 800; font-size: 18px; text-shadow: 0 0 10px var(--success-glow);}
+        .history-item span:last-child { color: #fff; font-weight: 700; font-size: 16px;}
+        .history-item.empty { display: block; text-align: center; color: var(--text-muted); background: transparent; border: none; padding: 20px 0; font-size: 13px; font-weight: 500;}
 
-        #toast { position: fixed; top: 40px; background: rgba(0, 255, 102, 0.95); color: #000; padding: 14px 28px; border-radius: 30px; font-weight: 800; font-size: 14px; box-shadow: 0 8px 25px var(--success-glow); transform: translateY(-200px); transition: transform 0.3s ease; z-index: 10000; letter-spacing: 0.5px;}
+        #toast { position: fixed; top: 40px; background: rgba(0, 255, 102, 0.95); color: #000; padding: 14px 28px; border-radius: 30px; font-weight: 800; font-size: 14px; box-shadow: 0 8px 25px var(--success-glow); transform: translateY(-200px); transition: transform 0.3s ease; z-index: 100000; letter-spacing: 0.5px; text-align: center;}
         #toast.show { transform: translateY(0); }
     </style>
 </head>
@@ -229,13 +209,182 @@
             </svg>
             <h1>Matheus Ortiz <span>Fitness</span></h1>
         </div>
-        <div class="subtitle">Cyberpunk Matrix // OS v10.5</div>
+        <div class="subtitle">Cyberpunk Matrix // OS v10.11 FINAL</div>
     </header>
 
+    <!-- TELA PRINCIPAL -->
     <div id="homeScreen" class="app-screen active">
         <div class="menu-list" id="menuList"></div>
     </div>
 
+    <!-- TELA: MAPA DO CORPO (ESTILO GYM WP REALISTA) -->
+    <div id="bodyScreen" class="app-screen">
+        <div class="body-header-title">Exercícios</div>
+        <div class="search-fake">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> 
+            Pesquisar
+        </div>
+
+        <div class="body-map-wrapper">
+            <!-- VISTA FRONTAL -->
+            <div id="bodyFront" class="body-view active">
+                <div class="body-svg-container">
+                    <svg viewBox="0 0 200 400" preserveAspectRatio="xMidYMid meet" style="width: 100%; height: 100%;">
+                        
+                        <!-- Silhueta Humana Realista -->
+                        <path d="M100 10 C106 10 111 15 111 23 C111 28 108 34 105 37 L105 45 C115 47 127 52 135 60 C143 68 147 78 150 95 C152 108 155 130 156 140 C157 148 148 152 143 145 C140 140 135 120 133 105 C132 120 128 150 125 180 C122 205 125 210 125 210 C125 220 130 260 135 300 C138 340 135 370 C133 390 115 390 112 370 C110 350 105 280 100 250 C95 280 90 350 88 370 C85 390 67 390 65 370 C62 340 65 300 70 260 C75 220 75 210 75 210 C75 210 78 205 75 180 C72 150 68 120 67 105 C65 120 60 140 57 145 C52 152 43 148 44 140 C45 130 48 108 50 95 C53 78 57 68 65 60 C73 52 85 47 95 45 L95 37 C92 34 89 28 89 23 C89 15 94 10 100 10 Z" fill="var(--body-base)" />
+
+                        <!-- Músculos - Peitoral -->
+                        <path d="M100 55 C115 55 125 60 130 75 C125 85 110 88 100 88 C90 88 75 85 70 75 C75 60 85 55 100 55 Z" fill="var(--body-muscle)" opacity="0.9"/>
+                        
+                        <!-- Músculos - Abdômen -->
+                        <rect x="91" y="93" width="8" height="14" rx="2" fill="var(--body-muscle)" opacity="0.9"/>
+                        <rect x="101" y="93" width="8" height="14" rx="2" fill="var(--body-muscle)" opacity="0.9"/>
+                        <rect x="91" y="110" width="8" height="14" rx="2" fill="var(--body-muscle)" opacity="0.9"/>
+                        <rect x="101" y="110" width="8" height="14" rx="2" fill="var(--body-muscle)" opacity="0.9"/>
+                        <rect x="91" y="127" width="8" height="14" rx="2" fill="var(--body-muscle)" opacity="0.9"/>
+                        <rect x="101" y="127" width="8" height="14" rx="2" fill="var(--body-muscle)" opacity="0.9"/>
+                        
+                        <!-- Músculos - Ombros -->
+                        <path d="M68 62 C58 68 52 80 52 95 C58 85 65 80 68 62 Z" fill="var(--body-muscle)" opacity="0.9"/>
+                        <path d="M132 62 C142 68 148 80 148 95 C142 85 135 80 132 62 Z" fill="var(--body-muscle)" opacity="0.9"/>
+                        
+                        <!-- Músculos - Bíceps -->
+                        <path d="M50 105 C46 115 48 135 55 140 C58 130 55 115 50 105 Z" fill="var(--body-muscle)" opacity="0.9"/>
+                        <path d="M150 105 C154 115 152 135 145 140 C142 130 145 115 150 105 Z" fill="var(--body-muscle)" opacity="0.9"/>
+                        
+                        <!-- Músculos - Antebraços -->
+                        <path d="M57 145 C50 150 48 165 48 175 C52 175 60 160 57 145 Z" fill="var(--body-muscle)" opacity="0.9"/>
+                        <path d="M143 145 C150 150 152 165 152 175 C148 175 140 160 143 145 Z" fill="var(--body-muscle)" opacity="0.9"/>
+                        
+                        <!-- Músculos - Oblíquos -->
+                        <path d="M85 95 C80 115 78 135 75 145 C82 140 85 115 85 95 Z" fill="var(--body-muscle)" opacity="0.9"/>
+                        <path d="M115 95 C120 115 122 135 125 145 C118 140 115 115 115 95 Z" fill="var(--body-muscle)" opacity="0.9"/>
+                        
+                        <!-- Músculos - Quadríceps -->
+                        <path d="M78 200 C70 230 68 280 72 320 C82 320 90 280 95 240 C92 220 85 205 78 200 Z" fill="var(--body-muscle)" opacity="0.9"/>
+                        <path d="M122 200 C130 230 132 280 128 320 C118 320 110 280 105 240 C108 220 115 205 122 200 Z" fill="var(--body-muscle)" opacity="0.9"/>
+                        
+                        <!-- Músculos - Panturrilhas Frontal -->
+                        <path d="M72 335 C65 350 68 375 72 385 C78 385 85 365 85 340 C80 335 75 335 72 335 Z" fill="var(--body-muscle)" opacity="0.9"/>
+                        <path d="M128 335 C135 350 132 375 128 385 C122 385 115 365 115 340 C120 335 125 335 128 335 Z" fill="var(--body-muscle)" opacity="0.9"/>
+                    </svg>
+                </div>
+                
+                <!-- Rótulos Lado Esquerdo -->
+                <div class="map-label left-side" style="top: 22%;" onclick="showToast('Menu: Exercícios para Ombros', 2000)">
+                    <span class="label-text">Ombros</span><div class="label-line" style="width: 25px;"></div><div class="label-dot"></div>
+                </div>
+                <div class="map-label left-side" style="top: 35%;" onclick="showToast('Menu: Exercícios para Bíceps', 2000)">
+                    <span class="label-text">Bíceps</span><div class="label-line" style="width: 20px;"></div><div class="label-dot"></div>
+                </div>
+                <div class="map-label left-side" style="top: 45%;" onclick="showToast('Menu: Exercícios para Oblíquos', 2000)">
+                    <span class="label-text">Oblíquos</span><div class="label-line" style="width: 32px;"></div><div class="label-dot"></div>
+                </div>
+                <div class="map-label left-side" style="top: 55%;" onclick="showToast('Menu: Exercícios para Abdutores', 2000)">
+                    <span class="label-text">Abdutores</span><div class="label-line" style="width: 22px;"></div><div class="label-dot"></div>
+                </div>
+                <div class="map-label left-side" style="top: 65%;" onclick="showToast('Menu: Exercícios para Quadríceps', 2000)">
+                    <span class="label-text">Quadríceps</span><div class="label-line" style="width: 32px;"></div><div class="label-dot"></div>
+                </div>
+                
+                <!-- Rótulos Lado Direito -->
+                <div class="map-label right-side" style="top: 22%;" onclick="showToast('Menu: Exercícios para Peitoral', 2000)">
+                    <span class="label-text">Peitoral</span><div class="label-line" style="width: 28px;"></div><div class="label-dot"></div>
+                </div>
+                <div class="map-label right-side" style="top: 35%;" onclick="showToast('Menu: Exercícios para Abdômen', 2000)">
+                    <span class="label-text">Abdômen</span><div class="label-line" style="width: 40px;"></div><div class="label-dot"></div>
+                </div>
+                <div class="map-label right-side" style="top: 45%;" onclick="showToast('Menu: Exercícios para Antebraços', 2000)">
+                    <span class="label-text">Antebraços</span><div class="label-line" style="width: 15px;"></div><div class="label-dot"></div>
+                </div>
+                <div class="map-label right-side" style="top: 58%;" onclick="showToast('Menu: Exercícios para Adutores', 2000)">
+                    <span class="label-text">Adutores</span><div class="label-line" style="width: 30px;"></div><div class="label-dot"></div>
+                </div>
+                <div class="map-label right-side" style="top: 85%; right: 4%;" onclick="showToast('Menu: Exercícios de Cardio', 2000)">
+                    <span class="label-text">Cardio</span><div class="label-line" style="width: 0px;"></div>
+                </div>
+            </div>
+
+            <!-- VISTA COSTAS -->
+            <div id="bodyBack" class="body-view">
+                <div class="body-svg-container">
+                    <svg viewBox="0 0 200 400" preserveAspectRatio="xMidYMid meet" style="width: 100%; height: 100%;">
+                        
+                        <!-- Silhueta Humana Realista (Costas) -->
+                        <path d="M100 10 C106 10 111 15 111 23 C111 28 108 34 105 37 L105 45 C115 47 127 52 135 60 C143 68 147 78 150 95 C152 108 155 130 156 140 C157 148 148 152 143 145 C140 140 135 120 133 105 C132 120 128 150 125 180 C122 205 125 210 125 210 C125 220 130 260 135 300 C138 340 135 370 C133 390 115 390 112 370 C110 350 105 280 100 250 C95 280 90 350 88 370 C85 390 67 390 65 370 C62 340 65 300 70 260 C75 220 75 210 75 210 C75 210 78 205 75 180 C72 150 68 120 67 105 C65 120 60 140 57 145 C52 152 43 148 44 140 C45 130 48 108 50 95 C53 78 57 68 65 60 C73 52 85 47 95 45 L95 37 C92 34 89 28 89 23 C89 15 94 10 100 10 Z" fill="var(--body-base)" />
+
+                        <!-- Músculos - Trapézio -->
+                        <path d="M100 45 C115 48 125 55 130 65 C120 65 110 70 100 75 C90 70 80 65 70 65 C75 55 85 48 100 45 Z" fill="var(--body-muscle)" opacity="0.9"/>
+                        
+                        <!-- Músculos - Dorsais -->
+                        <path d="M100 78 C115 80 128 95 130 120 C115 130 105 135 100 140 C95 135 85 130 70 120 C72 95 85 80 100 78 Z" fill="var(--body-muscle)" opacity="0.9"/>
+                        
+                        <!-- Músculos - Lombares -->
+                        <path d="M100 145 C110 140 120 135 125 145 C120 170 115 185 100 190 C85 185 80 170 75 145 C80 135 90 140 100 145 Z" fill="var(--body-muscle)" opacity="0.9"/>
+                        
+                        <!-- Músculos - Glúteos -->
+                        <path d="M100 195 C115 190 130 195 130 220 C125 240 115 245 100 245 C85 245 75 240 70 220 C70 195 85 190 100 195 Z" fill="var(--body-muscle)" opacity="0.9"/>
+                        
+                        <!-- Músculos - Tríceps -->
+                        <path d="M52 105 C48 115 50 135 57 140 C60 130 57 115 52 105 Z" fill="var(--body-muscle)" opacity="0.9"/>
+                        <path d="M148 105 C152 115 150 135 143 140 C140 130 143 115 148 105 Z" fill="var(--body-muscle)" opacity="0.9"/>
+                        
+                        <!-- Músculos - Isquiotibiais (Posterior de Coxa) -->
+                        <path d="M75 235 C68 260 68 290 72 325 C82 325 88 290 92 250 C85 240 80 235 75 235 Z" fill="var(--body-muscle)" opacity="0.9"/>
+                        <path d="M125 235 C132 260 132 290 128 325 C118 325 112 290 108 250 C115 240 120 235 125 235 Z" fill="var(--body-muscle)" opacity="0.9"/>
+                        
+                        <!-- Músculos - Panturrilhas Costas -->
+                        <path d="M70 335 C60 350 65 380 72 390 C80 390 85 360 85 340 C80 330 75 330 70 335 Z" fill="var(--body-muscle)" opacity="0.9"/>
+                        <path d="M130 335 C140 350 135 380 128 390 C120 390 115 360 115 340 C120 330 125 330 130 335 Z" fill="var(--body-muscle)" opacity="0.9"/>
+                    </svg>
+                </div>
+                
+                <!-- Rótulos Lado Esquerdo Costas -->
+                <div class="map-label left-side" style="top: 35%;" onclick="showToast('Menu: Exercícios para Tríceps', 2000)">
+                    <span class="label-text">Tríceps</span><div class="label-line" style="width: 20px;"></div><div class="label-dot"></div>
+                </div>
+                <div class="map-label left-side" style="top: 48%;" onclick="showToast('Menu: Exercícios para Lombares', 2000)">
+                    <span class="label-text">Lombares</span><div class="label-line" style="width: 35px;"></div><div class="label-dot"></div>
+                </div>
+                <div class="map-label left-side" style="top: 68%;" onclick="showToast('Menu: Exercícios para Isquiotibiais', 2000)">
+                    <span class="label-text">Isquiotibiais</span><div class="label-line" style="width: 25px;"></div><div class="label-dot"></div>
+                </div>
+                <div class="map-label left-side" style="top: 82%;" onclick="showToast('Menu: Exercícios para Panturrilhas', 2000)">
+                    <span class="label-text">Panturrilhas</span><div class="label-line" style="width: 25px;"></div><div class="label-dot"></div>
+                </div>
+                
+                <!-- Rótulos Lado Direito Costas -->
+                <div class="map-label right-side" style="top: 18%;" onclick="showToast('Menu: Exercícios para Trapézio', 2000)">
+                    <span class="label-text">Trapézio</span><div class="label-line" style="width: 30px;"></div><div class="label-dot"></div>
+                </div>
+                <div class="map-label right-side" style="top: 33%;" onclick="showToast('Menu: Exercícios para Dorsais', 2000)">
+                    <span class="label-text">Dorsais</span><div class="label-line" style="width: 35px;"></div><div class="label-dot"></div>
+                </div>
+                <div class="map-label right-side" style="top: 58%;" onclick="showToast('Menu: Exercícios para Glúteos', 2000)">
+                    <span class="label-text">Glúteos</span><div class="label-line" style="width: 30px;"></div><div class="label-dot"></div>
+                </div>
+                <div class="map-label right-side" style="top: 85%; right: 4%;" onclick="showToast('Menu: Exercícios de Cardio', 2000)">
+                    <span class="label-text">Cardio</span><div class="label-line" style="width: 0px;"></div>
+                </div>
+            </div>
+
+            <!-- Botão Girar -->
+            <div class="girar-wrapper" onclick="toggleBodyView()">
+                <button class="btn-girar">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="17 1 21 5 17 9"></polyline>
+                        <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                        <polyline points="7 23 3 19 7 15"></polyline>
+                        <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+                    </svg>
+                </button>
+                <span class="girar-text">GIRAR</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- TELA DE TREINO - GAVETA INTERNA -->
     <div id="workoutScreen" class="app-screen">
         <div class="workout-nav-bar">
             <button class="btn-back" onclick="goHome()">
@@ -271,6 +420,19 @@
         </div>
     </div>
 
+    <!-- NAVEGAÇÃO INFERIOR -->
+    <div class="main-nav-container" id="mainNavContainer">
+        <div class="nav-tab active" id="tabTreinos" onclick="switchMainTab('homeScreen')">
+            <svg viewBox="0 0 24 24"><path d="M6.5 6.5v11m11-11v11m-13-9h14m-14 7h14m-3-11v14m-8-14v14" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="nav-label">Treinos</span>
+        </div>
+        <div class="nav-tab" id="tabCorpo" onclick="switchMainTab('bodyScreen')">
+            <svg viewBox="0 0 24 24"><path d="M12 4a2 2 0 1 0 0 4 2 2 0 1 0 0-4zm-4 7h8v9h-2v-5h-2v5H8v-9z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="nav-label">Corpo</span>
+        </div>
+    </div>
+
+    <!-- MODAL HISTÓRICO E TOASTS -->
     <div class="modal-overlay" id="historyModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -286,7 +448,7 @@
                 </div>
             </div>
 
-            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 6px;">Histórico de Evolução</div>
+            <div class="history-list-title">Histórico de Evolução</div>
             <div class="history-list" id="historyList"></div>
         </div>
     </div>
@@ -391,7 +553,7 @@
             
             Object.keys(workoutData).forEach(dayKey => {
                 const day = workoutData[dayKey];
-                const exCount = day.exercises.length; // Conta os exercícios do dia
+                const exCount = day.exercises.length; 
                 const btn = document.createElement('div');
                 btn.className = 'menu-item';
                 btn.onclick = () => openDay(dayKey);
@@ -412,9 +574,41 @@
             });
         }
 
+        function switchMainTab(targetScreenId) {
+            document.getElementById('homeScreen').classList.remove('active');
+            document.getElementById('bodyScreen').classList.remove('active');
+            document.getElementById('workoutScreen').classList.remove('active');
+            
+            document.getElementById('tabTreinos').classList.toggle('active', targetScreenId === 'homeScreen');
+            document.getElementById('tabCorpo').classList.toggle('active', targetScreenId === 'bodyScreen');
+            
+            setTimeout(() => {
+                document.getElementById('homeScreen').style.display = 'none';
+                document.getElementById('bodyScreen').style.display = 'none';
+                document.getElementById('workoutScreen').style.display = 'none';
+                
+                document.getElementById(targetScreenId).style.display = 'flex';
+                setTimeout(() => document.getElementById(targetScreenId).classList.add('active'), 10);
+            }, 300);
+        }
+
+        function toggleBodyView() {
+            const front = document.getElementById('bodyFront');
+            const back = document.getElementById('bodyBack');
+            
+            if (front.classList.contains('active')) {
+                front.classList.remove('active');
+                back.classList.add('active');
+            } else {
+                back.classList.remove('active');
+                front.classList.add('active');
+            }
+        }
+
         function openDay(dayKey) {
             currentDay = dayKey;
             document.getElementById('mainHeader').style.display = 'none'; 
+            document.getElementById('mainNavContainer').style.display = 'none'; 
             document.getElementById('homeScreen').classList.remove('active');
             
             setTimeout(() => {
@@ -437,6 +631,7 @@
                 document.getElementById('workoutScreen').style.display = 'none';
                 document.getElementById('mainHeader').style.display = 'block'; 
                 document.getElementById('homeScreen').style.display = 'flex';
+                document.getElementById('mainNavContainer').style.display = 'flex'; 
                 
                 void document.getElementById('homeScreen').offsetWidth;
                 document.getElementById('homeScreen').classList.add('active');
@@ -457,7 +652,6 @@
             const savedDist = localStorage.getItem(`gym_6dias_${dayKey}_cardio_dist`) || dayData.cardio.dist;
             const savedKcal = localStorage.getItem(`gym_6dias_${dayKey}_cardio_kcal`) || dayData.cardio.kcal;
 
-            // CARDIO SESSION - TEXTO CORRIGIDO
             const cardioCard = document.createElement('div');
             cardioCard.className = 'cardio-card';
             cardioCard.innerHTML = `
@@ -512,7 +706,6 @@
                 
                 setsHtml += `</div>`; 
 
-                // BOTÃO COM O ÍCONE DO GRÁFICO (📈) CORRIGIDO
                 card.innerHTML = `
                     <div class="exercise-name">
                         ${ex.name}
@@ -635,7 +828,7 @@
             list.innerHTML = '';
             
             if (history.length === 0) {
-                list.innerHTML = '<div class="history-item" style="justify-content:center;"><span>Nenhum registro ainda. Digite acima para salvar!</span></div>';
+                list.innerHTML = '<div class="history-item empty">Nenhum registo de carga salvo ainda.</div>';
             } else {
                 [...history].reverse().forEach(entry => {
                     list.innerHTML += `<div class="history-item"><span>${entry.date}</span><span>${entry.maxKg} KG</span></div>`;
