@@ -13,7 +13,7 @@
     
     <title>Matheus Ortiz Fitness // CyberGym OS</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;700&family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;700&family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.cdnfonts.com/css/digital-7-mono" rel="stylesheet">
     
     <style>
@@ -22,9 +22,9 @@
             --primary-glow: rgba(255, 24, 54, 0.7);
             --success: #00ff66;
             --success-glow: rgba(0, 255, 102, 0.6);
-            --bg-dark: #040406;
-            --card-bg: rgba(12, 12, 18, 0.85);
-            --border-color: rgba(255, 24, 54, 0.5);
+            --bg-dark: #07070a;
+            --card-bg: rgba(22, 22, 30, 0.7);
+            --border-color: rgba(255, 24, 54, 0.2);
             --text-main: #ffffff;
             --text-muted: #9fa0b1;
         }
@@ -34,241 +34,202 @@
         body {
             background-color: var(--bg-dark);
             background-image: 
-                linear-gradient(rgba(255, 24, 54, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 24, 54, 0.03) 1px, transparent 1px),
-                radial-gradient(circle at 50% 0%, rgba(255, 24, 54, 0.15) 0%, transparent 60%),
-                linear-gradient(rgba(4, 4, 6, 0.92), rgba(4, 4, 6, 0.98)),
+                radial-gradient(circle at 50% 0%, rgba(255, 24, 54, 0.08) 0%, transparent 50%),
+                linear-gradient(rgba(7, 7, 10, 0.95), rgba(7, 7, 10, 0.98)),
                 url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1000&auto=format&fit=crop');
-            background-size: 30px 30px, 30px 30px, cover, cover, cover;
+            background-size: cover, cover, cover;
             background-position: center;
             background-attachment: fixed;
             color: var(--text-main);
-            padding: env(safe-area-inset-top, 20px) 12px 50px 12px;
+            padding: env(safe-area-inset-top, 20px) 12px 0px 12px;
             display: flex; flex-direction: column; align-items: center; min-height: 100vh;
             overflow-x: hidden;
         }
 
-        body::before {
-            content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.15) 50%);
-            background-size: 100% 4px; z-index: 9998; pointer-events: none;
-        }
-
-        body::after {
-            content: " "; display: block; position: fixed; top: -20vh; left: 0; right: 0; height: 10vh;
-            background: linear-gradient(to bottom, rgba(255,24,54,0) 0%, rgba(255,24,54,0.08) 50%, rgba(255,24,54,0) 100%);
-            box-shadow: 0 0 15px rgba(255,24,54,0.05); z-index: 9999; pointer-events: none;
-            animation: cyber-scan 8s linear infinite;
-        }
-
-        @keyframes cyber-scan {
-            0% { transform: translateY(0); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { transform: translateY(120vh); opacity: 0; }
-        }
-
-        header { width: 100%; max-width: 500px; text-align: center; margin-bottom: 20px; padding-top: 12px; z-index: 20; }
+        header { width: 100%; max-width: 500px; text-align: center; margin-bottom: 24px; padding-top: 12px; z-index: 20; }
         .logo-container { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 6px; }
         .dumbbell-icon { width: 42px; height: 42px; color: var(--primary); filter: drop-shadow(0 0 12px var(--primary-glow)); animation: cyber-pulse 2s infinite alternate; }
 
         @keyframes cyber-pulse {
             0% { transform: scale(1); filter: drop-shadow(0 0 8px var(--primary)); }
-            100% { transform: scale(1.1); filter: drop-shadow(0 0 18px var(--primary)); }
+            100% { transform: scale(1.05); filter: drop-shadow(0 0 15px var(--primary)); }
         }
 
-        h1 {
-            font-family: 'Teko', sans-serif; font-size: 38px; letter-spacing: 2px; color: #fff;
-            text-shadow: 0 0 18px var(--primary-glow); text-transform: uppercase; line-height: 1; position: relative;
-        }
-        h1 span { color: var(--primary); text-shadow: 0 0 18px var(--primary); }
-        .subtitle { font-size: 10px; letter-spacing: 5px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 12px; }
+        h1 { font-family: 'Teko', sans-serif; font-size: 38px; letter-spacing: 2px; color: #fff; text-transform: uppercase; line-height: 1; }
+        h1 span { color: var(--primary); }
+        .subtitle { font-size: 10px; letter-spacing: 4px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 12px; }
 
-        .app-screen {
-            width: 100%; max-width: 500px; z-index: 20; display: none; flex-direction: column; opacity: 0; transition: opacity 0.3s ease;
-        }
+        .app-screen { width: 100%; max-width: 500px; z-index: 20; display: none; flex-direction: column; opacity: 0; transition: opacity 0.3s ease; }
         .app-screen.active { display: flex; opacity: 1; }
 
-        .menu-list { display: flex; flex-direction: column; gap: 16px; width: 100%; }
+        /* ========================================================= */
+        /* NOVO DESIGN DOS BOTÕES DO MENU (ESTILO APP PREMIUM)       */
+        /* ========================================================= */
+        .menu-list { display: flex; flex-direction: column; gap: 14px; width: 100%; padding-bottom: 30px; }
         
         .menu-item {
-            background: linear-gradient(145deg, rgba(16, 16, 24, 0.95) 0%, rgba(8, 8, 12, 0.95) 100%);
-            border: 1px solid rgba(255, 24, 54, 0.15);
-            border-left: 6px solid var(--primary);
-            border-radius: 8px;
+            background: linear-gradient(145deg, #181824 0%, #101018 100%);
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+            border-radius: 16px; /* Cantos bem arredondados */
             padding: 22px 20px; 
             display: flex; justify-content: space-between; align-items: center; cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative; overflow: hidden;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s;
+            position: relative; overflow: hidden; 
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
         }
         
+        /* Indicador lateral moderno (pílula) */
         .menu-item::before {
-            content: ''; position: absolute; inset: 0;
-            background-image: linear-gradient(rgba(255, 24, 54, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 24, 54, 0.05) 1px, transparent 1px);
-            background-size: 8px 8px; opacity: 0; transition: opacity 0.4s;
+            content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+            height: 60%; width: 5px; border-radius: 0 6px 6px 0;
+            background: var(--primary);
+            box-shadow: 2px 0 10px var(--primary-glow);
         }
         
-        .menu-item::after {
-            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,24,54,0.25), transparent);
-            transform: skewX(-25deg); transition: left 0s;
-        }
-
-        .menu-item:hover, .menu-item:active {
-            background: rgba(255, 24, 54, 0.08); 
-            border-color: var(--primary);
-            box-shadow: 0 0 25px rgba(255, 24, 54, 0.3), inset 0 0 15px rgba(255, 24, 54, 0.15);
-            transform: scale(1.02) translateY(-2px);
+        .menu-item:hover, .menu-item:active { 
+            background: linear-gradient(145deg, #1c1c2a 0%, #13131d 100%);
+            border-color: rgba(255, 24, 54, 0.3); 
+            transform: scale(1.02) translateY(-2px); 
         }
         
-        .menu-item:hover::before, .menu-item:active::before { opacity: 1; }
-        .menu-item:hover::after, .menu-item:active::after { left: 200%; transition: left 0.7s ease-in-out; }
-        
-        .menu-info { display: flex; flex-direction: column; gap: 8px; position: relative; z-index: 2; }
+        .menu-info { display: flex; flex-direction: column; gap: 10px; position: relative; z-index: 2; }
         
         .menu-day-name { 
-            font-family: 'Teko', sans-serif; font-size: 28px; color: #ffffff; 
-            letter-spacing: 1.5px; line-height: 1; text-shadow: 0 2px 4px rgba(0,0,0,0.8); transition: color 0.3s; 
+            font-family: 'Teko', sans-serif; font-size: 32px; color: #ffffff; 
+            letter-spacing: 1px; line-height: 1; text-shadow: 0 2px 4px rgba(0,0,0,0.5); 
         }
-        .menu-item:hover .menu-day-name { color: #fff; text-shadow: 0 0 12px var(--primary-glow); }
+        
+        .menu-tags { display: flex; gap: 8px; align-items: center; flex-wrap: wrap;}
         
         .menu-region-badge { 
-            font-size: 10px; font-weight: 800; text-transform: uppercase; color: #fff; 
-            background: linear-gradient(90deg, var(--primary), #8a0014); 
-            padding: 5px 12px; border-radius: 4px; display: inline-block; align-self: flex-start;
-            box-shadow: 0 0 10px rgba(255,24,54,0.4); letter-spacing: 1.5px; border: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        .menu-chevron { 
-            position: relative; z-index: 2; color: rgba(255,255,255,0.15); font-size: 22px; 
-            font-weight: bold; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-        }
-        .menu-item:hover .menu-chevron { 
-            color: var(--success); text-shadow: 0 0 15px var(--success-glow); transform: translateX(8px) scale(1.2); 
+            font-size: 10px; font-weight: 800; text-transform: uppercase; 
+            background: rgba(255, 24, 54, 0.15); color: #ff4d63; 
+            padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255, 24, 54, 0.3);
+            letter-spacing: 1px;
         }
 
-        .workout-nav-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
-        .btn-back {
-            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.15); color: #fff;
-            padding: 8px 16px; border-radius: 8px; font-family: 'Montserrat', sans-serif; font-size: 14px; font-weight: 700;
-            cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;
+        .menu-ex-count {
+            font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.05); padding: 6px 10px; border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1); letter-spacing: 0.5px;
         }
+        
+        /* Botão circular direcional */
+        .menu-action {
+            width: 42px; height: 42px; border-radius: 50%; 
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s;
+        }
+        .menu-item:hover .menu-action { background: rgba(255, 24, 54, 0.15); border-color: var(--primary); }
+        .menu-chevron { color: var(--text-muted); font-size: 18px; font-weight: bold; transition: color 0.3s;}
+        .menu-item:hover .menu-chevron { color: var(--primary); }
+        /* ========================================================= */
+
+        /* TELA DE TREINO - GAVETA INTERNA */
+        .workout-nav-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; }
+        .btn-back { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
         .btn-back:active { background: rgba(255, 255, 255, 0.1); transform: scale(0.95); }
-        .workout-title { font-family: 'Teko', sans-serif; font-size: 28px; color: var(--primary); text-shadow: 0 0 10px var(--primary-glow); letter-spacing: 1px; }
+        .workout-title { font-family: 'Teko', sans-serif; font-size: 30px; color: var(--primary); text-shadow: 0 0 10px var(--primary-glow); letter-spacing: 1px; line-height: 1;}
 
-        .workout-container { display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px; width: 100%; }
+        .workout-container { display: flex; flex-direction: column; gap: 16px; width: 100%; padding-bottom: 140px; }
         
-        .cardio-card {
-            background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px;
-            backdrop-filter: blur(12px); box-shadow: inset 0 0 20px rgba(255,24,54,0.05), 0 8px 30px rgba(0,0,0,0.6); position: relative; overflow: hidden;
-        }
+        .cardio-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 18px; backdrop-filter: blur(12px); box-shadow: 0 8px 30px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
         .cardio-card::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px; background: var(--primary); box-shadow: 0 0 15px var(--primary); }
-        .cardio-header { font-family: 'Teko', sans-serif; font-size: 22px; color: #ff6b7d; letter-spacing: 1.5px; margin-bottom: 10px; }
-        .cardio-inputs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-        .cardio-input-group { background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 6px; padding: 6px 8px; display: flex; flex-direction: column; }
-        .cardio-input-group label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 2px; }
-        .cardio-input-group input { background: transparent; border: none; color: #fff; font-size: 15px; font-weight: 700; width: 100%; outline: none; text-shadow: none; }
+        .cardio-header { font-family: 'Teko', sans-serif; font-size: 24px; color: #ff6b7d; letter-spacing: 1.5px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;}
+        .cardio-inputs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        .cardio-input-group { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 8px; display: flex; flex-direction: column; }
+        .cardio-input-group label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; letter-spacing: 0.5px;}
+        .cardio-input-group input { background: transparent; border: none; color: #fff; font-size: 16px; font-weight: 800; width: 100%; outline: none; text-shadow: none; }
 
-        #timerWrapper { width: 100%; margin: 5px 0; }
-        .hardware-timer {
-            background: #0a0a0c; border: 2px solid #222; border-radius: 10px; padding: 6px 8px 16px 8px; 
-            box-shadow: inset 0 0 10px rgba(0,0,0,1), 0 8px 25px rgba(0,0,0,0.8), 0 1px 2px rgba(255,255,255,0.08); position: relative; display: flex; flex-direction: column; align-items: center;
-        }
-        .hardware-screen {
-            background: #060000; width: 100%; border-radius: 4px; padding: 8px 0; border: 1px solid #1a0000;
-            box-shadow: inset 0 0 15px rgba(0,0,0,1); text-align: center; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center;
-        }
-        .hardware-screen::before { content: "88:88:88"; position: absolute; font-family: 'Digital-7 Mono', sans-serif; font-size: 58px; color: #120000; z-index: 1; letter-spacing: 2px; pointer-events: none; user-select: none; line-height: 1; }
-        .timer-display { font-family: 'Digital-7 Mono', sans-serif; font-size: 58px; color: #ff0a25; text-shadow: 0 0 8px #ff0a25; line-height: 1; letter-spacing: 2px; position: relative; z-index: 2; }
-        .hardware-branding { position: absolute; bottom: 4px; width: 100%; display: flex; justify-content: space-between; padding: 0 14px; font-family: 'Montserrat', sans-serif; font-size: 8px; color: #666; font-weight: 800; letter-spacing: 1px; }
-        .timer-controls-inline { display: flex; gap: 8px; justify-content: center; margin-top: 10px; width: 100%; }
-        .timer-btn-inline {
-            flex: 1; background: rgba(35, 35, 42, 0.9); border: 1px solid rgba(255, 255, 255, 0.15); color: #ddd; font-family: 'Teko', sans-serif; font-size: 16px; padding: 6px 0; border-radius: 6px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        }
-        .timer-btn-inline:active { background: var(--primary); color: #fff; transform: scale(0.95); }
-        .timer-btn-inline.stop { background: rgba(255, 24, 54, 0.15); color: #ff4d63; border-color: rgba(255, 24, 54, 0.4); }
-        @keyframes flash-timer { 0% { opacity: 1; text-shadow: 0 0 12px #ff0a25; } 50% { opacity: 0.2; } 100% { opacity: 1; text-shadow: 0 0 12px #ff0a25; } }
-        .timer-display.alarm { animation: flash-timer 0.3s 10; }
-
-        .exercise-card {
-            background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; backdrop-filter: blur(12px);
-            box-shadow: inset 0 0 20px rgba(255,24,54,0.05), 0 8px 30px rgba(0,0,0,0.6); transition: border-color 0.3s;
-        }
-        .exercise-card:hover { border-color: rgba(255, 24, 54, 0.8); }
-        .exercise-name {
-            font-family: 'Teko', sans-serif; font-size: 26px; letter-spacing: 1.5px; color: #ffffff; margin-bottom: 12px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.12); padding-bottom: 6px; display: flex; align-items: center; text-shadow: none; 
-        }
-        .btn-history {
-            background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 6px; 
-            padding: 2px 8px; font-size: 14px; cursor: pointer; margin-left: auto; margin-right: 10px; display: flex; align-items: center; transition: background 0.2s;
-        }
-        .btn-history:active { background: var(--success); border-color: var(--success); color: #000; }
-        .exercise-name span.ex-tag { font-size: 11px; font-family: 'Montserrat', sans-serif; color: var(--text-muted); background: rgba(255, 255, 255, 0.08); padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.15); }
-
-        .sets-list { display: flex; flex-direction: column; gap: 10px; }
-        .set-row {
-            display: flex; align-items: center; justify-content: space-between; background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.15); padding: 10px 12px; border-radius: 8px; transition: all 0.3s ease;
-        }
-        @keyframes cyber-flash { 0% { background: rgba(0, 255, 102, 0.35); } 100% { background: rgba(0, 255, 102, 0.12); } }
-        .set-row.completed { animation: cyber-flash 0.6s ease-out forwards; border-color: rgba(0, 255, 102, 0.7); box-shadow: inset 0 0 20px rgba(0, 255, 102, 0.15); }
-        .set-label { font-family: 'Teko', sans-serif; font-size: 20px; color: #e0e0e8; width: 32px; font-weight: 700; text-shadow: none; }
-        .set-controls { display: flex; align-items: center; gap: 6px; }
-        .control-group { display: flex; align-items: center; background: rgba(255, 255, 255, 0.08); border-radius: 6px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.15); }
-        .control-group span { font-size: 10px; color: #aaa; text-transform: uppercase; padding: 0 4px; font-weight: 700; }
-        .btn-adjust { background: rgba(255, 255, 255, 0.12); border: none; color: #fff; width: 30px; height: 32px; font-size: 16px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
-        .btn-adjust:active { background: var(--primary); }
+        /* ESTILO TABELA DE ACADEMIA PRO */
+        .exercise-card { background: var(--card-bg); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 20px 14px; backdrop-filter: blur(12px); box-shadow: 0 8px 30px rgba(0,0,0,0.4); transition: border-color 0.3s; }
+        .exercise-card:hover { border-color: rgba(255, 255, 255, 0.2); }
+        .exercise-name { font-family: 'Teko', sans-serif; font-size: 26px; letter-spacing: 1px; color: #ffffff; margin-bottom: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 10px; display: flex; align-items: center; }
         
-        input.val-input { 
-            width: 44px; text-align: center; font-size: 15px; font-weight: 800; color: #ffffff; 
-            background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; 
-            padding: 4px 0; outline: none; -moz-appearance: textfield; font-family: 'Montserrat', sans-serif; margin: 0 2px;
-        }
-        input.val-input:focus { border-color: var(--primary); box-shadow: 0 0 8px var(--primary-glow); }
+        .btn-history { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 8px; padding: 6px 10px; font-size: 12px; font-family: 'Montserrat', sans-serif; cursor: pointer; margin-left: auto; transition: all 0.2s; font-weight: 700; display: flex; align-items: center; gap: 4px;}
+        .btn-history:active { background: rgba(255,255,255,0.15); }
+        
+        .sets-header { display: grid; grid-template-columns: 32px 1fr 1fr 36px; gap: 8px; padding: 0 4px 8px 4px; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 8px; font-size: 10px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; text-align: center;}
+        .sets-list { display: flex; flex-direction: column; gap: 8px; }
+        
+        .set-row { display: grid; grid-template-columns: 32px 1fr 1fr 36px; gap: 8px; align-items: center; background: rgba(0, 0, 0, 0.3); border: 1px solid transparent; padding: 8px 6px; border-radius: 10px; transition: all 0.3s ease; }
+        @keyframes cyber-flash { 0% { background: rgba(0, 255, 102, 0.2); } 100% { background: rgba(0, 255, 102, 0.05); } }
+        .set-row.completed { animation: cyber-flash 0.5s ease-out forwards; border-color: rgba(0, 255, 102, 0.3); }
+        
+        .set-label { font-size: 13px; color: var(--text-muted); font-weight: 800; text-align: center; background: rgba(255,255,255,0.05); border-radius: 6px; padding: 6px 0; }
+        .set-row.completed .set-label { background: rgba(0, 255, 102, 0.15); color: var(--success); }
+        
+        .control-group { display: flex; align-items: center; justify-content: space-between; background: rgba(255, 255, 255, 0.03); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.08); overflow: hidden; }
+        .btn-adjust { background: transparent; border: none; color: var(--text-muted); width: 32px; height: 36px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: color 0.2s; }
+        .btn-adjust:active { color: #fff; background: rgba(255,255,255,0.1); }
+        
+        input.val-input { width: 100%; text-align: center; font-size: 16px; font-weight: 800; color: #ffffff; background: transparent; border: none; padding: 0; outline: none; -moz-appearance: textfield; }
+        input.val-input:focus { color: var(--primary); }
         input.val-input::-webkit-outer-spin-button, input.val-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        .check-btn { width: 36px; height: 36px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.3); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.25s ease; color: transparent; font-size: 16px; }
-        .check-btn.checked { background: var(--success); border-color: var(--success); color: #000; box-shadow: 0 0 15px var(--success-glow); font-weight: bold; transform: scale(1.08); }
+        
+        .check-btn { width: 34px; height: 34px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(0,0,0,0.5); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.25s ease; color: transparent; font-size: 16px; margin: 0 auto;}
+        .check-btn.checked { background: var(--success); border-color: var(--success); color: #000; box-shadow: 0 0 12px var(--success-glow); }
 
-        .actions-container { display: flex; gap: 12px; margin-bottom: 12px; }
-        .bottom-actions { display: flex; flex-direction: column; gap: 12px; width: 100%; }
-        .action-btn { flex: 1; padding: 14px; border-radius: 8px; font-family: 'Teko', sans-serif; font-size: 20px; cursor: pointer; border: none; text-transform: uppercase; z-index: 20; position: relative; overflow: hidden; }
-        .btn-copy { background: linear-gradient(135deg, var(--primary), #8a0014); color: #fff; box-shadow: 0 6px 20px rgba(255,24,54,0.4); }
-        .btn-reset { background: rgba(255, 255, 255, 0.07); color: var(--text-muted); border: 1px solid rgba(255, 255, 255, 0.2); }
-        .btn-save { background: linear-gradient(135deg, #00b046, #006026); color: #fff; border: 1px solid var(--success); box-shadow: 0 0 15px var(--success-glow); font-size: 22px; padding: 16px; letter-spacing: 1px;}
-        .action-btn::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transition: left 0.5s; }
-        .action-btn:active::before { left: 100%; transition: left 0s; }
+        /* HARDWARE TIMER */
+        #timerWrapper { width: 100%; margin: 10px 0; }
+        .hardware-timer { background: #0a0a0c; border: 1px solid #222; border-radius: 12px; padding: 8px 10px 18px 10px; box-shadow: inset 0 0 10px rgba(0,0,0,1), 0 4px 15px rgba(0,0,0,0.5); position: relative; display: flex; flex-direction: column; align-items: center; }
+        .hardware-screen { background: #060000; width: 100%; border-radius: 6px; padding: 10px 0; border: 1px solid #1a0000; box-shadow: inset 0 0 15px rgba(0,0,0,1); text-align: center; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        .hardware-screen::before { content: "88:88:88"; position: absolute; font-family: 'Digital-7 Mono', sans-serif; font-size: 64px; color: #120000; z-index: 1; letter-spacing: 2px; pointer-events: none; user-select: none; line-height: 1; }
+        .timer-display { font-family: 'Digital-7 Mono', sans-serif; font-size: 64px; color: #ff0a25; text-shadow: 0 0 8px #ff0a25; line-height: 1; letter-spacing: 2px; position: relative; z-index: 2; }
+        .hardware-branding { position: absolute; bottom: 5px; width: 100%; display: flex; justify-content: space-between; padding: 0 16px; font-size: 9px; color: #666; font-weight: 800; letter-spacing: 1px; }
+        .timer-controls-inline { display: flex; gap: 10px; justify-content: center; margin-top: 12px; width: 100%; }
+        .timer-btn-inline { flex: 1; background: rgba(35, 35, 42, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); color: #ddd; font-family: 'Teko', sans-serif; font-size: 18px; padding: 8px 0; border-radius: 8px; cursor: pointer; transition: all 0.2s; letter-spacing: 1px;}
+        .timer-btn-inline:active { background: rgba(255,255,255,0.2); transform: scale(0.95); }
+        .timer-btn-inline.stop { background: rgba(255, 24, 54, 0.1); color: #ff4d63; border-color: rgba(255, 24, 54, 0.2); }
 
+        /* BARRA INFERIOR FLUTUANTE */
+        .bottom-actions-container {
+            position: fixed; bottom: 0; left: 0; width: 100%; 
+            background: rgba(7, 7, 10, 0.9); backdrop-filter: blur(15px);
+            border-top: 1px solid rgba(255,255,255,0.05); padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+            display: flex; flex-direction: column; gap: 12px; z-index: 100;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.9);
+        }
+        .secondary-actions { display: flex; gap: 12px; }
+        .action-btn { flex: 1; padding: 14px; border-radius: 10px; font-family: 'Teko', sans-serif; font-size: 20px; cursor: pointer; border: none; text-transform: uppercase; letter-spacing: 1px; transition: transform 0.1s;}
+        .action-btn:active { transform: scale(0.98); }
+        
+        .btn-copy { background: rgba(255, 24, 54, 0.15); color: var(--primary); border: 1px solid rgba(255, 24, 54, 0.3); }
+        .btn-reset { background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .btn-save { background: linear-gradient(135deg, var(--primary), #8a0014); color: #fff; font-size: 24px; padding: 16px; box-shadow: 0 4px 15px rgba(255,24,54,0.4); border: 1px solid #ff5c73;}
+
+        /* MODAL E TOASTS */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 100000; opacity: 0; pointer-events: none; transition: 0.3s ease; }
         .modal-overlay.active { opacity: 1; pointer-events: auto; }
-        .modal-content { background: rgba(12, 12, 18, 0.95); border: 1px solid var(--primary); border-radius: 12px; width: 90%; max-width: 400px; padding: 20px; box-shadow: 0 0 30px rgba(255,24,54,0.3); max-height: 85vh; display: flex; flex-direction: column; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; }
-        .modal-title { font-family: 'Teko', sans-serif; font-size: 24px; color: #fff; letter-spacing: 1px;}
-        .close-btn { background: transparent; border: none; color: var(--primary); font-size: 24px; cursor: pointer; font-weight: bold; }
-        .input-history-box { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 12px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; }
+        .modal-content { background: rgba(22, 22, 30, 0.95); border: 1px solid var(--primary); border-radius: 16px; width: 90%; max-width: 400px; padding: 24px; box-shadow: 0 0 40px rgba(255,24,54,0.3); max-height: 85vh; display: flex; flex-direction: column; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; }
+        .modal-title { font-family: 'Teko', sans-serif; font-size: 28px; color: #fff; letter-spacing: 1px;}
+        .close-btn { background: transparent; border: none; color: var(--primary); font-size: 28px; cursor: pointer; font-weight: bold; }
+        .input-history-box { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 16px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 10px; }
         .input-history-box label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
-        .input-row-flex { display: flex; gap: 8px; }
-        .input-row-flex input { flex: 1; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: #fff; font-size: 16px; font-weight: bold; padding: 8px; text-align: center; outline: none; }
-        .btn-add-weight { background: linear-gradient(135deg, var(--primary), #8a0014); color: #fff; border: none; border-radius: 6px; padding: 0 16px; font-family: 'Teko', sans-serif; font-size: 18px; cursor: pointer; letter-spacing: 1px; }
-        .history-list { overflow-y: auto; display: flex; flex-direction: column; gap: 8px; max-height: 250px;}
-        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; font-size: 14px; font-weight: 600;}
-        .history-item span:first-child { color: var(--text-muted); font-size: 12px;}
-        .history-item span:last-child { color: var(--success); font-weight: 800; font-size: 16px; text-shadow: 0 0 8px var(--success-glow);}
+        .input-row-flex { display: flex; gap: 10px; }
+        .input-row-flex input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 18px; font-weight: bold; padding: 10px; text-align: center; outline: none; }
+        .btn-add-weight { background: linear-gradient(135deg, var(--primary), #8a0014); color: #fff; border: none; border-radius: 8px; padding: 0 20px; font-family: 'Teko', sans-serif; font-size: 20px; cursor: pointer; letter-spacing: 1px; }
+        .history-list { overflow-y: auto; display: flex; flex-direction: column; gap: 8px; max-height: 250px; padding-right: 4px;}
+        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; color: #fff; font-size: 15px; font-weight: 600;}
+        .history-item span:first-child { color: var(--text-muted); font-size: 13px;}
+        .history-item span:last-child { color: var(--success); font-weight: 800; font-size: 18px; text-shadow: 0 0 10px var(--success-glow);}
 
-        #toast { position: fixed; bottom: 40px; background: rgba(0, 255, 102, 0.95); color: #000; padding: 12px 24px; border-radius: 30px; font-weight: 700; font-size: 14px; box-shadow: 0 8px 25px var(--success-glow); transform: translateY(200px); transition: transform 0.3s ease; z-index: 10000; }
+        #toast { position: fixed; top: 40px; background: rgba(0, 255, 102, 0.95); color: #000; padding: 14px 28px; border-radius: 30px; font-weight: 800; font-size: 14px; box-shadow: 0 8px 25px var(--success-glow); transform: translateY(-200px); transition: transform 0.3s ease; z-index: 10000; letter-spacing: 0.5px;}
         #toast.show { transform: translateY(0); }
     </style>
 </head>
 <body>
 
-    <header>
+    <header id="mainHeader">
         <div class="logo-container">
             <svg class="dumbbell-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                <path d="M20.5 8.5V15.5C20.5 16.3 19.8 17 19 17H18V19C18 19.6 17.6 20 17 20H15C14.4 20 14 19.6 14 19V15H10V19C10 19.6 9.6 20 9 20H7C6.4 20 6 19.6 6 19V17H5C4.2 17 3.5 16.3 3.5 15.5V8.5C3.5 7.7 4.2 7 5 7H6V5C6 4.4 6.4 4 7 4H9C9.6 4 10 4.4 10 5V9H14V5C14 4.4 14.4 4 15 4H17C17.6 4 18 4.4 18 5V7H19C19.8 7 20.5 7.7 20.5 8.5Z"/>
             </svg>
             <h1>Matheus Ortiz <span>Fitness</span></h1>
         </div>
-        <div class="subtitle">Cyberpunk Matrix // OS v10.3</div>
+        <div class="subtitle">Cyberpunk Matrix // OS v10.5</div>
     </header>
 
     <div id="homeScreen" class="app-screen active">
@@ -278,7 +239,7 @@
     <div id="workoutScreen" class="app-screen">
         <div class="workout-nav-bar">
             <button class="btn-back" onclick="goHome()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                 VOLTAR
             </button>
             <div class="workout-title" id="workoutTitleDisplay">Domingo</div>
@@ -301,12 +262,12 @@
             </div>
         </div>
 
-        <div class="bottom-actions">
-            <div class="actions-container">
+        <div class="bottom-actions-container" id="bottomActions" style="display: none;">
+            <div class="secondary-actions">
                 <button class="action-btn btn-reset" onclick="resetWorkout()">Zerar Dados</button>
-                <button class="action-btn btn-copy" onclick="copyWorkoutReport()">Copiar Relatório</button>
+                <button class="action-btn btn-copy" onclick="copyWorkoutReport()">Copiar</button>
             </div>
-            <button class="action-btn btn-save" onclick="saveWorkoutHistory()">✓ FINALIZAR & SALVAR TREINO</button>
+            <button class="action-btn btn-save" onclick="saveWorkoutHistory()">✓ FINALIZAR TREINO</button>
         </div>
     </div>
 
@@ -430,6 +391,7 @@
             
             Object.keys(workoutData).forEach(dayKey => {
                 const day = workoutData[dayKey];
+                const exCount = day.exercises.length; // Conta os exercícios do dia
                 const btn = document.createElement('div');
                 btn.className = 'menu-item';
                 btn.onclick = () => openDay(dayKey);
@@ -437,9 +399,14 @@
                 btn.innerHTML = `
                     <div class="menu-info">
                         <span class="menu-day-name">${day.dayName}</span>
-                        <span class="menu-region-badge">${day.region}</span>
+                        <div class="menu-tags">
+                            <span class="menu-region-badge">${day.region}</span>
+                            <span class="menu-ex-count">${exCount} EXERCÍCIOS</span>
+                        </div>
                     </div>
-                    <span class="menu-chevron">❯</span>
+                    <div class="menu-action">
+                        <span class="menu-chevron">❯</span>
+                    </div>
                 `;
                 menuList.appendChild(btn);
             });
@@ -447,11 +414,13 @@
 
         function openDay(dayKey) {
             currentDay = dayKey;
+            document.getElementById('mainHeader').style.display = 'none'; 
             document.getElementById('homeScreen').classList.remove('active');
             
             setTimeout(() => {
                 document.getElementById('homeScreen').style.display = 'none';
                 document.getElementById('workoutScreen').style.display = 'flex';
+                document.getElementById('bottomActions').style.display = 'flex'; 
                 document.getElementById('workoutTitleDisplay').innerText = workoutData[dayKey].dayName;
                 renderWorkout(dayKey);
                 
@@ -462,9 +431,11 @@
 
         function goHome() {
             document.getElementById('workoutScreen').classList.remove('active');
+            document.getElementById('bottomActions').style.display = 'none'; 
             
             setTimeout(() => {
                 document.getElementById('workoutScreen').style.display = 'none';
+                document.getElementById('mainHeader').style.display = 'block'; 
                 document.getElementById('homeScreen').style.display = 'flex';
                 
                 void document.getElementById('homeScreen').offsetWidth;
@@ -477,7 +448,7 @@
             const container = document.getElementById('workoutView');
             const timerWrapper = document.getElementById('timerWrapper');
             
-            document.getElementById('workoutScreen').insertBefore(timerWrapper, document.querySelector('.bottom-actions'));
+            container.appendChild(timerWrapper); 
             timerWrapper.style.display = 'none';
             container.innerHTML = '';
             
@@ -486,6 +457,7 @@
             const savedDist = localStorage.getItem(`gym_6dias_${dayKey}_cardio_dist`) || dayData.cardio.dist;
             const savedKcal = localStorage.getItem(`gym_6dias_${dayKey}_cardio_kcal`) || dayData.cardio.kcal;
 
+            // CARDIO SESSION - TEXTO CORRIGIDO
             const cardioCard = document.createElement('div');
             cardioCard.className = 'cardio-card';
             cardioCard.innerHTML = `
@@ -498,41 +470,55 @@
             `;
             container.appendChild(cardioCard);
             timerWrapper.style.display = 'block';
+            container.appendChild(timerWrapper); 
 
             dayData.exercises.forEach((ex, exIdx) => {
                 const card = document.createElement('div');
                 card.className = 'exercise-card';
-                let setsHtml = '';
+                
+                let setsHtml = `
+                    <div class="sets-header">
+                        <div>Série</div>
+                        <div>Carga (KG)</div>
+                        <div>Repetições</div>
+                        <div>OK</div>
+                    </div>
+                    <div class="sets-list">
+                `;
+                
                 ex.sets.forEach((set, setIdx) => {
                     const saved = JSON.parse(localStorage.getItem(`gym_6dias_${dayKey}_ex${exIdx}_set${setIdx}`)) || { kg: set.kg, reps: set.reps, checked: false };
+                    
                     setsHtml += `
                         <div class="set-row ${saved.checked ? 'completed' : ''}" id="row_${exIdx}_${setIdx}">
-                            <div class="set-label">S${setIdx + 1}</div>
-                            <div class="set-controls">
-                                <div class="control-group">
-                                    <span>KG</span>
-                                    <button class="btn-adjust" onclick="updateVal(${exIdx}, ${setIdx}, 'kg', -5)">-</button>
-                                    <input type="number" class="val-input" id="kg_${exIdx}_${setIdx}" value="${saved.kg}" onchange="saveState(${exIdx}, ${setIdx})" step="0.5">
-                                    <button class="btn-adjust" onclick="updateVal(${exIdx}, ${setIdx}, 'kg', 5)">+</button>
-                                </div>
-                                <div class="control-group">
-                                    <span>REPS</span>
-                                    <button class="btn-adjust" onclick="updateVal(${exIdx}, ${setIdx}, 'reps', -1)">-</button>
-                                    <input type="number" class="val-input" id="reps_${exIdx}_${setIdx}" value="${saved.reps}" onchange="saveState(${exIdx}, ${setIdx})">
-                                    <button class="btn-adjust" onclick="updateVal(${exIdx}, ${setIdx}, 'reps', 1)">+</button>
-                                </div>
+                            <div class="set-label">${setIdx + 1}</div>
+                            
+                            <div class="control-group">
+                                <button class="btn-adjust" onclick="updateVal(${exIdx}, ${setIdx}, 'kg', -5)">-</button>
+                                <input type="number" class="val-input" id="kg_${exIdx}_${setIdx}" value="${saved.kg}" onchange="saveState(${exIdx}, ${setIdx})" step="0.5">
+                                <button class="btn-adjust" onclick="updateVal(${exIdx}, ${setIdx}, 'kg', 5)">+</button>
                             </div>
+                            
+                            <div class="control-group">
+                                <button class="btn-adjust" onclick="updateVal(${exIdx}, ${setIdx}, 'reps', -1)">-</button>
+                                <input type="number" class="val-input" id="reps_${exIdx}_${setIdx}" value="${saved.reps}" onchange="saveState(${exIdx}, ${setIdx})">
+                                <button class="btn-adjust" onclick="updateVal(${exIdx}, ${setIdx}, 'reps', 1)">+</button>
+                            </div>
+                            
                             <button class="check-btn ${saved.checked ? 'checked' : ''}" id="check_${exIdx}_${setIdx}" onclick="toggleCheck(${exIdx}, ${setIdx})">✓</button>
                         </div>
                     `;
                 });
+                
+                setsHtml += `</div>`; 
+
+                // BOTÃO COM O ÍCONE DO GRÁFICO (📈) CORRIGIDO
                 card.innerHTML = `
                     <div class="exercise-name">
                         ${ex.name}
-                        <button class="btn-history" onclick="showHistory('${ex.name}')">📈</button>
-                        <span class="ex-tag">EX ${exIdx + 1}</span>
+                        <button class="btn-history" onclick="showHistory('${ex.name}')">📈 HISTÓRICO</button>
                     </div>
-                    <div class="sets-list">${setsHtml}</div>
+                    ${setsHtml}
                 `;
                 container.appendChild(card);
             });
@@ -560,7 +546,6 @@
             
             if (checkBtn.classList.contains('checked')) {
                 row.classList.add('completed'); saveState(exIdx, setIdx);
-                // TIMER AUTOMÁTICO REMOVIDO AQUI
                 showToast("SÉRIE COMPUTADA", 1500);
             } else {
                 saveState(exIdx, setIdx);
