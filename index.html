@@ -1482,8 +1482,10 @@
             const s = JSON.parse(
               localStorage.getItem(`g_${k}_e${i}_s${j}`),
             ) || { kg: set.kg, reps: set.reps, checked: false };
+
+            /* AQUI FOI FEITA A CORREÇÃO: ID MUDOU DE r_${i}_${j} para row_${i}_${j} */
             sHtml += `
-                        <div class="set-row ${s.checked ? "completed" : ""}" id="r_${i}_${j}">
+                        <div class="set-row ${s.checked ? "completed" : ""}" id="row_${i}_${j}">
                             <div class="set-label">${j + 1}</div>
                             
                             <div class="control-group">
@@ -1539,7 +1541,7 @@
 
       function tC(i, j) {
         const btn = document.getElementById(`c_${i}_${j}`);
-        const row = document.getElementById(`r_${i}_${j}`);
+        const row = document.getElementById(`row_${i}_${j}`);
 
         row.classList.remove("completed");
         void row.offsetWidth;
