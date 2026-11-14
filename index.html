@@ -24,6 +24,7 @@
         --success: #00ff66;
         --success-glow: rgba(0, 255, 102, 0.4);
         --accent: #ff6a00;
+        --accent-glow: rgba(255, 106, 0, 0.4);
         --bg-dark: #050508;
         --card-bg: linear-gradient(
           145deg,
@@ -283,6 +284,7 @@
 
       .menu-tags {
         display: flex;
+        flex-wrap: wrap;
         gap: 6px;
       }
 
@@ -305,6 +307,16 @@
         border-radius: 4px;
       }
 
+      .menu-stretch-badge {
+        font-size: 8px;
+        font-weight: 800;
+        background: rgba(255, 106, 0, 0.15);
+        color: #ff8c33;
+        padding: 4px 8px;
+        border-radius: 4px;
+        border: 1px solid rgba(255, 106, 0, 0.3);
+      }
+
       .menu-action {
         width: 32px;
         height: 32px;
@@ -317,6 +329,7 @@
         transition: 0.3s;
         color: var(--muted);
         font-size: 14px;
+        flex-shrink: 0;
       }
 
       .menu-item:hover .menu-action {
@@ -360,11 +373,12 @@
         display: flex;
         flex-direction: column;
         gap: 14px;
-        padding-bottom: 130px;
+        padding-bottom: 140px;
       }
 
       .cardio-card,
-      .exercise-card {
+      .exercise-card,
+      .stretch-card {
         background: var(--card-bg);
         border: 1px solid var(--border);
         border-radius: 12px;
@@ -385,21 +399,93 @@
         box-shadow: 0 0 12px var(--primary);
       }
 
+      .stretch-card {
+        border-color: rgba(255, 106, 0, 0.3);
+      }
+
+      .stretch-card::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 3px;
+        background: var(--accent);
+        box-shadow: 0 0 12px var(--accent-glow);
+      }
+
       .cardio-header,
-      .exercise-name {
+      .exercise-name,
+      .stretch-header {
         font-family: "Teko", sans-serif;
         font-size: 20px;
         color: #fff;
         letter-spacing: 1px;
         display: flex;
         align-items: center;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
         border-bottom: 1px solid var(--border);
         padding-bottom: 8px;
       }
 
       .cardio-header {
         color: #ff6b7d;
+      }
+
+      .stretch-header {
+        color: #ff944d;
+        margin-bottom: 8px;
+      }
+
+      .exercise-note {
+        font-size: 11px;
+        color: #b4b6c4;
+        background: rgba(255, 106, 0, 0.08);
+        border-left: 2px solid var(--accent);
+        padding: 8px 10px;
+        border-radius: 0 6px 6px 0;
+        margin-bottom: 12px;
+        line-height: 1.4;
+      }
+
+      .stretch-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .stretch-item {
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        border-radius: 8px;
+        padding: 8px 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .stretch-item-title {
+        font-size: 12px;
+        font-weight: 800;
+        color: #fff;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .stretch-item-time {
+        font-size: 10px;
+        font-weight: 800;
+        color: var(--accent);
+        background: rgba(255, 106, 0, 0.15);
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+
+      .stretch-item-desc {
+        font-size: 10px;
+        color: var(--muted);
+        line-height: 1.35;
       }
 
       .cardio-inputs {
@@ -444,6 +530,7 @@
         font-weight: 800;
         margin-left: auto;
         cursor: pointer;
+        flex-shrink: 0;
       }
 
       .sets-header,
@@ -880,6 +967,9 @@
             <span class="timer-display" id="timerDisplay">00:00:00</span>
           </div>
           <div class="timer-controls-inline">
+            <button class="timer-btn-inline" onclick="startTimer(45)">
+              45s
+            </button>
             <button class="timer-btn-inline" onclick="startTimer(60)">
               60s
             </button>
@@ -965,10 +1055,10 @@
 
     <script>
       const workoutData = {
-        DOM: {
-          dayName: "Domingo",
-          region: "PUSH + ABS",
-          cardio: { time: "20min", dist: "2,5km", kcal: "160" },
+        TREINO_A: {
+          dayName: "Treino A",
+          region: "PUSH (PEITO, TRÍCEPS E CORE)",
+          cardio: { time: "15min", dist: "1,5km", kcal: "120" },
           exercises: [
             {
               name: "Supino Reto Barra",
@@ -987,64 +1077,50 @@
               ],
             },
             {
-              name: "Desenv. Máquina",
+              name: "Peck Deck (Voador)",
               sets: [
+                { kg: 45, reps: 12 },
                 { kg: 50, reps: 10 },
-                { kg: 60, reps: 8 },
+                { kg: 50, reps: 10 },
               ],
             },
             {
-              name: "Elevação Lateral",
+              name: "Tríceps Polia (Barra V)",
               sets: [
-                { kg: 15, reps: 10 },
-                { kg: 10, reps: 10 },
-                { kg: 10, reps: 8 },
-                { kg: 10, reps: 8 },
-              ],
-            },
-            {
-              name: "Tríceps Corda",
-              sets: [
+                { kg: 50, reps: 12 },
+                { kg: 55, reps: 10 },
                 { kg: 60, reps: 10 },
-                { kg: 65, reps: 8 },
-                { kg: 70, reps: 8 },
               ],
             },
             {
-              name: "Tríceps Testa Polia",
+              name: "Tríceps Francês Unilateral Polia",
               sets: [
-                { kg: 40, reps: 10 },
-                { kg: 45, reps: 8 },
+                { kg: 15, reps: 12 },
+                { kg: 15, reps: 10 },
+                { kg: 20, reps: 10 },
               ],
             },
             {
-              name: "Abd. Infra Aparelho",
+              name: "Abd. Infra Solo (Colchonete)",
               sets: [
                 { kg: 0, reps: 15 },
-                { kg: 0, reps: 12 },
-                { kg: 0, reps: 12 },
-              ],
-            },
-            {
-              name: "Abd. Roda (Ab Wheel)",
-              sets: [
                 { kg: 0, reps: 15 },
                 { kg: 0, reps: 15 },
               ],
             },
           ],
         },
-        SEG: {
-          dayName: "Segunda-feira",
-          region: "PULL + BICEPS",
-          cardio: { time: "10min", dist: "1,0km", kcal: "80" },
+        TREINO_B: {
+          dayName: "Treino B",
+          region: "PULL (COSTAS, BÍCEPS E CORE)",
+          cardio: { time: "15min", dist: "1,5km", kcal: "120" },
           exercises: [
             {
               name: "Puxada Alta",
               sets: [
-                { kg: 40, reps: 10 },
-                { kg: 45, reps: 8 },
+                { kg: 45, reps: 10 },
                 { kg: 50, reps: 8 },
+                { kg: 55, reps: 8 },
               ],
             },
             {
@@ -1056,231 +1132,211 @@
               ],
             },
             {
-              name: "Facepull (Polia)",
+              name: "Pulldown Corda",
               sets: [
-                { kg: 30, reps: 15 },
                 { kg: 35, reps: 12 },
-                { kg: 35, reps: 12 },
-              ],
-            },
-            {
-              name: "Rosca Direta (W)",
-              sets: [
-                { kg: 30, reps: 10 },
-                { kg: 35, reps: 10 },
-                { kg: 35, reps: 8 },
-              ],
-            },
-            {
-              name: "Rosca Alternada",
-              sets: [
-                { kg: 14, reps: 10 },
-                { kg: 16, reps: 8 },
-                { kg: 16, reps: 8 },
-              ],
-            },
-            {
-              name: "Rosca Scott Maq.",
-              sets: [
+                { kg: 40, reps: 12 },
                 { kg: 40, reps: 10 },
-                { kg: 45, reps: 8 },
-                { kg: 50, reps: 8 },
+              ],
+            },
+            {
+              name: "Bíceps Bayesian (Polia)",
+              sets: [
+                { kg: 15, reps: 12 },
+                { kg: 15, reps: 10 },
+                { kg: 15, reps: 10 },
+              ],
+            },
+            {
+              name: "Rosca Concentrada",
+              sets: [
+                { kg: 12, reps: 12 },
+                { kg: 14, reps: 10 },
+                { kg: 14, reps: 10 },
               ],
             },
             {
               name: "Rosca Martelo",
               sets: [
                 { kg: 14, reps: 10 },
-                { kg: 14, reps: 10 },
-                { kg: 14, reps: 10 },
+                { kg: 16, reps: 10 },
+                { kg: 16, reps: 8 },
+              ],
+            },
+            {
+              name: "Abd. Roda (Ab Wheel)",
+              sets: [
+                { kg: 0, reps: 15 },
+                { kg: 0, reps: 12 },
+                { kg: 0, reps: 12 },
               ],
             },
           ],
         },
-        TER: {
-          dayName: "Terça-feira",
-          region: "PUSH 2 + ABS",
-          cardio: { time: "15min", dist: "1,2km", kcal: "100" },
-          exercises: [
+        TREINO_C: {
+          dayName: "Treino C",
+          region: "LEGS & OMBROS",
+          cardio: { time: "10min", dist: "1,0km", kcal: "80" },
+          preStretch: [
             {
-              name: "Supino Reto Halter",
-              sets: [
-                { kg: 0, reps: 10 },
-                { kg: 0, reps: 10 },
-                { kg: 0, reps: 10 },
-              ],
+              title: "Balanço de Pernas (Frontal e Lateral)",
+              time: "2x 15 / perna",
+              desc: "Apoie a mão na parede/rack e balance a perna aumentando a altura aos poucos para lubrificar o quadril.",
             },
             {
-              name: "Peck Deck (Voador)",
-              sets: [
-                { kg: 0, reps: 10 },
-                { kg: 0, reps: 10 },
-                { kg: 0, reps: 10 },
-              ],
-            },
-            {
-              name: "Desenv. Halteres",
-              sets: [
-                { kg: 0, reps: 10 },
-                { kg: 0, reps: 10 },
-                { kg: 0, reps: 10 },
-              ],
-            },
-            {
-              name: "Elevação Lateral",
-              sets: [
-                { kg: 0, reps: 12 },
-                { kg: 0, reps: 12 },
-                { kg: 0, reps: 12 },
-                { kg: 0, reps: 12 },
-              ],
-            },
-            {
-              name: "Tríceps Francês",
-              sets: [
-                { kg: 0, reps: 10 },
-                { kg: 0, reps: 10 },
-                { kg: 0, reps: 10 },
-              ],
-            },
-            {
-              name: "Tríceps Pulley Reto",
-              sets: [
-                { kg: 0, reps: 10 },
-                { kg: 0, reps: 10 },
-                { kg: 0, reps: 10 },
-              ],
-            },
-            {
-              name: "Abdominal na Polia",
-              sets: [
-                { kg: 35, reps: 15 },
-                { kg: 35, reps: 15 },
-                { kg: 35, reps: 15 },
-              ],
-            },
-            {
-              name: "Abd. Oblíquo Cruzado",
-              sets: [
-                { kg: 0, reps: 15 },
-                { kg: 0, reps: 15 },
-                { kg: 0, reps: 15 },
-              ],
+              title: "Agachamento Cosaco (Cossack Squat)",
+              time: "2x 8 / lado",
+              desc: "Sem peso. Desça lateralmente em uma perna enquanto a outra fica estendida para destravar adutores e tornozelo.",
             },
           ],
-        },
-        QUA: {
-          dayName: "Quarta-feira",
-          region: "LOWER 1 (PERNAS)",
-          cardio: { time: "15min", dist: "1,5km", kcal: "120" },
+          postStretch: [
+            {
+              title: "Abertura Lateral (Straddle Stretch)",
+              time: "2x 45-60s",
+              desc: "Sentado com pernas bem afastadas, incline o tronco à frente com a coluna reta (foco em chutes laterais/circulares).",
+            },
+            {
+              title: "Posterior de Coxa no Banco",
+              time: "2x 45s / perna",
+              desc: "Calcanhar apoiado na altura do quadril, puxe a ponta do pé para você (foco em chutes frontais altos).",
+            },
+            {
+              title: "Avanço Profundo (Flexor de Quadril)",
+              time: "2x 45s / perna",
+              desc: "Joelho de trás no colchonete, empurre o quadril para frente para dar amplitude ao giro da perna de apoio.",
+            },
+            {
+              title: "Borboleta (Adutores)",
+              time: "2x 45s",
+              desc: "Solas dos pés unidas, pressione suavemente os joelhos em direção ao solo com os cotovelos.",
+            },
+          ],
           exercises: [
             {
               name: "Hack Squat",
               sets: [
-                { kg: 0, reps: 10 },
-                { kg: 0, reps: 10 },
-                { kg: 0, reps: 10 },
+                { kg: 60, reps: 10 },
+                { kg: 70, reps: 8 },
+                { kg: 80, reps: 8 },
               ],
             },
             {
               name: "Leg Press 45º",
               sets: [
-                { kg: 0, reps: 10 },
-                { kg: 0, reps: 10 },
-                { kg: 0, reps: 10 },
+                { kg: 120, reps: 10 },
+                { kg: 140, reps: 10 },
+                { kg: 160, reps: 8 },
               ],
             },
             {
-              name: "Cadeira Extensora",
+              name: "Mesa Flexora",
               sets: [
-                { kg: 0, reps: 12 },
-                { kg: 0, reps: 12 },
-                { kg: 0, reps: 12 },
-              ],
-            },
-            {
-              name: "Cadeira Abdutora",
-              sets: [
-                { kg: 0, reps: 15 },
-                { kg: 0, reps: 12 },
-                { kg: 0, reps: 12 },
-              ],
-            },
-            {
-              name: "Cadeira Adutora",
-              sets: [
-                { kg: 0, reps: 15 },
-                { kg: 0, reps: 12 },
-                { kg: 0, reps: 12 },
+                { kg: 40, reps: 12 },
+                { kg: 45, reps: 10 },
+                { kg: 45, reps: 10 },
               ],
             },
             {
               name: "Panturrilhas em Pé",
               sets: [
-                { kg: 0, reps: 15 },
-                { kg: 0, reps: 15 },
-                { kg: 0, reps: 15 },
+                { kg: 50, reps: 15 },
+                { kg: 50, reps: 15 },
+                { kg: 50, reps: 15 },
+                { kg: 50, reps: 15 },
+              ],
+            },
+            {
+              name: "Desenvolvimento Halteres",
+              sets: [
+                { kg: 18, reps: 10 },
+                { kg: 20, reps: 8 },
+                { kg: 20, reps: 8 },
+              ],
+            },
+            {
+              name: "Elevação Lateral Polia",
+              sets: [
+                { kg: 10, reps: 15 },
+                { kg: 10, reps: 12 },
+                { kg: 10, reps: 12 },
+                { kg: 10, reps: 12 },
               ],
             },
           ],
         },
-        QUI: {
-          dayName: "Quinta-feira",
-          region: "PULL 2 + ABS",
-          cardio: { time: "15min", dist: "1,2km", kcal: "100" },
+        TREINO_D: {
+          dayName: "Treino D",
+          region: "FULLBODY (FIM DE SEMANA)",
+          cardio: { time: "20min", dist: "2,2km", kcal: "160" },
+          postStretch: [
+            {
+              title: "Abertura Lateral (Straddle Stretch)",
+              time: "2x 45-60s",
+              desc: "Sentado com pernas bem afastadas, incline o tronco à frente com a coluna reta (foco em chutes laterais/circulares).",
+            },
+            {
+              title: "Posterior de Coxa no Banco",
+              time: "2x 45s / perna",
+              desc: "Calcanhar apoiado na altura do quadril, puxe a ponta do pé para você (foco em chutes frontais altos).",
+            },
+            {
+              title: "Avanço Profundo (Flexor de Quadril)",
+              time: "2x 45s / perna",
+              desc: "Joelho de trás no colchonete, empurre o quadril para frente para dar amplitude ao giro da perna de apoio.",
+            },
+            {
+              title: "Borboleta (Adutores)",
+              time: "2x 45s",
+              desc: "Solas dos pés unidas, pressione suavemente os joelhos em direção ao solo com os cotovelos.",
+            },
+          ],
           exercises: [
             {
-              name: "Puxada Triângulo",
+              name: "Crossover Polia Alta",
               sets: [
-                { kg: 0, reps: 10 },
-                { kg: 0, reps: 10 },
-                { kg: 0, reps: 10 },
+                { kg: 20, reps: 12 },
+                { kg: 25, reps: 12 },
+                { kg: 25, reps: 10 },
               ],
             },
             {
-              name: "Remada Curvada",
+              name: "Remada Unilateral / Serrote",
               sets: [
-                { kg: 0, reps: 10 },
-                { kg: 0, reps: 10 },
-                { kg: 0, reps: 10 },
+                { kg: 22, reps: 10 },
+                { kg: 24, reps: 10 },
+                { kg: 26, reps: 10 },
               ],
             },
             {
-              name: "Pulldown Corda",
+              name: "Cadeira Extensora",
               sets: [
-                { kg: 0, reps: 12 },
-                { kg: 0, reps: 12 },
+                { kg: 50, reps: 12 },
+                { kg: 55, reps: 12 },
+                { kg: 60, reps: 10 },
+              ],
+            },
+            {
+              name: "Stiff",
+              sets: [
+                { kg: 40, reps: 10 },
+                { kg: 50, reps: 10 },
+                { kg: 50, reps: 10 },
               ],
             },
             {
               name: "Crucifixo Inverso",
               sets: [
-                { kg: 0, reps: 12 },
-                { kg: 0, reps: 12 },
-                { kg: 0, reps: 12 },
+                { kg: 10, reps: 15 },
+                { kg: 12, reps: 12 },
+                { kg: 12, reps: 12 },
               ],
             },
             {
-              name: "Rosca Direta",
+              name: "Bi-set: Bíceps Bayesian + Tríceps V",
+              note: "Execução: faça 12 reps de Bíceps Bayesian na polia baixa e, sem descanso, suba a polia/troque o pegador para fazer 12 reps de Tríceps Barra V. Descanse 60-90s apenas ao final dos dois.",
               sets: [
-                { kg: 0, reps: 10 },
-                { kg: 0, reps: 10 },
-                { kg: 0, reps: 10 },
-              ],
-            },
-            {
-              name: "Rosca Concentrada",
-              sets: [
-                { kg: 0, reps: 10 },
-                { kg: 0, reps: 10 },
-              ],
-            },
-            {
-              name: "Abd. Supra c/ Carga",
-              sets: [
-                { kg: 10, reps: 15 },
-                { kg: 10, reps: 15 },
-                { kg: 10, reps: 15 },
+                { kg: 15, reps: 12 },
+                { kg: 15, reps: 12 },
               ],
             },
             {
@@ -1289,55 +1345,6 @@
                 { kg: 0, reps: 60 },
                 { kg: 0, reps: 60 },
                 { kg: 0, reps: 60 },
-              ],
-            },
-          ],
-        },
-        SEX: {
-          dayName: "Sexta-feira",
-          region: "LOWER 2",
-          cardio: { time: "15min", dist: "1,5km", kcal: "120" },
-          exercises: [
-            {
-              name: "Mesa Flexora",
-              sets: [
-                { kg: 0, reps: 12 },
-                { kg: 0, reps: 12 },
-                { kg: 0, reps: 12 },
-                { kg: 0, reps: 10 },
-              ],
-            },
-            {
-              name: "Stiff",
-              sets: [
-                { kg: 0, reps: 10 },
-                { kg: 0, reps: 10 },
-                { kg: 0, reps: 10 },
-              ],
-            },
-            {
-              name: "Elevação Pélvica",
-              sets: [
-                { kg: 0, reps: 10 },
-                { kg: 0, reps: 10 },
-                { kg: 0, reps: 10 },
-              ],
-            },
-            {
-              name: "Panturrilhas Sentado",
-              sets: [
-                { kg: 0, reps: 15 },
-                { kg: 0, reps: 15 },
-                { kg: 0, reps: 15 },
-              ],
-            },
-            {
-              name: "Panturrilhas em Pé",
-              sets: [
-                { kg: 0, reps: 15 },
-                { kg: 0, reps: 15 },
-                { kg: 0, reps: 15 },
-                { kg: 0, reps: 15 },
               ],
             },
           ],
@@ -1368,17 +1375,19 @@
 
         Object.keys(workoutData).forEach((k) => {
           const d = workoutData[k];
+          const hasStretch = d.preStretch || d.postStretch;
           list.innerHTML += `
-                    <div class="menu-item" onclick="openDay('${k}')">
-                        <div class="menu-info">
-                            <span class="menu-day-name">${d.dayName}</span>
-                            <div class="menu-tags">
-                                <span class="menu-region-badge">${d.region}</span>
-                                <span class="menu-ex-count">${d.exercises.length} EXERCÍCIOS</span>
-                            </div>
-                        </div>
-                        <div class="menu-action">❯</div>
-                    </div>`;
+            <div class="menu-item" onclick="openDay('${k}')">
+                <div class="menu-info">
+                    <span class="menu-day-name">${d.dayName}</span>
+                    <div class="menu-tags">
+                        <span class="menu-region-badge">${d.region}</span>
+                        <span class="menu-ex-count">${d.exercises.length} EXERCÍCIOS</span>
+                        ${hasStretch ? '<span class="menu-stretch-badge">+ ELASTICIDADE CHUTES</span>' : ""}
+                    </div>
+                </div>
+                <div class="menu-action">❯</div>
+            </div>`;
         });
       }
 
@@ -1436,6 +1445,27 @@
         }, 300);
       }
 
+      function buildStretchCard(title, items) {
+        let itemsHtml = items
+          .map(
+            (st) => `
+            <div class="stretch-item">
+                <div class="stretch-item-title">
+                    <span>${st.title}</span>
+                    <span class="stretch-item-time">${st.time}</span>
+                </div>
+                <div class="stretch-item-desc">${st.desc}</div>
+            </div>`,
+          )
+          .join("");
+
+        return `
+          <div class="stretch-card">
+              <div class="stretch-header">${title}</div>
+              <div class="stretch-list">${itemsHtml}</div>
+          </div>`;
+      }
+
       function renderWorkout(k) {
         const cont = document.getElementById("workoutView");
         const timer = document.getElementById("timerWrapper");
@@ -1447,73 +1477,91 @@
         const kc = localStorage.getItem(`g_${k}_c_k`) || d.cardio.kcal;
 
         cont.innerHTML += `
-                <div class="cardio-card">
-                    <div class="cardio-header">🔥 AQUECIMENTO / CARDIO</div>
-                    <div class="cardio-inputs">
-                        <div class="cardio-input-group">
-                            <label>Tempo</label>
-                            <input type="text" id="c_t" value="${t}" oninput="saveC()">
-                        </div>
-                        <div class="cardio-input-group">
-                            <label>Distância</label>
-                            <input type="text" id="c_d" value="${di}" oninput="saveC()">
-                        </div>
-                        <div class="cardio-input-group">
-                            <label>Calorias</label>
-                            <input type="text" id="c_k" value="${kc}" oninput="saveC()">
-                        </div>
-                    </div>
-                </div>`;
+          <div class="cardio-card">
+              <div class="cardio-header">🔥 AQUECIMENTO / CARDIO</div>
+              <div class="cardio-inputs">
+                  <div class="cardio-input-group">
+                      <label>Tempo</label>
+                      <input type="text" id="c_t" value="${t}" oninput="saveC()">
+                  </div>
+                  <div class="cardio-input-group">
+                      <label>Distância</label>
+                      <input type="text" id="c_d" value="${di}" oninput="saveC()">
+                  </div>
+                  <div class="cardio-input-group">
+                      <label>Calorias</label>
+                      <input type="text" id="c_k" value="${kc}" oninput="saveC()">
+                  </div>
+              </div>
+          </div>`;
 
         timer.style.display = "block";
         cont.appendChild(timer);
 
+        if (d.preStretch && d.preStretch.length > 0) {
+          cont.innerHTML += buildStretchCard(
+            "🥋 MOBILIDADE PRÉ-TREINO (CHUTES)",
+            d.preStretch,
+          );
+        }
+
         d.exercises.forEach((ex, i) => {
+          let noteHtml = ex.note
+            ? `<div class="exercise-note">${ex.note}</div>`
+            : "";
+
           let sHtml = `
-                    <div class="sets-header">
-                        <div>Série</div>
-                        <div>Carga</div>
-                        <div>Reps</div>
-                        <div>OK</div>
-                    </div>
-                    <div class="sets-list">`;
+            <div class="sets-header">
+                <div>Série</div>
+                <div>Carga</div>
+                <div>Reps</div>
+                <div>OK</div>
+            </div>
+            <div class="sets-list">`;
 
           ex.sets.forEach((set, j) => {
             const s = JSON.parse(
               localStorage.getItem(`g_${k}_e${i}_s${j}`),
             ) || { kg: set.kg, reps: set.reps, checked: false };
 
-            /* AQUI FOI FEITA A CORREÇÃO: ID MUDOU DE r_${i}_${j} para row_${i}_${j} */
             sHtml += `
-                        <div class="set-row ${s.checked ? "completed" : ""}" id="row_${i}_${j}">
-                            <div class="set-label">${j + 1}</div>
-                            
-                            <div class="control-group">
-                                <button class="btn-adjust" onclick="uV(${i},${j},'kg',-1)">-</button>
-                                <input type="number" class="val-input" id="k_${i}_${j}" value="${s.kg}" onchange="saveS(${i},${j})" step="1">
-                                <button class="btn-adjust" onclick="uV(${i},${j},'kg',1)">+</button>
-                            </div>
-                            
-                            <div class="control-group">
-                                <button class="btn-adjust" onclick="uV(${i},${j},'rp',-1)">-</button>
-                                <input type="number" class="val-input" id="r_${i}_${j}" value="${s.reps}" onchange="saveS(${i},${j})">
-                                <button class="btn-adjust" onclick="uV(${i},${j},'rp',1)">+</button>
-                            </div>
-                            
-                            <button class="check-btn ${s.checked ? "checked" : ""}" id="c_${i}_${j}" onclick="tC(${i},${j})">✓</button>
-                        </div>`;
+              <div class="set-row ${s.checked ? "completed" : ""}" id="row_${i}_${j}">
+                  <div class="set-label">${j + 1}</div>
+                  
+                  <div class="control-group">
+                      <button class="btn-adjust" onclick="uV(${i},${j},'kg',-1)">-</button>
+                      <input type="number" class="val-input" id="k_${i}_${j}" value="${s.kg}" onchange="saveS(${i},${j})" step="1">
+                      <button class="btn-adjust" onclick="uV(${i},${j},'kg',1)">+</button>
+                  </div>
+                  
+                  <div class="control-group">
+                      <button class="btn-adjust" onclick="uV(${i},${j},'rp',-1)">-</button>
+                      <input type="number" class="val-input" id="r_${i}_${j}" value="${s.reps}" onchange="saveS(${i},${j})">
+                      <button class="btn-adjust" onclick="uV(${i},${j},'rp',1)">+</button>
+                  </div>
+                  
+                  <button class="check-btn ${s.checked ? "checked" : ""}" id="c_${i}_${j}" onclick="tC(${i},${j})">✓</button>
+              </div>`;
           });
           sHtml += `</div>`;
 
           cont.innerHTML += `
-                    <div class="exercise-card">
-                        <div class="exercise-name">
-                            ${ex.name}
-                            <button class="btn-history" onclick="showH('${ex.name}')">📈 HISTÓRICO</button>
-                        </div>
-                        ${sHtml}
-                    </div>`;
+            <div class="exercise-card">
+                <div class="exercise-name">
+                    ${ex.name}
+                    <button class="btn-history" onclick="showH('${ex.name}')">📈 HISTÓRICO</button>
+                </div>
+                ${noteHtml}
+                ${sHtml}
+            </div>`;
         });
+
+        if (d.postStretch && d.postStretch.length > 0) {
+          cont.innerHTML += buildStretchCard(
+            "🥋 ELASTICIDADE PÓS-TREINO (USE O TIMER 45s/60s)",
+            d.postStretch,
+          );
+        }
       }
 
       function saveC() {
