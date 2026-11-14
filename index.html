@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
-    <title>Matheus Ortiz Fitness // CyberGym</title>
+    <title>Matheus Ortiz Fitness // CyberHUD v2.1</title>
 
     <link
       href="https://fonts.googleapis.com/css2?family=Teko:wght@500;700&family=Montserrat:wght@400;600;800&display=swap"
@@ -19,21 +19,24 @@
 
     <style>
       :root {
-        --primary: #ff1836;
-        --primary-glow: rgba(255, 24, 54, 0.5);
-        --success: #00ff66;
-        --success-glow: rgba(0, 255, 102, 0.4);
-        --accent: #ff6a00;
-        --accent-glow: rgba(255, 106, 0, 0.4);
-        --bg-dark: #050508;
+        --primary: #00f0ff;
+        --primary-deep: #0066ff;
+        --primary-glow: rgba(0, 240, 255, 0.45);
+        --primary-subtle: rgba(0, 240, 255, 0.12);
+        --success: #00ff88;
+        --success-glow: rgba(0, 255, 136, 0.4);
+        --accent: #ffb800;
+        --accent-glow: rgba(255, 184, 0, 0.35);
+        --danger: #ff3b5c;
+        --bg-dark: #04070d;
         --card-bg: linear-gradient(
           145deg,
-          rgba(22, 22, 30, 0.95),
-          rgba(10, 10, 15, 0.98)
+          rgba(13, 22, 38, 0.88),
+          rgba(6, 11, 20, 0.94)
         );
-        --border: rgba(255, 255, 255, 0.08);
-        --text: #ffffff;
-        --muted: #8b8d9b;
+        --border: rgba(0, 240, 255, 0.14);
+        --text: #f4f9ff;
+        --muted: #7a8fa8;
       }
 
       * {
@@ -56,16 +59,17 @@
       body {
         background-image:
           radial-gradient(
-            circle at 50% 0%,
-            rgba(255, 24, 54, 0.15) 0%,
-            transparent 60%
+            circle at 50% -10%,
+            rgba(0, 240, 255, 0.18) 0%,
+            rgba(0, 102, 255, 0.08) 40%,
+            transparent 70%
           ),
-          linear-gradient(rgba(5, 5, 8, 0.92), rgba(5, 5, 8, 0.98)),
+          linear-gradient(rgba(4, 7, 13, 0.9), rgba(4, 7, 13, 0.97)),
           url("https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1000&auto=format&fit=crop");
         background-size: cover;
         background-attachment: fixed;
         background-position: center;
-        padding: env(safe-area-inset-top, 20px) 12px 90px 12px;
+        padding: env(safe-area-inset-top, 16px) 12px 90px 12px;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -84,8 +88,8 @@
           transparent
         );
         box-shadow: 0 0 15px 2px var(--primary-glow);
-        opacity: 0.35;
-        animation: scan 7s linear infinite;
+        opacity: 0.3;
+        animation: scan 8s linear infinite;
         pointer-events: none;
         z-index: 9999;
       }
@@ -99,23 +103,13 @@
         }
       }
 
-      @keyframes blink {
+      @keyframes hudPulse {
         0%,
-        100%,
-        38%,
-        42%,
-        70%,
-        72% {
-          opacity: 1;
-          text-shadow: 0 0 8px var(--primary-glow);
+        100% {
+          text-shadow: 0 0 12px var(--primary-glow);
         }
-        36%,
-        40% {
-          opacity: 0.4;
-          text-shadow: none;
-        }
-        71% {
-          opacity: 0.6;
+        50% {
+          text-shadow: 0 0 4px rgba(0, 240, 255, 0.2);
         }
       }
 
@@ -133,7 +127,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 8px;
+        gap: 10px;
         margin-bottom: 4px;
       }
 
@@ -146,12 +140,13 @@
 
       h1 {
         font-family: "Teko", sans-serif;
-        font-size: 28px;
+        font-size: 30px;
         letter-spacing: 2px;
         text-transform: uppercase;
         line-height: 1;
-        animation: blink 5s infinite;
+        animation: hudPulse 4s infinite;
       }
+
       h1 span {
         color: var(--primary);
       }
@@ -171,7 +166,7 @@
         display: none;
         flex-direction: column;
         opacity: 0;
-        transition: opacity 0.3s ease;
+        transition: opacity 0.25s ease;
       }
 
       .app-screen.active {
@@ -179,18 +174,21 @@
         opacity: 1 !important;
       }
 
+      /* BOTTOM NAV HOME */
       .main-nav-container {
         position: fixed;
         bottom: 0;
         left: 0;
         width: 100%;
-        background: rgba(7, 7, 11, 0.98);
+        background: rgba(5, 10, 18, 0.92);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         border-top: 1px solid var(--border);
         display: flex;
         justify-content: space-around;
         padding: 10px 0 calc(10px + env(safe-area-inset-bottom, 0px));
         z-index: 9000;
-        box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.9);
+        box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.85);
       }
 
       .nav-tab {
@@ -205,8 +203,8 @@
       }
 
       .nav-tab.active {
-        color: var(--accent);
-        filter: drop-shadow(0 0 8px rgba(255, 106, 0, 0.5));
+        color: var(--primary);
+        filter: drop-shadow(0 0 8px var(--primary-glow));
       }
 
       .nav-tab svg {
@@ -215,20 +213,15 @@
         stroke: currentColor;
         fill: none;
         stroke-width: 2;
-        transition: 0.25s;
-      }
-
-      .nav-tab.active svg {
-        stroke: var(--accent);
-        transform: scale(1.15);
       }
 
       .nav-label {
         font-size: 9px;
         font-weight: 800;
-        letter-spacing: 1px;
+        letter-spacing: 1.5px;
       }
 
+      /* MENU HOME */
       .menu-list {
         display: flex;
         flex-direction: column;
@@ -239,8 +232,10 @@
 
       .menu-item {
         background: var(--card-bg);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
         border: 1px solid var(--border);
-        border-radius: 12px;
+        border-radius: 14px;
         padding: 16px;
         display: flex;
         justify-content: space-between;
@@ -259,27 +254,33 @@
         top: 0;
         height: 100%;
         width: 4px;
-        background: linear-gradient(180deg, var(--primary), #8a0014);
+        background: linear-gradient(
+          180deg,
+          var(--primary),
+          var(--primary-deep)
+        );
         box-shadow: 2px 0 12px var(--primary-glow);
       }
 
-      .menu-item:hover {
-        transform: scale(1.02) translateY(-2px);
-        border-color: rgba(255, 24, 54, 0.4);
-        box-shadow: 0 12px 30px rgba(255, 24, 54, 0.15);
+      .menu-item:hover,
+      .menu-item:active {
+        transform: translateY(-2px);
+        border-color: rgba(0, 240, 255, 0.45);
+        box-shadow: 0 12px 30px rgba(0, 240, 255, 0.14);
       }
 
       .menu-info {
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 7px;
         z-index: 2;
       }
 
       .menu-day-name {
         font-family: "Teko", sans-serif;
-        font-size: 26px;
+        font-size: 28px;
         line-height: 1;
+        letter-spacing: 0.5px;
       }
 
       .menu-tags {
@@ -291,11 +292,12 @@
       .menu-region-badge {
         font-size: 8px;
         font-weight: 800;
-        background: rgba(255, 24, 54, 0.15);
-        color: #ff4d63;
+        background: var(--primary-subtle);
+        color: var(--primary);
         padding: 4px 8px;
-        border-radius: 4px;
-        border: 1px solid rgba(255, 24, 54, 0.3);
+        border-radius: 5px;
+        border: 1px solid rgba(0, 240, 255, 0.3);
+        letter-spacing: 0.5px;
       }
 
       .menu-ex-count {
@@ -304,84 +306,146 @@
         color: var(--muted);
         background: rgba(255, 255, 255, 0.05);
         padding: 4px 8px;
-        border-radius: 4px;
+        border-radius: 5px;
       }
 
       .menu-stretch-badge {
         font-size: 8px;
         font-weight: 800;
-        background: rgba(255, 106, 0, 0.15);
-        color: #ff8c33;
+        background: rgba(255, 184, 0, 0.12);
+        color: var(--accent);
         padding: 4px 8px;
-        border-radius: 4px;
-        border: 1px solid rgba(255, 106, 0, 0.3);
+        border-radius: 5px;
+        border: 1px solid rgba(255, 184, 0, 0.3);
       }
 
       .menu-action {
-        width: 32px;
-        height: 32px;
+        width: 34px;
+        height: 34px;
         border-radius: 50%;
-        background: rgba(255, 255, 255, 0.05);
+        background: rgba(0, 240, 255, 0.06);
         border: 1px solid var(--border);
         display: flex;
         justify-content: center;
         align-items: center;
         transition: 0.3s;
-        color: var(--muted);
+        color: var(--primary);
         font-size: 14px;
         flex-shrink: 0;
       }
 
       .menu-item:hover .menu-action {
-        background: rgba(255, 24, 54, 0.2);
+        background: rgba(0, 240, 255, 0.2);
         border-color: var(--primary);
-        color: var(--primary);
         transform: translateX(3px);
       }
 
-      .workout-nav-bar {
+      /* STICKY HUD HEADER COM PROGRESSO */
+      .workout-hud-header {
+        position: sticky;
+        top: 0;
+        z-index: 90;
+        background: rgba(4, 8, 16, 0.92);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 10px 12px;
+        margin-bottom: 14px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.75);
+      }
+
+      .workout-nav-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+
+      .workout-title-group {
         display: flex;
         align-items: center;
         gap: 10px;
-        margin-bottom: 14px;
-        border-bottom: 1px solid var(--border);
-        padding-bottom: 10px;
       }
 
       .btn-back {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid var(--border);
-        color: #fff;
+        background: rgba(0, 240, 255, 0.08);
+        border: 1px solid rgba(0, 240, 255, 0.25);
+        color: var(--primary);
         padding: 6px 10px;
         border-radius: 6px;
         font-size: 10px;
         font-weight: 800;
         cursor: pointer;
         display: flex;
-        gap: 5px;
+        align-items: center;
+        gap: 4px;
       }
 
       .workout-title {
         font-family: "Teko", sans-serif;
-        font-size: 24px;
-        color: var(--primary);
+        font-size: 25px;
+        color: #fff;
         text-shadow: 0 0 12px var(--primary-glow);
         line-height: 1;
       }
 
+      .progress-badge {
+        font-size: 10px;
+        font-weight: 800;
+        color: var(--primary);
+        background: var(--primary-subtle);
+        border: 1px solid rgba(0, 240, 255, 0.25);
+        padding: 4px 8px;
+        border-radius: 6px;
+        letter-spacing: 0.5px;
+      }
+
+      .progress-badge.complete {
+        color: var(--success);
+        background: rgba(0, 255, 136, 0.12);
+        border-color: rgba(0, 255, 136, 0.35);
+      }
+
+      .progress-track {
+        width: 100%;
+        height: 5px;
+        background: rgba(255, 255, 255, 0.07);
+        border-radius: 99px;
+        overflow: hidden;
+      }
+
+      .progress-fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(
+          90deg,
+          var(--primary-deep),
+          var(--primary),
+          var(--success)
+        );
+        box-shadow: 0 0 10px var(--primary-glow);
+        border-radius: 99px;
+        transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      /* CONTAINER DE EXERCÍCIOS */
       .workout-container {
         display: flex;
         flex-direction: column;
         gap: 14px;
-        padding-bottom: 140px;
+        padding-bottom: 195px;
       }
 
       .cardio-card,
       .exercise-card,
       .stretch-card {
         background: var(--card-bg);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
         border: 1px solid var(--border);
-        border-radius: 12px;
+        border-radius: 14px;
         padding: 14px;
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
         position: relative;
@@ -395,12 +459,16 @@
         top: 0;
         height: 100%;
         width: 3px;
-        background: var(--primary);
+        background: linear-gradient(
+          180deg,
+          var(--primary),
+          var(--primary-deep)
+        );
         box-shadow: 0 0 12px var(--primary);
       }
 
       .stretch-card {
-        border-color: rgba(255, 106, 0, 0.3);
+        border-color: rgba(255, 184, 0, 0.3);
       }
 
       .stretch-card::before {
@@ -415,33 +483,160 @@
       }
 
       .cardio-header,
-      .exercise-name,
       .stretch-header {
         font-family: "Teko", sans-serif;
         font-size: 20px;
-        color: #fff;
         letter-spacing: 1px;
         display: flex;
         align-items: center;
         margin-bottom: 10px;
-        border-bottom: 1px solid var(--border);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
         padding-bottom: 8px;
       }
 
       .cardio-header {
-        color: #ff6b7d;
+        color: var(--primary);
       }
 
       .stretch-header {
-        color: #ff944d;
-        margin-bottom: 8px;
+        color: var(--accent);
+      }
+
+      .exercise-header-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        padding-bottom: 8px;
+      }
+
+      .exercise-title-col {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .exercise-name {
+        font-family: "Teko", sans-serif;
+        font-size: 21px;
+        color: #fff;
+        letter-spacing: 0.8px;
+        line-height: 1.05;
+      }
+
+      .exercise-actions-col {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 5px;
+        flex-shrink: 0;
+      }
+
+      .pr-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 9px;
+        font-weight: 800;
+        color: var(--primary);
+        background: rgba(0, 240, 255, 0.08);
+        border: 1px solid rgba(0, 240, 255, 0.2);
+        padding: 2px 7px;
+        border-radius: 4px;
+        width: fit-content;
+      }
+
+      .pr-tag.empty {
+        color: var(--muted);
+        background: rgba(255, 255, 255, 0.03);
+        border-color: rgba(255, 255, 255, 0.08);
+      }
+
+      /* BOTÃO E GAVETA DE IMAGEM ANATÔMICA */
+      .btn-img-toggle {
+        background: rgba(0, 102, 255, 0.16);
+        border: 1px solid rgba(0, 240, 255, 0.35);
+        color: #fff;
+        border-radius: 6px;
+        padding: 4px 8px;
+        font-size: 9px;
+        font-weight: 800;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        transition: 0.2s;
+      }
+
+      .btn-img-toggle.active {
+        background: var(--primary);
+        color: #020812;
+        border-color: var(--primary);
+        box-shadow: 0 0 10px var(--primary-glow);
+      }
+
+      .img-drawer {
+        display: none;
+        margin-bottom: 12px;
+        background: rgba(2, 6, 13, 0.85);
+        border: 1px solid rgba(0, 240, 255, 0.25);
+        border-radius: 10px;
+        padding: 10px;
+        text-align: center;
+        animation: fadeInDrawer 0.25s ease;
+      }
+
+      .img-drawer.open {
+        display: block;
+      }
+
+      @keyframes fadeInDrawer {
+        from {
+          opacity: 0;
+          transform: translateY(-6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .img-drawer img {
+        max-width: 100%;
+        max-height: 210px;
+        border-radius: 8px;
+        background: #ffffff;
+        padding: 6px;
+        object-fit: contain;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+      }
+
+      .img-placeholder-msg {
+        font-size: 10px;
+        color: var(--muted);
+        padding: 14px 8px;
+        border: 1px dashed rgba(0, 240, 255, 0.25);
+        border-radius: 8px;
+        line-height: 1.4;
+      }
+
+      .img-placeholder-msg code {
+        display: inline-block;
+        margin-top: 4px;
+        color: var(--primary);
+        background: rgba(0, 240, 255, 0.08);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: monospace;
       }
 
       .exercise-note {
         font-size: 11px;
-        color: #b4b6c4;
-        background: rgba(255, 106, 0, 0.08);
-        border-left: 2px solid var(--accent);
+        color: #c8d8eb;
+        background: rgba(0, 240, 255, 0.07);
+        border-left: 2px solid var(--primary);
         padding: 8px 10px;
         border-radius: 0 6px 6px 0;
         margin-bottom: 12px;
@@ -455,13 +650,13 @@
       }
 
       .stretch-item {
-        background: rgba(0, 0, 0, 0.4);
-        border: 1px solid rgba(255, 255, 255, 0.04);
+        background: rgba(2, 5, 10, 0.55);
+        border: 1px solid rgba(255, 184, 0, 0.12);
         border-radius: 8px;
-        padding: 8px 10px;
+        padding: 9px 10px;
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 5px;
       }
 
       .stretch-item-title {
@@ -471,15 +666,40 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        gap: 6px;
+      }
+
+      .stretch-badges-right {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        flex-shrink: 0;
       }
 
       .stretch-item-time {
         font-size: 10px;
         font-weight: 800;
         color: var(--accent);
-        background: rgba(255, 106, 0, 0.15);
+        background: rgba(255, 184, 0, 0.14);
         padding: 2px 6px;
         border-radius: 4px;
+        white-space: nowrap;
+      }
+
+      .btn-stretch-img {
+        background: rgba(255, 184, 0, 0.16);
+        border: 1px solid rgba(255, 184, 0, 0.35);
+        color: var(--accent);
+        border-radius: 4px;
+        padding: 2px 6px;
+        font-size: 9px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      .btn-stretch-img.active {
+        background: var(--accent);
+        color: #050508;
       }
 
       .stretch-item-desc {
@@ -495,10 +715,10 @@
       }
 
       .cardio-input-group {
-        background: rgba(0, 0, 0, 0.5);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 6px;
-        padding: 6px;
+        background: rgba(2, 5, 10, 0.6);
+        border: 1px solid rgba(0, 240, 255, 0.12);
+        border-radius: 8px;
+        padding: 7px 8px;
       }
 
       .cardio-input-group label {
@@ -521,22 +741,25 @@
       }
 
       .btn-history {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        color: #ddd;
+        background: rgba(0, 240, 255, 0.08);
+        border: 1px solid rgba(0, 240, 255, 0.25);
+        color: var(--primary);
         border-radius: 6px;
         padding: 4px 8px;
         font-size: 9px;
         font-weight: 800;
-        margin-left: auto;
         cursor: pointer;
-        flex-shrink: 0;
+        transition: 0.2s;
+      }
+
+      .btn-history:active {
+        transform: scale(0.96);
       }
 
       .sets-header,
       .set-row {
         display: grid;
-        grid-template-columns: 26px 1fr 1fr 34px;
+        grid-template-columns: 28px 1fr 1fr 36px;
         gap: 6px;
         text-align: center;
       }
@@ -546,7 +769,8 @@
         color: var(--muted);
         font-weight: 800;
         padding: 0 4px 6px;
-        border-bottom: 1px solid var(--border);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
 
       .sets-list {
@@ -556,28 +780,28 @@
       }
 
       .set-row {
-        background: rgba(0, 0, 0, 0.4);
-        border: 1px solid rgba(255, 255, 255, 0.03);
-        padding: 5px 4px;
-        border-radius: 8px;
-        transition: 0.3s;
+        background: rgba(2, 5, 10, 0.55);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 6px 5px;
+        border-radius: 9px;
+        transition: 0.25s;
         align-items: center;
       }
 
       @keyframes glow-pulse {
         0% {
-          box-shadow: 0 0 15px var(--success-glow);
+          box-shadow: 0 0 16px var(--success-glow);
           border-color: var(--success);
         }
         100% {
-          box-shadow: 0 0 5px rgba(0, 255, 102, 0.2);
-          border-color: rgba(0, 255, 102, 0.4);
+          box-shadow: 0 0 6px rgba(0, 255, 136, 0.18);
+          border-color: rgba(0, 255, 136, 0.4);
         }
       }
 
       .set-row.completed {
-        background: rgba(0, 255, 102, 0.08);
-        animation: glow-pulse 0.5s forwards;
+        background: rgba(0, 255, 136, 0.07);
+        animation: glow-pulse 0.45s forwards;
       }
 
       .set-label {
@@ -585,12 +809,12 @@
         color: var(--muted);
         font-weight: 800;
         background: rgba(255, 255, 255, 0.05);
-        border-radius: 4px;
+        border-radius: 5px;
         padding: 6px 0;
       }
 
       .set-row.completed .set-label {
-        background: rgba(0, 255, 102, 0.15);
+        background: rgba(0, 255, 136, 0.16);
         color: var(--success);
       }
 
@@ -599,18 +823,23 @@
         align-items: center;
         justify-content: space-between;
         background: rgba(255, 255, 255, 0.03);
-        border-radius: 6px;
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 7px;
+        border: 1px solid rgba(0, 240, 255, 0.12);
       }
 
       .btn-adjust {
         background: transparent;
         border: none;
-        color: var(--muted);
-        width: 24px;
-        height: 28px;
-        font-size: 14px;
+        color: var(--primary);
+        width: 26px;
+        height: 30px;
+        font-size: 16px;
+        font-weight: 700;
         cursor: pointer;
+      }
+
+      .btn-adjust:active {
+        background: rgba(0, 240, 255, 0.15);
       }
 
       input.val-input {
@@ -626,164 +855,172 @@
       }
 
       .check-btn {
-        width: 32px;
-        height: 32px;
+        width: 34px;
+        height: 34px;
         border-radius: 8px;
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        background: rgba(0, 0, 0, 0.6);
+        border: 1px solid rgba(0, 240, 255, 0.25);
+        background: rgba(2, 5, 10, 0.75);
         color: transparent;
         cursor: pointer;
-        transition: 0.3s;
+        transition: 0.25s;
         margin: 0 auto;
-        font-size: 14px;
+        font-size: 15px;
       }
 
       .check-btn.checked {
         background: var(--success);
         border-color: var(--success);
-        color: #000;
+        color: #02120a;
         font-weight: 900;
-        box-shadow: 0 0 12px var(--success-glow);
-        transform: scale(1.05);
+        box-shadow: 0 0 14px var(--success-glow);
+        transform: scale(1.04);
       }
 
-      #timerWrapper {
-        margin: 8px 0;
-      }
-
-      .hardware-timer {
-        background: #07070b;
-        border: 1px solid rgba(255, 24, 54, 0.3);
-        border-radius: 10px;
-        padding: 10px;
-        box-shadow:
-          inset 0 0 15px #000,
-          0 6px 20px rgba(0, 0, 0, 0.8);
-      }
-
-      .hardware-screen {
-        background: #040001;
-        border-radius: 6px;
-        padding: 8px 0;
-        border: 1px solid #1c0305;
-        box-shadow: inset 0 0 18px #000;
-        text-align: center;
-        position: relative;
-      }
-
-      .hardware-screen::before {
-        content: "88:88:88";
-        position: absolute;
-        font-family: "Digital-7 Mono", sans-serif;
-        font-size: 44px;
-        color: #150002;
-        z-index: 1;
-        pointer-events: none;
-      }
-
-      .timer-display {
-        font-family: "Digital-7 Mono", sans-serif;
-        font-size: 44px;
-        color: var(--primary);
-        text-shadow:
-          0 0 10px var(--primary),
-          0 0 20px var(--primary-glow);
-        position: relative;
-        z-index: 2;
-        line-height: 1;
-      }
-
-      .timer-controls-inline {
-        display: flex;
-        gap: 6px;
-        margin-top: 8px;
-      }
-
-      .timer-btn-inline {
-        flex: 1;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid var(--border);
-        color: #ddd;
-        font-family: "Teko", sans-serif;
-        font-size: 16px;
-        padding: 6px 0;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: 0.2s;
-      }
-
-      .timer-btn-inline:hover {
-        background: rgba(255, 24, 54, 0.2);
-        border-color: var(--primary);
-        color: #fff;
-      }
-
-      .bottom-actions-container {
+      /* DOCK INFERIOR FLUTUANTE (TIMER + AÇÕES) */
+      .floating-dock {
         position: fixed;
         bottom: 0;
         left: 0;
         width: 100%;
-        background: rgba(5, 5, 8, 0.98);
+        background: rgba(4, 8, 16, 0.94);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
         border-top: 1px solid var(--border);
-        padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
-        display: flex;
+        padding: 8px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+        display: none;
         flex-direction: column;
+        align-items: center;
         gap: 8px;
         z-index: 100;
         box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.9);
       }
 
-      .secondary-actions {
+      .dock-inner {
+        width: 100%;
+        max-width: 500px;
         display: flex;
+        flex-direction: column;
         gap: 8px;
       }
 
-      .action-btn {
+      .mini-timer-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        background: rgba(2, 6, 13, 0.9);
+        border: 1px solid rgba(0, 240, 255, 0.25);
+        border-radius: 9px;
+        padding: 6px 10px;
+        box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.8);
+      }
+
+      .timer-display {
+        font-family: "Digital-7 Mono", sans-serif;
+        font-size: 28px;
+        color: var(--primary);
+        text-shadow: 0 0 10px var(--primary-glow);
+        line-height: 1;
+        letter-spacing: 1px;
+        min-width: 88px;
+      }
+
+      .timer-display.running {
+        color: var(--success);
+        text-shadow: 0 0 12px var(--success-glow);
+      }
+
+      .timer-pills {
+        display: flex;
+        gap: 4px;
         flex: 1;
-        padding: 10px;
-        border-radius: 6px;
+        justify-content: flex-end;
+      }
+
+      .timer-pill {
+        background: rgba(0, 240, 255, 0.08);
+        border: 1px solid rgba(0, 240, 255, 0.2);
+        color: #d8f6ff;
+        font-family: "Teko", sans-serif;
+        font-size: 15px;
+        padding: 3px 8px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+
+      .timer-pill:active,
+      .timer-pill:hover {
+        background: var(--primary);
+        color: #020812;
+        font-weight: 700;
+      }
+
+      .timer-pill.stop {
+        background: rgba(255, 59, 92, 0.12);
+        border-color: rgba(255, 59, 92, 0.35);
+        color: #ff6b84;
+      }
+
+      .actions-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1.6fr;
+        gap: 6px;
+      }
+
+      .action-btn {
+        padding: 9px 6px;
+        border-radius: 7px;
         font-family: "Teko", sans-serif;
         font-size: 16px;
+        letter-spacing: 0.5px;
         cursor: pointer;
         border: none;
         text-transform: uppercase;
-      }
-
-      .btn-copy {
-        background: rgba(255, 24, 54, 0.15);
-        color: var(--primary);
-        border: 1px solid rgba(255, 24, 54, 0.3);
+        line-height: 1.1;
       }
 
       .btn-reset {
         background: rgba(255, 255, 255, 0.05);
         color: var(--muted);
-        border: 1px solid var(--border);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .btn-copy {
+        background: rgba(0, 240, 255, 0.12);
+        color: var(--primary);
+        border: 1px solid rgba(0, 240, 255, 0.35);
       }
 
       .btn-save {
-        background: linear-gradient(135deg, var(--primary), #700010);
-        color: #fff;
-        font-size: 20px;
-        padding: 12px;
-        box-shadow: 0 4px 20px rgba(255, 24, 54, 0.5);
-        border: 1px solid #ff5c73;
+        background: linear-gradient(
+          135deg,
+          var(--primary),
+          var(--primary-deep)
+        );
+        color: #020812;
+        font-weight: 700;
+        font-size: 18px;
+        box-shadow: 0 4px 18px var(--primary-glow);
+        border: 1px solid #8cf7ff;
       }
 
+      /* MODAL HISTÓRICO */
       .modal-overlay {
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.85);
+        background: rgba(2, 5, 12, 0.88);
+        backdrop-filter: blur(6px);
         display: flex;
         justify-content: center;
         align-items: center;
         z-index: 100000;
         visibility: hidden;
         opacity: 0;
-        transition: 0.3s;
+        transition: 0.25s;
       }
 
       .modal-overlay.active {
@@ -792,13 +1029,13 @@
       }
 
       .modal-content {
-        background: #12121c;
-        border: 1px solid rgba(255, 24, 54, 0.3);
-        border-radius: 12px;
+        background: #0a1220;
+        border: 1px solid rgba(0, 240, 255, 0.35);
+        border-radius: 14px;
         width: 90%;
         max-width: 340px;
         padding: 18px;
-        box-shadow: 0 20px 50px #000;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);
       }
 
       .modal-header {
@@ -813,6 +1050,7 @@
       .modal-title {
         font-family: "Teko", sans-serif;
         font-size: 22px;
+        color: var(--primary);
         line-height: 1;
       }
 
@@ -826,7 +1064,7 @@
       }
 
       .input-history-box {
-        background: rgba(0, 0, 0, 0.4);
+        background: rgba(2, 5, 10, 0.6);
         border: 1px solid var(--border);
         border-radius: 8px;
         padding: 12px;
@@ -839,6 +1077,7 @@
         font-weight: 800;
         display: block;
         margin-bottom: 6px;
+        text-transform: uppercase;
       }
 
       .input-row-flex {
@@ -849,7 +1088,7 @@
       .input-row-flex input {
         flex: 1;
         background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(0, 240, 255, 0.2);
         border-radius: 6px;
         color: #fff;
         font-size: 14px;
@@ -860,11 +1099,15 @@
       }
 
       .btn-add-weight {
-        background: var(--primary);
-        color: #fff;
+        background: linear-gradient(
+          135deg,
+          var(--primary),
+          var(--primary-deep)
+        );
+        color: #020812;
         border: none;
         border-radius: 6px;
-        padding: 0 12px;
+        padding: 0 14px;
         font-weight: 800;
         font-size: 11px;
         cursor: pointer;
@@ -875,6 +1118,7 @@
         color: var(--muted);
         font-weight: 800;
         margin-bottom: 8px;
+        text-transform: uppercase;
       }
 
       .history-list {
@@ -889,9 +1133,9 @@
         display: flex;
         justify-content: space-between;
         padding: 10px;
-        background: rgba(255, 255, 255, 0.03);
+        background: rgba(0, 240, 255, 0.04);
         border: 1px solid var(--border);
-        border-radius: 6px;
+        border-radius: 7px;
         font-size: 13px;
         font-weight: 800;
       }
@@ -901,15 +1145,20 @@
         font-size: 11px;
       }
 
+      .history-item span:last-child {
+        color: var(--primary);
+      }
+
       #toast {
         position: fixed;
-        top: 30px;
-        background: rgba(0, 255, 102, 0.95);
-        color: #000;
-        padding: 12px 24px;
+        top: 24px;
+        background: rgba(0, 255, 136, 0.96);
+        color: #02120a;
+        padding: 11px 22px;
         border-radius: 30px;
         font-weight: 900;
-        font-size: 12px;
+        font-size: 11px;
+        letter-spacing: 0.5px;
         box-shadow: 0 8px 25px var(--success-glow);
         transform: translateY(-200px);
         transition: 0.3s;
@@ -934,7 +1183,7 @@
         </svg>
         <h1>Matheus Ortiz <span>Fitness</span></h1>
       </div>
-      <div class="subtitle">Cyberpunk HUD // High Performance</div>
+      <div class="subtitle">CyberHUD v2.1 // Electric Blue Edition</div>
     </header>
 
     <div id="homeScreen" class="app-screen active">
@@ -942,70 +1191,58 @@
     </div>
 
     <div id="workoutScreen" class="app-screen">
-      <div class="workout-nav-bar">
-        <button class="btn-back" onclick="goHome()">
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="3"
-          >
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-          VOLTAR
-        </button>
-        <div class="workout-title" id="workoutTitleDisplay"></div>
-      </div>
-
-      <div class="workout-container" id="workoutView"></div>
-
-      <div id="timerWrapper" style="display: none">
-        <div class="hardware-timer">
-          <div class="hardware-screen">
-            <span class="timer-display" id="timerDisplay">00:00:00</span>
+      <div class="workout-hud-header">
+        <div class="workout-nav-row">
+          <div class="workout-title-group">
+            <button class="btn-back" onclick="goHome()">
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+              >
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+              </svg>
+              VOLTAR
+            </button>
+            <div class="workout-title" id="workoutTitleDisplay"></div>
           </div>
-          <div class="timer-controls-inline">
-            <button class="timer-btn-inline" onclick="startTimer(45)">
-              45s
-            </button>
-            <button class="timer-btn-inline" onclick="startTimer(60)">
-              60s
-            </button>
-            <button class="timer-btn-inline" onclick="startTimer(90)">
-              90s
-            </button>
-            <button class="timer-btn-inline" onclick="startTimer(120)">
-              120s
-            </button>
-            <button
-              class="timer-btn-inline"
-              onclick="stopTimer()"
-              style="color: #ff6b7d"
-            >
-              PARAR
-            </button>
-          </div>
+          <div class="progress-badge" id="progressBadge">0/0 • 0%</div>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill"></div>
         </div>
       </div>
 
-      <div
-        class="bottom-actions-container"
-        id="bottomActions"
-        style="display: none"
-      >
-        <div class="secondary-actions">
+      <div class="workout-container" id="workoutView"></div>
+    </div>
+
+    <!-- DOCK INFERIOR FLUTUANTE COM TIMER + BOTÕES -->
+    <div class="floating-dock" id="floatingDock">
+      <div class="dock-inner">
+        <div class="mini-timer-bar">
+          <span class="timer-display" id="timerDisplay">00:00:00</span>
+          <div class="timer-pills">
+            <button class="timer-pill" onclick="startTimer(45)">45s</button>
+            <button class="timer-pill" onclick="startTimer(60)">60s</button>
+            <button class="timer-pill" onclick="startTimer(90)">90s</button>
+            <button class="timer-pill" onclick="startTimer(120)">120s</button>
+            <button class="timer-pill stop" onclick="stopTimer()">PARAR</button>
+          </div>
+        </div>
+        <div class="actions-row">
           <button class="action-btn btn-reset" onclick="resetWorkout()">
-            Zerar Dados
+            Zerar
           </button>
           <button class="action-btn btn-copy" onclick="copyWorkoutReport()">
             Copiar
           </button>
+          <button class="action-btn btn-save" onclick="saveWorkoutHistory()">
+            ✓ FINALIZAR TREINO
+          </button>
         </div>
-        <button class="action-btn btn-save" onclick="saveWorkoutHistory()">
-          ✓ FINALIZAR TREINO
-        </button>
       </div>
     </div>
 
@@ -1062,6 +1299,7 @@
           exercises: [
             {
               name: "Supino Reto Barra",
+              img: "img/supino-reto.png",
               sets: [
                 { kg: 60, reps: 10 },
                 { kg: 65, reps: 8 },
@@ -1070,6 +1308,7 @@
             },
             {
               name: "Supino Inclinado Halter",
+              img: "img/supino-inclinado-halter.png",
               sets: [
                 { kg: 55, reps: 10 },
                 { kg: 60, reps: 8 },
@@ -1078,14 +1317,16 @@
             },
             {
               name: "Crucifixo Inclinado Articulado",
+              img: "img/crucifixo-inclinado-articulado.png",
               sets: [
-                { kg: 45, reps: 12 },
-                { kg: 50, reps: 10 },
-                { kg: 50, reps: 10 },
+                { kg: 30, reps: 12 },
+                { kg: 35, reps: 10 },
+                { kg: 35, reps: 10 },
               ],
             },
             {
               name: "Tríceps Polia (Barra V)",
+              img: "img/triceps-barra-v.png",
               sets: [
                 { kg: 50, reps: 12 },
                 { kg: 55, reps: 10 },
@@ -1094,6 +1335,7 @@
             },
             {
               name: "Tríceps Francês Unilateral Polia",
+              img: "img/triceps-frances-unilateral.png",
               sets: [
                 { kg: 15, reps: 12 },
                 { kg: 15, reps: 10 },
@@ -1102,6 +1344,7 @@
             },
             {
               name: "Abd. Infra Solo (Colchonete)",
+              img: "img/abd-infra-solo.png",
               sets: [
                 { kg: 0, reps: 15 },
                 { kg: 0, reps: 15 },
@@ -1117,6 +1360,7 @@
           exercises: [
             {
               name: "Puxada Alta",
+              img: "img/puxada-alta.png",
               sets: [
                 { kg: 45, reps: 10 },
                 { kg: 50, reps: 8 },
@@ -1125,6 +1369,7 @@
             },
             {
               name: "Remada Baixa",
+              img: "img/remada-baixa.png",
               sets: [
                 { kg: 60, reps: 10 },
                 { kg: 65, reps: 8 },
@@ -1133,6 +1378,7 @@
             },
             {
               name: "Pulldown Corda",
+              img: "img/pulldown-corda.png",
               sets: [
                 { kg: 35, reps: 12 },
                 { kg: 40, reps: 12 },
@@ -1141,6 +1387,7 @@
             },
             {
               name: "Bíceps Bayesian (Polia)",
+              img: "img/biceps-bayesian.png",
               sets: [
                 { kg: 15, reps: 12 },
                 { kg: 15, reps: 10 },
@@ -1149,6 +1396,7 @@
             },
             {
               name: "Rosca Concentrada",
+              img: "img/rosca-concentrada.png",
               sets: [
                 { kg: 12, reps: 12 },
                 { kg: 14, reps: 10 },
@@ -1157,6 +1405,7 @@
             },
             {
               name: "Rosca Martelo",
+              img: "img/rosca-martelo.png",
               sets: [
                 { kg: 14, reps: 10 },
                 { kg: 16, reps: 10 },
@@ -1165,6 +1414,7 @@
             },
             {
               name: "Abd. Roda (Ab Wheel)",
+              img: "img/abd-roda.png",
               sets: [
                 { kg: 0, reps: 15 },
                 { kg: 0, reps: 12 },
@@ -1181,11 +1431,13 @@
             {
               title: "Balanço de Pernas (Frontal e Lateral)",
               time: "2x 15 / perna",
+              img: "img/balanco-pernas.png",
               desc: "Apoie a mão na parede/rack e balance a perna aumentando a altura aos poucos para lubrificar o quadril.",
             },
             {
               title: "Agachamento Cosaco (Cossack Squat)",
               time: "2x 8 / lado",
+              img: "img/agachamento-cosaco.png",
               desc: "Sem peso. Desça lateralmente em uma perna enquanto a outra fica estendida para destravar adutores e tornozelo.",
             },
           ],
@@ -1193,27 +1445,32 @@
             {
               title: "Abertura Lateral (Straddle Stretch)",
               time: "2x 45-60s",
+              img: "img/abertura-lateral.png",
               desc: "Sentado com pernas bem afastadas, incline o tronco à frente com a coluna reta (foco em chutes laterais/circulares).",
             },
             {
               title: "Posterior de Coxa no Banco",
               time: "2x 45s / perna",
+              img: "img/posterior-banco.png",
               desc: "Calcanhar apoiado na altura do quadril, puxe a ponta do pé para você (foco em chutes frontais altos).",
             },
             {
               title: "Avanço Profundo (Flexor de Quadril)",
               time: "2x 45s / perna",
+              img: "img/avanco-profundo.png",
               desc: "Joelho de trás no colchonete, empurre o quadril para frente para dar amplitude ao giro da perna de apoio.",
             },
             {
               title: "Borboleta (Adutores)",
               time: "2x 45s",
+              img: "img/borboleta.png",
               desc: "Solas dos pés unidas, pressione suavemente os joelhos em direção ao solo com os cotovelos.",
             },
           ],
           exercises: [
             {
               name: "Hack Squat",
+              img: "img/hack-squat.png",
               sets: [
                 { kg: 60, reps: 10 },
                 { kg: 70, reps: 8 },
@@ -1222,6 +1479,7 @@
             },
             {
               name: "Leg Press 45º",
+              img: "img/leg-press.png",
               sets: [
                 { kg: 120, reps: 10 },
                 { kg: 140, reps: 10 },
@@ -1230,6 +1488,7 @@
             },
             {
               name: "Mesa Flexora",
+              img: "img/mesa-flexora.png",
               sets: [
                 { kg: 40, reps: 12 },
                 { kg: 45, reps: 10 },
@@ -1238,6 +1497,7 @@
             },
             {
               name: "Panturrilhas em Pé",
+              img: "img/panturrilha-pe.png",
               sets: [
                 { kg: 50, reps: 15 },
                 { kg: 50, reps: 15 },
@@ -1247,6 +1507,7 @@
             },
             {
               name: "Desenvolvimento Halteres",
+              img: "img/desenvolvimento-halteres.png",
               sets: [
                 { kg: 18, reps: 10 },
                 { kg: 20, reps: 8 },
@@ -1255,6 +1516,7 @@
             },
             {
               name: "Elevação Lateral Polia",
+              img: "img/elevacao-lateral-polia.png",
               sets: [
                 { kg: 10, reps: 15 },
                 { kg: 10, reps: 12 },
@@ -1272,27 +1534,32 @@
             {
               title: "Abertura Lateral (Straddle Stretch)",
               time: "2x 45-60s",
+              img: "img/abertura-lateral.png",
               desc: "Sentado com pernas bem afastadas, incline o tronco à frente com a coluna reta (foco em chutes laterais/circulares).",
             },
             {
               title: "Posterior de Coxa no Banco",
               time: "2x 45s / perna",
+              img: "img/posterior-banco.png",
               desc: "Calcanhar apoiado na altura do quadril, puxe a ponta do pé para você (foco em chutes frontais altos).",
             },
             {
               title: "Avanço Profundo (Flexor de Quadril)",
               time: "2x 45s / perna",
+              img: "img/avanco-profundo.png",
               desc: "Joelho de trás no colchonete, empurre o quadril para frente para dar amplitude ao giro da perna de apoio.",
             },
             {
               title: "Borboleta (Adutores)",
               time: "2x 45s",
+              img: "img/borboleta.png",
               desc: "Solas dos pés unidas, pressione suavemente os joelhos em direção ao solo com os cotovelos.",
             },
           ],
           exercises: [
             {
               name: "Crossover Polia Alta",
+              img: "img/crossover-polia-alta.png",
               sets: [
                 { kg: 20, reps: 12 },
                 { kg: 25, reps: 12 },
@@ -1301,6 +1568,7 @@
             },
             {
               name: "Remada Unilateral / Serrote",
+              img: "img/remada-serrote.png",
               sets: [
                 { kg: 22, reps: 10 },
                 { kg: 24, reps: 10 },
@@ -1309,6 +1577,7 @@
             },
             {
               name: "Cadeira Extensora",
+              img: "img/cadeira-extensora.png",
               sets: [
                 { kg: 50, reps: 12 },
                 { kg: 55, reps: 12 },
@@ -1317,6 +1586,7 @@
             },
             {
               name: "Stiff",
+              img: "img/stiff.png",
               sets: [
                 { kg: 40, reps: 10 },
                 { kg: 50, reps: 10 },
@@ -1325,6 +1595,7 @@
             },
             {
               name: "Crucifixo Inverso",
+              img: "img/crucifixo-inverso.png",
               sets: [
                 { kg: 10, reps: 15 },
                 { kg: 12, reps: 12 },
@@ -1333,6 +1604,7 @@
             },
             {
               name: "Bi-set: Bíceps Bayesian + Tríceps V",
+              img: "img/biset-bracos.png",
               note: "Execução: faça 12 reps de Bíceps Bayesian na polia baixa e, sem descanso, suba a polia/troque o pegador para fazer 12 reps de Tríceps Barra V. Descanse 60-90s apenas ao final dos dois.",
               sets: [
                 { kg: 15, reps: 12 },
@@ -1341,6 +1613,7 @@
             },
             {
               name: "Prancha Isométrica",
+              img: "img/prancha-isometrica.png",
               sets: [
                 { kg: 0, reps: 60 },
                 { kg: 0, reps: 60 },
@@ -1366,6 +1639,57 @@
       function releaseWakeLock() {
         if (wakeLock) {
           wakeLock.release().then(() => (wakeLock = null));
+        }
+      }
+
+      function getExercisePR(exName) {
+        const h = JSON.parse(localStorage.getItem(`gh_${exName}`)) || [];
+        if (!h.length) return null;
+        return Math.max(...h.map((item) => Number(item.max) || 0));
+      }
+
+      function toggleImgDrawer(drawerId, btnEl) {
+        const drawer = document.getElementById(drawerId);
+        if (!drawer) return;
+        drawer.classList.toggle("open");
+        if (btnEl) {
+          btnEl.classList.toggle("active");
+        }
+      }
+
+      function handleImgError(imgEl, path) {
+        const parent = imgEl.parentElement;
+        parent.innerHTML = `<div class="img-placeholder-msg">Ilustração ainda não adicionada.<br>Salve o arquivo no GitHub em:<br><code>${path}</code></div>`;
+      }
+
+      function updateProgressHUD() {
+        if (!currentDay) return;
+        const d = workoutData[currentDay];
+        let totalSets = 0;
+        let doneSets = 0;
+
+        d.exercises.forEach((ex, i) => {
+          ex.sets.forEach((s, j) => {
+            totalSets++;
+            const btn = document.getElementById(`c_${i}_${j}`);
+            if (btn && btn.classList.contains("checked")) {
+              doneSets++;
+            }
+          });
+        });
+
+        const pct =
+          totalSets > 0 ? Math.round((doneSets / totalSets) * 100) : 0;
+        const badge = document.getElementById("progressBadge");
+        const fill = document.getElementById("progressFill");
+
+        badge.innerText = `${doneSets}/${totalSets} • ${pct}%`;
+        fill.style.width = `${pct}%`;
+
+        if (pct === 100 && totalSets > 0) {
+          badge.classList.add("complete");
+        } else {
+          badge.classList.remove("complete");
         }
       }
 
@@ -1404,7 +1728,7 @@
             () => document.getElementById(id).classList.add("active"),
             10,
           );
-        }, 300);
+        }, 250);
       }
 
       function openDay(k) {
@@ -1416,21 +1740,23 @@
         setTimeout(() => {
           document.getElementById("homeScreen").style.display = "none";
           document.getElementById("workoutScreen").style.display = "flex";
-          document.getElementById("bottomActions").style.display = "flex";
+          document.getElementById("floatingDock").style.display = "flex";
           document.getElementById("workoutTitleDisplay").innerText =
             workoutData[k].dayName;
           renderWorkout(k);
+          updateProgressHUD();
+          window.scrollTo({ top: 0, behavior: "instant" });
           setTimeout(
             () =>
               document.getElementById("workoutScreen").classList.add("active"),
             10,
           );
-        }, 300);
+        }, 250);
       }
 
       function goHome() {
         document.getElementById("workoutScreen").classList.remove("active");
-        document.getElementById("bottomActions").style.display = "none";
+        document.getElementById("floatingDock").style.display = "none";
 
         setTimeout(() => {
           document.getElementById("workoutScreen").style.display = "none";
@@ -1442,21 +1768,35 @@
             10,
           );
           stopTimer();
-        }, 300);
+        }, 250);
       }
 
-      function buildStretchCard(title, items) {
+      function buildStretchCard(title, items, prefix) {
         let itemsHtml = items
-          .map(
-            (st) => `
+          .map((st, idx) => {
+            const drawerId = `st_img_${prefix}_${idx}`;
+            const imgBtn = st.img
+              ? `<button class="btn-stretch-img" onclick="toggleImgDrawer('${drawerId}', this)">👁️ VER</button>`
+              : "";
+            const imgDrawer = st.img
+              ? `<div class="img-drawer" id="${drawerId}" style="margin-top:6px;margin-bottom:0;">
+                   <img src="${st.img}" alt="${st.title}" loading="lazy" onerror="handleImgError(this, '${st.img}')" />
+                 </div>`
+              : "";
+
+            return `
             <div class="stretch-item">
                 <div class="stretch-item-title">
                     <span>${st.title}</span>
-                    <span class="stretch-item-time">${st.time}</span>
+                    <div class="stretch-badges-right">
+                        <span class="stretch-item-time">${st.time}</span>
+                        ${imgBtn}
+                    </div>
                 </div>
                 <div class="stretch-item-desc">${st.desc}</div>
-            </div>`,
-          )
+                ${imgDrawer}
+            </div>`;
+          })
           .join("");
 
         return `
@@ -1468,7 +1808,6 @@
 
       function renderWorkout(k) {
         const cont = document.getElementById("workoutView");
-        const timer = document.getElementById("timerWrapper");
         cont.innerHTML = "";
 
         const d = workoutData[k];
@@ -1478,7 +1817,7 @@
 
         cont.innerHTML += `
           <div class="cardio-card">
-              <div class="cardio-header">🔥 AQUECIMENTO / CARDIO</div>
+              <div class="cardio-header">⚡ AQUECIMENTO / CARDIO</div>
               <div class="cardio-inputs">
                   <div class="cardio-input-group">
                       <label>Tempo</label>
@@ -1495,17 +1834,32 @@
               </div>
           </div>`;
 
-        timer.style.display = "block";
-        cont.appendChild(timer);
-
         if (d.preStretch && d.preStretch.length > 0) {
           cont.innerHTML += buildStretchCard(
             "🥋 MOBILIDADE PRÉ-TREINO (CHUTES)",
             d.preStretch,
+            "pre",
           );
         }
 
         d.exercises.forEach((ex, i) => {
+          const pr = getExercisePR(ex.name);
+          const prHtml =
+            pr && pr > 0
+              ? `<span class="pr-tag" id="pr_badge_${i}">🏆 RECORDE: ${pr} KG</span>`
+              : `<span class="pr-tag empty" id="pr_badge_${i}">SEM RECORDE SALVO</span>`;
+
+          const drawerId = `ex_img_${i}`;
+          const imgBtnHtml = ex.img
+            ? `<button class="btn-img-toggle" onclick="toggleImgDrawer('${drawerId}', this)">👁️ EXECUÇÃO</button>`
+            : "";
+
+          const imgDrawerHtml = ex.img
+            ? `<div class="img-drawer" id="${drawerId}">
+                 <img src="${ex.img}" alt="${ex.name}" loading="lazy" onerror="handleImgError(this, '${ex.img}')" />
+               </div>`
+            : "";
+
           let noteHtml = ex.note
             ? `<div class="exercise-note">${ex.note}</div>`
             : "";
@@ -1513,7 +1867,7 @@
           let sHtml = `
             <div class="sets-header">
                 <div>Série</div>
-                <div>Carga</div>
+                <div>Carga (KG)</div>
                 <div>Reps</div>
                 <div>OK</div>
             </div>
@@ -1547,10 +1901,17 @@
 
           cont.innerHTML += `
             <div class="exercise-card">
-                <div class="exercise-name">
-                    ${ex.name}
-                    <button class="btn-history" onclick="showH('${ex.name}')">📈 HISTÓRICO</button>
+                <div class="exercise-header-top">
+                    <div class="exercise-title-col">
+                        <div class="exercise-name">${ex.name}</div>
+                        ${prHtml}
+                    </div>
+                    <div class="exercise-actions-col">
+                        ${imgBtnHtml}
+                        <button class="btn-history" onclick="showH('${ex.name}')">📈 HISTÓRICO</button>
+                    </div>
                 </div>
+                ${imgDrawerHtml}
                 ${noteHtml}
                 ${sHtml}
             </div>`;
@@ -1558,8 +1919,9 @@
 
         if (d.postStretch && d.postStretch.length > 0) {
           cont.innerHTML += buildStretchCard(
-            "🥋 ELASTICIDADE PÓS-TREINO (USE O TIMER 45s/60s)",
+            "🥋 ELASTICIDADE PÓS-TREINO (TIMER 45s/60s ABAIXO)",
             d.postStretch,
+            "post",
           );
         }
       }
@@ -1598,9 +1960,10 @@
 
         if (btn.classList.contains("checked")) {
           row.classList.add("completed");
-          showToast("SÉRIE COMPUTADA", 1000);
+          showToast("SÉRIE COMPUTADA ✓", 900);
         }
         saveS(i, j);
+        updateProgressHUD();
       }
 
       function saveS(i, j) {
@@ -1632,23 +1995,29 @@
           });
 
           renderWorkout(currentDay);
+          updateProgressHUD();
           showToast("DADOS ZERADOS!", 1500);
         }
       }
 
       function copyWorkoutReport() {
-        let r = `*HUD CYBERGYM: ${workoutData[currentDay].dayName.toUpperCase()}*\n🔥 *Cardio:* ${document.getElementById("c_t").value} | ${document.getElementById("c_d").value} / ${document.getElementById("c_k").value}\n`;
+        let r = `*HUD CYBERGYM: ${workoutData[currentDay].dayName.toUpperCase()}*\n⚡ *Cardio:* ${document.getElementById("c_t").value} | ${document.getElementById("c_d").value} / ${document.getElementById("c_k").value}\n`;
 
         workoutData[currentDay].exercises.forEach((ex, i) => {
           r += `\n* ${ex.name}:`;
           ex.sets.forEach((s, j) => {
-            r += `\n  - S${j + 1}: ${document.getElementById(`k_${i}_${j}`).value}kg x ${document.getElementById(`r_${i}_${j}`).value} (OK)`;
+            const done = document
+              .getElementById(`c_${i}_${j}`)
+              .classList.contains("checked")
+              ? "✓"
+              : "○";
+            r += `\n  - S${j + 1}: ${document.getElementById(`k_${i}_${j}`).value}kg x ${document.getElementById(`r_${i}_${j}`).value} (${done})`;
           });
         });
 
         navigator.clipboard
           .writeText(r)
-          .then(() => showToast("COPIADO PRO WHATSAPP!", 2000));
+          .then(() => showToast("RELATÓRIO COPIADO!", 2000));
       }
 
       function saveWorkoutHistory() {
@@ -1680,6 +2049,14 @@
             }
 
             localStorage.setItem(`gh_${ex.name}`, JSON.stringify(h));
+
+            const newPR = getExercisePR(ex.name);
+            const prBadge = document.getElementById(`pr_badge_${i}`);
+            if (prBadge && newPR > 0) {
+              prBadge.classList.remove("empty");
+              prBadge.innerText = `🏆 RECORDE: ${newPR} KG`;
+            }
+
             count++;
           }
         });
@@ -1687,7 +2064,7 @@
         if (count > 0) {
           showToast(`SALVO! ${count} REGISTROS ATUALIZADOS 🚀`, 3000);
         } else {
-          showToast("NADA CONCLUÍDO PARA SALVAR", 3000);
+          showToast("MARQUE AO MENOS UMA SÉRIE PARA SALVAR", 2500);
         }
       }
 
@@ -1702,7 +2079,7 @@
 
         if (!h.length) {
           list.innerHTML =
-            '<div class="history-item" style="justify-content:center;color:#888;">Sem registros</div>';
+            '<div class="history-item" style="justify-content:center;color:#7a8fa8;">Sem registros ainda</div>';
         } else {
           [...h].reverse().forEach((e) => {
             list.innerHTML += `<div class="history-item"><span>${e.date}</span><span>${e.max} KG</span></div>`;
@@ -1734,6 +2111,20 @@
         localStorage.setItem(`gh_${currentEx}`, JSON.stringify(h));
         showToast(`CARGA DE ${v}KG GRAVADA!`, 2000);
         showH(currentEx);
+
+        if (currentDay) {
+          const idx = workoutData[currentDay].exercises.findIndex(
+            (e) => e.name === currentEx,
+          );
+          if (idx !== -1) {
+            const newPR = getExercisePR(currentEx);
+            const prBadge = document.getElementById(`pr_badge_${idx}`);
+            if (prBadge && newPR > 0) {
+              prBadge.classList.remove("empty");
+              prBadge.innerText = `🏆 RECORDE: ${newPR} KG`;
+            }
+          }
+        }
       }
 
       function closeHistory() {
@@ -1758,12 +2149,15 @@
         clearInterval(tmr);
         requestWakeLock();
         end = Date.now() + s * 1000;
+        const disp = document.getElementById("timerDisplay");
+        disp.classList.add("running");
 
         tmr = setInterval(() => {
           let r = end - Date.now();
           if (r <= 0) {
             clearInterval(tmr);
-            document.getElementById("timerDisplay").innerText = "00:00:00";
+            disp.innerText = "00:00:00";
+            disp.classList.remove("running");
             end = 0;
             bell.play().catch(() => {});
             if (navigator.vibrate) navigator.vibrate([500, 200, 500]);
@@ -1778,8 +2172,7 @@
             let ms = Math.floor((r % 1000) / 10)
               .toString()
               .padStart(2, "0");
-            document.getElementById("timerDisplay").innerText =
-              `${m}:${sc}:${ms}`;
+            disp.innerText = `${m}:${sc}:${ms}`;
           }
         }, 16);
       }
@@ -1787,7 +2180,9 @@
       function stopTimer() {
         clearInterval(tmr);
         end = 0;
-        document.getElementById("timerDisplay").innerText = "00:00:00";
+        const disp = document.getElementById("timerDisplay");
+        disp.innerText = "00:00:00";
+        disp.classList.remove("running");
         releaseWakeLock();
       }
 
