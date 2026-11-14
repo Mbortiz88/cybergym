@@ -254,11 +254,7 @@
         top: 0;
         height: 100%;
         width: 4px;
-        background: linear-gradient(
-          180deg,
-          var(--primary),
-          var(--primary-deep)
-        );
+        background: linear-gradient(180deg, var(--primary), var(--primary-deep));
         box-shadow: 2px 0 12px var(--primary-glow);
       }
 
@@ -459,11 +455,7 @@
         top: 0;
         height: 100%;
         width: 3px;
-        background: linear-gradient(
-          180deg,
-          var(--primary),
-          var(--primary-deep)
-        );
+        background: linear-gradient(180deg, var(--primary), var(--primary-deep));
         box-shadow: 0 0 12px var(--primary);
       }
 
@@ -993,11 +985,7 @@
       }
 
       .btn-save {
-        background: linear-gradient(
-          135deg,
-          var(--primary),
-          var(--primary-deep)
-        );
+        background: linear-gradient(135deg, var(--primary), var(--primary-deep));
         color: #020812;
         font-weight: 700;
         font-size: 18px;
@@ -1099,11 +1087,7 @@
       }
 
       .btn-add-weight {
-        background: linear-gradient(
-          135deg,
-          var(--primary),
-          var(--primary-deep)
-        );
+        background: linear-gradient(135deg, var(--primary), var(--primary-deep));
         color: #020812;
         border: none;
         border-radius: 6px;
@@ -1678,8 +1662,7 @@
           });
         });
 
-        const pct =
-          totalSets > 0 ? Math.round((doneSets / totalSets) * 100) : 0;
+        const pct = totalSets > 0 ? Math.round((doneSets / totalSets) * 100) : 0;
         const badge = document.getElementById("progressBadge");
         const fill = document.getElementById("progressFill");
 
