@@ -4,12 +4,18 @@
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
     />
-    <title>Matheus Ortiz Fitness // CyberHUD v2.1</title>
-
+    <title>Matheus Ortiz Fitness • CyberHUD</title>
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#04070d" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
     <link
-      href="https://fonts.googleapis.com/css2?family=Teko:wght@500;700&family=Montserrat:wght@400;600;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Teko:wght@600;700&display=swap"
       rel="stylesheet"
     />
     <link
@@ -20,43 +26,64 @@
   </head>
   <body>
     <div class="scanline"></div>
+    <div id="toast">SÉRIE COMPUTADA ✓</div>
 
+    <!-- CABEÇALHO PRINCIPAL (APENAS NA HOME/EVOLUÇÃO) -->
     <header id="mainHeader">
       <div class="logo-container">
         <svg class="dumbbell-icon" viewBox="0 0 24 24" fill="currentColor">
           <path
-            d="M20.5 8.5V15.5C20.5 16.3 19.8 17 19 17H18V19C18 19.6 17.6 20 17 20H15C14.4 20 14 19.6 14 19V15H10V19C10 19.6 9.6 20 9 20H7C6.4 20 6 19.6 6 19V17H5C4.2 17 3.5 16.3 3.5 15.5V8.5C3.5 7.7 4.2 7 5 7H6V5C6 4.4 6.4 4 7 4H9C9.6 4 10 4.4 10 5V9H14V5C14 4.4 14.4 4 15 4H17C17.6 4 18 4.4 18 5V7H19C19.8 7 20.5 7.7 20.5 8.5Z"
+            d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"
           />
         </svg>
         <h1>Matheus Ortiz <span>Fitness</span></h1>
       </div>
-      <div class="subtitle">CyberHUD v2.1 // Electric Blue Edition</div>
+      <div class="subtitle">CyberHUD v3.2 // Offline PWA Edition</div>
     </header>
 
+    <!-- TELA 1: MENU DE TREINOS -->
     <div id="homeScreen" class="app-screen active">
       <div class="menu-list" id="menuList"></div>
     </div>
 
+    <!-- TELA 2: EVOLUÇÃO & BACKUP -->
+    <div id="dashboardScreen" class="app-screen">
+      <div class="dash-stats-grid" id="dashStatsGrid"></div>
+
+      <div class="dash-section-card">
+        <div class="dash-section-title">🏆 RECORDES PESSOAIS (PRs)</div>
+        <div class="pr-summary-list" id="prSummaryList"></div>
+      </div>
+
+      <div class="dash-section-card">
+        <div class="dash-section-title">💾 BACKUP & SINCRONIZAÇÃO</div>
+        <p class="dash-desc">
+          Exporte seus recordes e histórico para guardar segurança ou transferir
+          para outro aparelho.
+        </p>
+        <div class="backup-actions">
+          <button class="btn-backup export" onclick="exportBackup()">
+            📋 EXPORTAR JSON
+          </button>
+          <button class="btn-backup import" onclick="openImportModal()">
+            📥 IMPORTAR JSON
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TELA 3: TREINO ATIVO -->
     <div id="workoutScreen" class="app-screen">
       <div class="workout-hud-header">
         <div class="workout-nav-row">
           <div class="workout-title-group">
-            <button class="btn-back" onclick="goHome()">
-              <svg
-                width="13"
-                height="13"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="3"
-              >
-                <path d="M19 12H5M12 19l-7-7 7-7" />
-              </svg>
-              VOLTAR
-            </button>
-            <div class="workout-title" id="workoutTitleDisplay"></div>
+            <button class="btn-back" onclick="goHome()">❮ MENU</button>
+            <div class="workout-title" id="workoutTitleDisplay">Treino A</div>
           </div>
-          <div class="progress-badge" id="progressBadge">0/0 • 0%</div>
+          <div class="hud-telemetry-badges">
+            <div class="volume-badge" id="volumeBadge">⚡ 0 KG</div>
+            <div class="progress-badge" id="progressBadge">0/0 • 0%</div>
+          </div>
         </div>
         <div class="progress-track">
           <div class="progress-fill" id="progressFill"></div>
@@ -66,76 +93,148 @@
       <div class="workout-container" id="workoutView"></div>
     </div>
 
-    <!-- DOCK INFERIOR FLUTUANTE COM TIMER + BOTÕES -->
+    <!-- DOCK INFERIOR FLUTUANTE (TIMER + AÇÕES) -->
     <div class="floating-dock" id="floatingDock">
       <div class="dock-inner">
         <div class="mini-timer-bar">
-          <span class="timer-display" id="timerDisplay">00:00:00</span>
+          <div class="timer-display" id="timerDisplay">00:00:00</div>
           <div class="timer-pills">
             <button class="timer-pill" onclick="startTimer(45)">45s</button>
             <button class="timer-pill" onclick="startTimer(60)">60s</button>
             <button class="timer-pill" onclick="startTimer(90)">90s</button>
-            <button class="timer-pill" onclick="startTimer(120)">120s</button>
-            <button class="timer-pill stop" onclick="stopTimer()">PARAR</button>
+            <button class="timer-pill" onclick="startTimer(120)">2m</button>
+            <button class="timer-pill stop" onclick="stopTimer()">✕</button>
           </div>
         </div>
+
         <div class="actions-row">
           <button class="action-btn btn-reset" onclick="resetWorkout()">
-            Zerar
+            Nova Sessão
           </button>
           <button class="action-btn btn-copy" onclick="copyWorkoutReport()">
             Copiar
           </button>
           <button class="action-btn btn-save" onclick="saveWorkoutHistory()">
-            ✓ FINALIZAR TREINO
+            Finalizar & Salvar
           </button>
         </div>
       </div>
     </div>
 
+    <!-- BOTTOM NAV HOME -->
     <div class="main-nav-container" id="mainNavContainer">
       <div
         class="nav-tab active"
         id="tabTreinos"
-        onclick="switchMainTab('homeScreen')"
+        onclick="switchMainTab('homeScreen', this)"
       >
         <svg viewBox="0 0 24 24">
-          <path
-            d="M6.5 6.5v11m11-11v11m-13-9h14m-14 7h14m-3-11v14m-8-14v14"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
+          <rect x="3" y="3" width="7" height="7" rx="1.5" />
+          <rect x="14" y="3" width="7" height="7" rx="1.5" />
+          <rect x="3" y="14" width="7" height="7" rx="1.5" />
+          <rect x="14" y="14" width="7" height="7" rx="1.5" />
         </svg>
         <span class="nav-label">TREINOS</span>
       </div>
+      <div
+        class="nav-tab"
+        id="tabEvolucao"
+        onclick="switchMainTab('dashboardScreen', this)"
+      >
+        <svg viewBox="0 0 24 24">
+          <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+          <polyline points="16 7 22 7 22 13" />
+        </svg>
+        <span class="nav-label">EVOLUÇÃO</span>
+      </div>
     </div>
 
+    <!-- MODAL DE HISTÓRICO -->
     <div class="modal-overlay" id="historyModal">
       <div class="modal-content">
         <div class="modal-header">
-          <div class="modal-title" id="historyTitle">Nome</div>
-          <button class="close-btn" onclick="closeHistory()">×</button>
+          <div class="modal-title" id="historyTitle">Histórico</div>
+          <button class="close-btn" onclick="closeHistory()">&times;</button>
         </div>
+
         <div class="input-history-box">
-          <label>Nova Carga Máxima (KG)</label>
+          <label>Registrar Nova Carga Manualmente (KG):</label>
           <div class="input-row-flex">
             <input
               type="number"
               id="manualKgInput"
-              placeholder="Ex: 60"
-              step="0.5"
+              placeholder="Ex: 55"
+              step="1"
             />
             <button class="btn-add-weight" onclick="addManualWeight()">
-              SALVAR
+              + GRAVAR
             </button>
           </div>
         </div>
-        <div class="history-list-title">Evolução de Cargas</div>
+
+        <div class="history-list-title">Evolução Registrada:</div>
         <div class="history-list" id="historyList"></div>
       </div>
     </div>
 
-    <div id="toast">MENSAGEM AQUI</div>
+    <!-- MODAL DE CALCULADORA DE ANILHAS -->
+    <div class="modal-overlay" id="plateModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title" id="plateModalTitle">
+            Calculadora de Anilhas
+          </div>
+          <button class="close-btn" onclick="closePlateModal()">&times;</button>
+        </div>
+
+        <div class="input-history-box">
+          <label>Carga Total Alvo (KG) e Peso da Barra:</label>
+          <div class="input-row-flex">
+            <input
+              type="number"
+              id="plateTargetInput"
+              placeholder="Total KG"
+              oninput="calculatePlates()"
+            />
+            <select id="barWeightSelect" onchange="calculatePlates()">
+              <option value="20">Barra 20kg</option>
+              <option value="15">Barra 15kg</option>
+              <option value="12">Barra W 12kg</option>
+              <option value="0">Sem Barra (0kg)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="plate-result-box" id="plateResultBox"></div>
+      </div>
+    </div>
+
+    <!-- MODAL DE IMPORTAÇÃO DE BACKUP -->
+    <div class="modal-overlay" id="importModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title">Restaurar Backup</div>
+          <button class="close-btn" onclick="closeImportModal()">
+            &times;
+          </button>
+        </div>
+        <div class="input-history-box">
+          <label>Cole o código JSON copiado anteriormente:</label>
+          <textarea
+            id="importJsonArea"
+            rows="4"
+            placeholder='{"gh_Supino Reto Barra":"[...]"}'
+          ></textarea>
+        </div>
+        <button
+          class="btn-backup export"
+          style="width: 100%; padding: 12px"
+          onclick="importBackup()"
+        >
+          RESTAURAR DADOS AGORA
+        </button>
+      </div>
+    </div>
 
     <script src="script.js"></script>
   </body>
