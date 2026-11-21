@@ -1,11 +1,11 @@
-const CACHE_NAME = "cybergym-hud-v3.3";
+const CACHE_NAME = "cybergym-hud-v3.4";
 const ASSETS = [
   "./",
   "./index.html",
   "./style.css",
   "./script.js",
   "./manifest.json",
-  "./icon-512.png"
+  "./icon-512.jpg"
 ];
 
 self.addEventListener("install", (event) => {
