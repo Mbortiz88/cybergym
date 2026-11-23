@@ -336,6 +336,101 @@ const workoutData = {
   },
 };
 
+const dietMealsData = [
+  {
+    id: "cafe",
+    time: "07:15 • CAFÉ DA MANHÃ",
+    macros: "~500 KCAL • 35G PROT • 45G CARB • 18G GORD",
+    options: [
+      {
+        label: "Principal: Ovos Mexidos + Pão Integral + Abacate",
+        desc: "3 ovos mexidos no azeite (5ml) + 2 fatias de pão integral (50g) + 70g de abacate fresco com sal + café preto sem açúcar.",
+      },
+      {
+        label: "Opção 1: Omelete Rústico com Aveia e Banana",
+        desc: "3 ovos inteiros + 30g de aveia em flocos + 1 banana-prata média (100g) com canela.",
+      },
+      {
+        label: "Opção 2: Pão Integral + Ovos Cozidos + Homus",
+        desc: "2 fatias de pão integral + 3 ovos cozidos fatiados + 30g de homus + 1 maçã média.",
+      },
+      {
+        label: "Opção 3: Panqueca Salgada de Atum",
+        desc: "3 ovos batidos + 1 lata de atum drenado (120g) + 30g de farinha de aveia grelhados na frigideira.",
+      },
+    ],
+  },
+  {
+    id: "almoco",
+    time: "12:30 • ALMOÇO (MARMITA / BATCH COOKING)",
+    macros: "~650 KCAL • 50G PROT • 75G CARB • 16G GORD",
+    options: [
+      {
+        label: "Principal: Frango Grelhado + Arroz + Feijão + Brócolis",
+        desc: "170g peito de frango grelhado + 140g arroz cozido + 100g feijão + 100g brócolis no vapor + 5ml azeite.",
+      },
+      {
+        label: "Opção 1: Coxão de Fora / Patinho + Batata-Doce",
+        desc: "160g bife de coxão de fora ou patinho grelhado + 200g batata-doce assada + 100g vagem + 5ml azeite.",
+      },
+      {
+        label: "Opção 2: Tilápia AirFryer + Purê de Mandioquinha",
+        desc: "200g filé de tilápia na AirFryer + 250g purê de mandioquinha (sem leite, só água e sal) + salada verde com 5ml azeite.",
+      },
+      {
+        label: "Opção 3: Sobrecoxa Desossada + Arroz e Feijão",
+        desc: "160g sobrecoxa sem pele assada + 140g arroz cozido + 100g feijão + 100g abobrinha refogada.",
+      },
+    ],
+  },
+  {
+    id: "lanche",
+    time: "17:15 • LANCHE DA TARDE / PRÉ-TREINO",
+    macros: "~500 KCAL • 40G PROT • 60G CARB • 12G GORD",
+    options: [
+      {
+        label: "Principal: Crepioca de Frango Desfiado",
+        desc: "3 ovos inteiros + 20g goma de tapioca + 100g peito de frango desfiado temperado com tomate.",
+      },
+      {
+        label: "Opção 1: Sanduíche Integral de Atum",
+        desc: "2 fatias de pão integral + 1 lata de atum em água drenado (120g) + 20g de homus + alface e tomate.",
+      },
+      {
+        label: "Opção 2: Wrap Integral de Patinho Moído",
+        desc: "1 massa Rap10 integral + 140g patinho moído refogado + alface, tomate e 15g sementes de girassol.",
+      },
+      {
+        label: "Opção 3: Macarrão Integral ao Sugo com Frango",
+        desc: "140g macarrão integral cozido + molho de tomate caseiro + 150g peito de frango em cubos.",
+      },
+    ],
+  },
+  {
+    id: "jantar",
+    time: "20:15 • JANTAR / PÓS-TREINO NOTURNO",
+    macros: "~600 KCAL • 50G PROT • 65G CARB • 17G GORD",
+    options: [
+      {
+        label: "Principal: Escondidinho de Patinho com Batata-Inglesa",
+        desc: "160g patinho moído refogado + 250g purê de batata-inglesa (com alho e azeite, sem leite) + salada folhosa.",
+      },
+      {
+        label: "Opção 1: Strogonoff de Frango sem Creme de Leite",
+        desc: "180g peito de frango em cubos com molho de tomate natural, mostarda e cogumelos + 160g arroz cozido.",
+      },
+      {
+        label: "Opção 2: Tilápia Grelhada + Batata-Doce",
+        desc: "220g filé de tilápia grelhado + 200g batata-doce cozida + 10ml azeite extravirgem com ervas.",
+      },
+      {
+        label: "Opção 3: Omelete Reforçado com Frango + Pão Integral",
+        desc: "4 ovos inteiros + 80g frango desfiado + 2 fatias de pão integral + 1 fatia média de mamão.",
+      },
+    ],
+  },
+];
+
 const cardioModalities = [
   { id: "Escada", icon: "🪜", label: "Escada" },
   { id: "Esteira", icon: "🏃‍♂️", label: "Esteira" },
@@ -532,6 +627,172 @@ function updateTelemetryHUD() {
   }
 }
 
+/* DIETA, HIDRATAÇÃO E MEDIDAS */
+function getDietState() {
+  const defaultState = {
+    water: 0,
+    checked: { cafe: false, almoco: false, lanche: false, jantar: false },
+    selected: { cafe: 0, almoco: 0, lanche: 0, jantar: 0 },
+  };
+  try {
+    const saved = JSON.parse(localStorage.getItem("g_diet_state"));
+    if (!saved) return defaultState;
+    return {
+      water: Number(saved.water) || 0,
+      checked: { ...defaultState.checked, ...(saved.checked || {}) },
+      selected: { ...defaultState.selected, ...(saved.selected || {}) },
+    };
+  } catch (e) {
+    return defaultState;
+  }
+}
+
+function saveDietState(state) {
+  localStorage.setItem("g_diet_state", JSON.stringify(state));
+}
+
+function renderDietScreen() {
+  const state = getDietState();
+  const listEl = document.getElementById("dietMealsList");
+  listEl.innerHTML = "";
+
+  let doneMeals = 0;
+
+  dietMealsData.forEach((meal) => {
+    const isDone = !!state.checked[meal.id];
+    if (isDone) doneMeals++;
+    const selIdx = state.selected[meal.id] || 0;
+    const currentOpt = meal.options[selIdx] || meal.options[0];
+
+    const optsHtml = meal.options
+      .map(
+        (opt, idx) =>
+          `<option value="${idx}" ${idx === selIdx ? "selected" : ""}>${opt.label}</option>`,
+      )
+      .join("");
+
+    listEl.innerHTML += `
+      <div class="diet-meal-card ${isDone ? "done" : ""}">
+        <div class="diet-meal-top">
+          <div>
+            <div class="diet-meal-time">${meal.time}</div>
+            <div class="diet-meal-sub">${meal.macros}</div>
+          </div>
+          <button type="button" class="diet-check-btn" onclick="toggleDietMeal('${meal.id}')">
+            ${isDone ? "✓ FEITA" : "MARCAR"}
+          </button>
+        </div>
+        <select class="diet-option-select" onchange="changeDietOption('${meal.id}', this.value)">
+          ${optsHtml}
+        </select>
+        <div class="diet-meal-desc">${currentOpt.desc}</div>
+      </div>`;
+  });
+
+  document.getElementById("dietMealsCount").innerText = `${doneMeals}/4`;
+  document.getElementById("waterDisplay").innerText =
+    `${state.water.toFixed(2).replace(".", ",")} L`;
+  const pct = Math.min(100, Math.round((state.water / 3.2) * 100));
+  document.getElementById("waterProgressFill").style.width = `${pct}%`;
+}
+
+function toggleDietMeal(mealId) {
+  const state = getDietState();
+  state.checked[mealId] = !state.checked[mealId];
+  saveDietState(state);
+  renderDietScreen();
+  showToast(
+    state.checked[mealId] ? "REFEIÇÃO REGISTRADA ✓" : "MARCAÇÃO REMOVIDA",
+    1000,
+  );
+}
+
+function changeDietOption(mealId, idx) {
+  const state = getDietState();
+  state.selected[mealId] = Number(idx) || 0;
+  saveDietState(state);
+  renderDietScreen();
+}
+
+function addWater(liters) {
+  const state = getDietState();
+  state.water = Math.min(6, Number((state.water + liters).toFixed(2)));
+  saveDietState(state);
+  renderDietScreen();
+  showToast(`+${Math.round(liters * 1000)}ML DE ÁGUA 💧`, 1000);
+}
+
+function resetDietDay() {
+  const state = getDietState();
+  state.water = 0;
+  state.checked = { cafe: false, almoco: false, lanche: false, jantar: false };
+  saveDietState(state);
+  renderDietScreen();
+  showToast("CONTROLE DIÁRIO ZERADO", 1300);
+}
+
+function toggleEquivalenceDrawer() {
+  const panel = document.getElementById("eqDrawerPanel");
+  const arrow = document.getElementById("eqToggleArrow");
+  const isOpen = panel.classList.toggle("open");
+  if (arrow) arrow.innerText = isOpen ? "▴" : "▾";
+}
+
+function saveMeasurements() {
+  const peso = document.getElementById("mPeso").value.trim();
+  const cintura = document.getElementById("mCintura").value.trim();
+  const abdomen = document.getElementById("mAbdomen").value.trim();
+  const torax = document.getElementById("mTorax").value.trim();
+  const braco = document.getElementById("mBraco").value.trim();
+  const coxa = document.getElementById("mCoxa").value.trim();
+
+  if (!peso && !cintura && !abdomen && !torax && !braco && !coxa) {
+    showToast("PREENCHA AO MENOS UMA MEDIDA!", 1600);
+    return;
+  }
+
+  const list = JSON.parse(localStorage.getItem("g_measures_list")) || [];
+  list.unshift({
+    date: new Date().toLocaleDateString("pt-BR"),
+    peso: peso || "-",
+    cintura: cintura || "-",
+    abdomen: abdomen || "-",
+    torax: torax || "-",
+    braco: braco || "-",
+    coxa: coxa || "-",
+  });
+
+  localStorage.setItem("g_measures_list", JSON.stringify(list));
+  renderMeasurementsList();
+  showToast("MEDIDAS ANTROPOMÉTRICAS SALVAS ✓", 1800);
+}
+
+function renderMeasurementsList() {
+  const el = document.getElementById("measuresHistoryList");
+  if (!el) return;
+  const list = JSON.parse(localStorage.getItem("g_measures_list")) || [];
+  if (!list.length) {
+    el.innerHTML = `<div class="pr-summary-row" style="justify-content:center;color:#7a8fa8;">Nenhuma medição registrada ainda.</div>`;
+    return;
+  }
+
+  el.innerHTML = list
+    .map(
+      (m) => `
+      <div class="measure-history-card">
+        <div class="measure-history-top">
+          <span>${m.date}</span>
+          <span>PESO: ${m.peso} KG</span>
+        </div>
+        <div class="measure-history-vals">
+          Cintura: <strong>${m.cintura}</strong> cm • Abdômen: <strong>${m.abdomen}</strong> cm • Tórax: <strong>${m.torax}</strong> cm<br/>
+          Braço D.: <strong>${m.braco}</strong> cm • Coxa D.: <strong>${m.coxa}</strong> cm
+        </div>
+      </div>`,
+    )
+    .join("");
+}
+
 function initApp() {
   const list = document.getElementById("menuList");
   list.innerHTML = "";
@@ -552,6 +813,8 @@ function initApp() {
           <div class="menu-action">❯</div>
       </div>`;
   });
+
+  renderDietScreen();
 }
 
 function switchMainTab(id, tabEl) {
@@ -560,7 +823,9 @@ function switchMainTab(id, tabEl) {
     .forEach((t) => t.classList.remove("active"));
   if (tabEl) tabEl.classList.add("active");
 
-  if (id === "dashboardScreen") {
+  if (id === "dietScreen") {
+    renderDietScreen();
+  } else if (id === "dashboardScreen") {
     renderDashboard();
   }
 
@@ -606,15 +871,21 @@ function renderDashboard() {
     }
   });
 
+  const measuresCount = (
+    JSON.parse(localStorage.getItem("g_measures_list")) || []
+  ).length;
+
   statsGrid.innerHTML = `
     <div class="dash-stat-box">
         <span class="dash-stat-label">Sessões Registradas</span>
         <span class="dash-stat-value">${allDates.size}</span>
     </div>
     <div class="dash-stat-box">
-        <span class="dash-stat-label">Recordes Ativos</span>
-        <span class="dash-stat-value">${totalPRs}</span>
+        <span class="dash-stat-label">PRs / Medidas</span>
+        <span class="dash-stat-value">${totalPRs} / ${measuresCount}</span>
     </div>`;
+
+  renderMeasurementsList();
 
   prList.innerHTML =
     prRowsHtml ||
@@ -659,6 +930,7 @@ function importBackup() {
       }
     });
     closeImportModal();
+    renderDietScreen();
     renderDashboard();
     showToast(`BACKUP RESTAURADO (${count} ITENS) ✓`, 2500);
   } catch (e) {
@@ -671,10 +943,12 @@ function openDay(k) {
   document.getElementById("mainHeader").style.display = "none";
   document.getElementById("mainNavContainer").style.display = "none";
   document.getElementById("homeScreen").classList.remove("active");
+  document.getElementById("dietScreen").classList.remove("active");
   document.getElementById("dashboardScreen").classList.remove("active");
 
   setTimeout(() => {
     document.getElementById("homeScreen").style.display = "none";
+    document.getElementById("dietScreen").style.display = "none";
     document.getElementById("dashboardScreen").style.display = "none";
     document.getElementById("workoutScreen").style.display = "flex";
     document.getElementById("floatingDock").style.display = "flex";
