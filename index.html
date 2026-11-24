@@ -40,7 +40,7 @@
         </svg>
         <h1>Matheus Ortiz <span>Fitness</span></h1>
       </div>
-      <div class="subtitle">CyberHUD v3.5 // Offline PWA Edition</div>
+      <div class="subtitle">CyberHUD v3.6 // Offline PWA Edition</div>
     </header>
 
     <!-- TELA 1: MENU DE TREINOS -->
@@ -153,36 +153,126 @@
       </div>
     </div>
 
-    <!-- TELA 3: EVOLUÇÃO & MEDIDAS & BACKUP -->
+    <!-- TELA 3: EVOLUÇÃO, CHECK-IN GYMRATS, MEDIDAS & BACKUP -->
     <div id="dashboardScreen" class="app-screen">
-      <div class="dash-stats-grid" id="dashStatsGrid"></div>
+      <div class="dash-stats-grid three-cols" id="dashStatsGrid"></div>
 
+      <!-- CALENDÁRIO ESTILO GYMRATS -->
+      <div class="dash-section-card">
+        <div class="cal-card-header">
+          <div class="dash-section-title" style="border: none; padding: 0; margin: 0">
+            📅 CHECK-INS (GYMRATS)
+          </div>
+          <span class="cal-month-count" id="calMonthCheckinsCount">0 dias no mês</span>
+        </div>
+
+        <div class="cal-nav-bar">
+          <button type="button" class="cal-nav-btn" onclick="changeCalendarMonth(-1)">
+            ❮
+          </button>
+          <span class="cal-month-label" id="calMonthLabel">NOVEMBRO 2026</span>
+          <button type="button" class="cal-nav-btn" onclick="changeCalendarMonth(1)">
+            ❯
+          </button>
+        </div>
+
+        <div class="cal-weekdays-row">
+          <span>DOM</span>
+          <span>SEG</span>
+          <span>TER</span>
+          <span>QUA</span>
+          <span>QUI</span>
+          <span>SEX</span>
+          <span>SÁB</span>
+        </div>
+
+        <div class="cal-days-grid" id="calDaysGrid"></div>
+
+        <div class="cal-day-details" id="calDayDetails">
+          <div class="cdd-top">
+            <span id="cddDateTitle">DIA --/--/----</span>
+            <span class="cdd-badge" id="cddStatusBadge">SEM CHECK-IN</span>
+          </div>
+          <div class="cdd-content" id="cddContent">
+            Nenhum treino ou atividade registrada nesta data.
+          </div>
+        </div>
+      </div>
+
+      <!-- REGISTRO MANUAL DE ATIVIDADE / ESPORTES (TAEKWONDO, CORRIDA, ETC.) -->
+      <div class="dash-section-card">
+        <div class="dash-section-title">⚡ CHECK-IN MANUAL (OUTRAS ATIVIDADES)</div>
+        <div class="quick-sports-row">
+          <button type="button" class="quick-sport-chip" onclick="applyQuickSport('Taekwondo', '🥋')">
+            🥋 Taekwondo
+          </button>
+          <button type="button" class="quick-sport-chip" onclick="applyQuickSport('Corrida', '🏃‍♂️')">
+            🏃‍♂️ Corrida
+          </button>
+          <button type="button" class="quick-sport-chip" onclick="applyQuickSport('Muay Thai', '🥊')">
+            🥊 Muay Thai
+          </button>
+          <button type="button" class="quick-sport-chip" onclick="applyQuickSport('Bike', '🚴')">
+            🚴 Bike
+          </button>
+        </div>
+
+        <div class="manual-checkin-grid">
+          <div class="measure-field">
+            <label>Atividade / Modalidade</label>
+            <input type="text" id="mcActivity" placeholder="Ex: 🥋 Taekwondo" />
+          </div>
+          <div class="measure-field">
+            <label>Data</label>
+            <input type="date" id="mcDate" />
+          </div>
+          <div class="measure-field">
+            <label>Duração (min)</label>
+            <input type="number" id="mcDuration" placeholder="60" />
+          </div>
+          <div class="measure-field">
+            <label>Observação</label>
+            <input type="text" id="mcNote" placeholder="Ex: Treino de chutes" />
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="btn-backup export"
+          style="width: 100%; padding: 11px"
+          onclick="saveManualCheckin()"
+        >
+          ✓ REGISTRAR CHECK-IN NO CALENDÁRIO
+        </button>
+      </div>
+
+      <!-- FICHA DE MEDIDAS -->
       <div class="dash-section-card">
         <div class="dash-section-title">📏 FICHA DE MEDIDAS (EM JEJUM)</div>
         <div class="measures-form-grid">
           <div class="measure-field">
             <label>Peso (kg)</label>
-            <input type="number" step="0.1" id="mPeso" placeholder="82.0" />
+            <input type="number" step="0.1" id="mPeso" placeholder="82.5" />
           </div>
           <div class="measure-field">
             <label>Cintura (cm)</label>
-            <input type="number" step="0.5" id="mCintura" placeholder="cm" />
+            <input type="number" step="0.5" id="mCintura" placeholder="93" />
           </div>
           <div class="measure-field">
             <label>Abdômen (cm)</label>
-            <input type="number" step="0.5" id="mAbdomen" placeholder="cm" />
+            <input type="number" step="0.5" id="mAbdomen" placeholder="90" />
           </div>
           <div class="measure-field">
             <label>Tórax (cm)</label>
-            <input type="number" step="0.5" id="mTorax" placeholder="cm" />
+            <input type="number" step="0.5" id="mTorax" placeholder="101" />
           </div>
           <div class="measure-field">
             <label>Braço D. (cm)</label>
-            <input type="number" step="0.5" id="mBraco" placeholder="cm" />
+            <input type="number" step="0.5" id="mBraco" placeholder="40" />
           </div>
           <div class="measure-field">
             <label>Coxa D. (cm)</label>
-            <input type="number" step="0.5" id="mCoxa" placeholder="cm" />
+            <input type="number" step="0.5" id="mCoxa" placeholder="60" />
           </div>
         </div>
         <button
@@ -196,15 +286,17 @@
         <div class="pr-summary-list" id="measuresHistoryList"></div>
       </div>
 
+      <!-- RECORDES PESSOAIS -->
       <div class="dash-section-card">
         <div class="dash-section-title">🏆 RECORDES PESSOAIS (PRs)</div>
         <div class="pr-summary-list" id="prSummaryList"></div>
       </div>
 
+      <!-- BACKUP -->
       <div class="dash-section-card">
         <div class="dash-section-title">💾 BACKUP & SINCRONIZAÇÃO</div>
         <p class="dash-desc">
-          Exporte seus recordes, medidas e dieta para guardar segurança ou
+          Exporte seus recordes, check-ins, medidas e dieta para guardar segurança ou
           transferir para outro aparelho.
         </p>
         <div class="backup-actions">
