@@ -156,6 +156,36 @@
     <!-- TELA 3: EVOLUÇÃO, CHECK-IN GYMRATS, MEDIDAS & BACKUP -->
     <div id="dashboardScreen" class="app-screen">
       <div class="dash-stats-grid three-cols" id="dashStatsGrid"></div>
+      <!-- SINCRONIZAÇÃO NUVEM (FIREBASE GOOGLE) -->
+      <div class="dash-section-card" id="cloudSyncCard">
+        <div class="cal-card-header">
+          <div class="dash-section-title" style="border: none; padding: 0; margin: 0">
+            ☁️ NUVEM & CONTA GOOGLE
+          </div>
+          <span class="cdd-badge" id="cloudSyncStatus">OFFLINE / LOCAL</span>
+        </div>
+        <p class="dash-desc" id="cloudUserInfo" style="margin-bottom: 10px">
+          Conecte sua conta Google para sincronizar treinos, check-ins, PRs e medidas automaticamente entre dispositivos.
+        </p>
+        <div class="backup-actions" id="cloudLoggedOutActions">
+          <button
+            type="button"
+            class="btn-backup export"
+            style="grid-column: span 2"
+            onclick="loginWithGoogle()"
+          >
+            🔐 ENTRAR COM GOOGLE
+          </button>
+        </div>
+        <div class="backup-actions" id="cloudLoggedInActions" style="display: none">
+          <button type="button" class="btn-backup export" onclick="manualCloudSync()">
+            🔄 SINCRONIZAR AGORA
+          </button>
+          <button type="button" class="btn-backup reset-water" onclick="logoutGoogle()">
+            SAIR DA CONTA
+          </button>
+        </div>
+      </div>
 
       <!-- CALENDÁRIO ESTILO GYMRATS -->
       <div class="dash-section-card">
