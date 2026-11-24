@@ -1972,12 +1972,13 @@ window.onload = initApp;
    ========================================================= */
 // Substitua pelos dados do seu projeto no Firebase Console caso ainda não tenha configurado
 const FIREBASE_CONFIG = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: "",
+  apiKey: "AIzaSyAoT05zjZH9W9fdmNeCGCppJwGeEJTxXos",
+  authDomain: "cybergym-matheus-ortiz.firebaseapp.com",
+  projectId: "cybergym-matheus-ortiz",
+  storageBucket: "cybergym-matheus-ortiz.firebasestorage.app",
+  messagingSenderId: "867243931319",
+  appId: "1:867243931319:web:e666e71d57ab6e024a7f32",
+  measurementId: "G-Z5Q9Q7D83K"
 };
 
 let fbApp = null;
