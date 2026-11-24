@@ -1,3 +1,32 @@
+/* =========================================================
+   CONFIGURAÇÃO DO FIREBASE (PROJETO: cybergym-matheus-ortiz)
+   ========================================================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyAoT05zjZH9W9fdmNeCGCppJwGeEJTxXos",
+  authDomain: "cybergym-matheus-ortiz.firebaseapp.com",
+  projectId: "cybergym-matheus-ortiz",
+  storageBucket: "cybergym-matheus-ortiz.firebasestorage.app",
+  messagingSenderId: "867243931319",
+  appId: "1:867243931319:web:e666e71d57ab6e024a7f32",
+};
+
+let fbAuth = null;
+let fbDb = null;
+let currentCloudUser = null;
+let isSyncing = false;
+
+try {
+  if (typeof firebase !== "undefined") {
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    fbAuth = firebase.auth();
+    fbDb = firebase.firestore();
+  }
+} catch (e) {
+  console.warn("Erro ao iniciar Firebase:", e);
+}
+
 const workoutData = {
   TREINO_A: {
     dayName: "Treino A",
@@ -470,6 +499,178 @@ let calViewYear = new Date().getFullYear();
 let calViewMonth = new Date().getMonth();
 let selectedCalDateISO = getTodayISO();
 
+/* =========================================================
+   CAMADA DE SINCRONIZAÇÃO NUVEM (FIREBASE AUTH + FIRESTORE)
+   ========================================================= */
+function collectLocalPayload() {
+  const payload = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && (key.startsWith("g_") || key.startsWith("gh_"))) {
+      payload[key] = localStorage.getItem(key);
+    }
+  }
+  return payload;
+}
+
+function updateCloudUI(user, statusText) {
+  const statusBadge = document.getElementById("cloudSyncStatus");
+  const userInfoEl = document.getElementById("cloudUserInfo");
+  const loggedOutBox = document.getElementById("cloudLoggedOutActions");
+  const loggedInBox = document.getElementById("cloudLoggedInActions");
+
+  if (!statusBadge || !userInfoEl) return;
+
+  if (user) {
+    statusBadge.innerText = statusText || "CONECTADO ✓";
+    statusBadge.classList.add("active-checkin");
+    userInfoEl.innerHTML = `Logado como <strong>${user.displayName || user.email}</strong> (${user.email}).<br/>Seus dados são salvos na nuvem automaticamente.`;
+    if (loggedOutBox) loggedOutBox.style.display = "none";
+    if (loggedInBox) loggedInBox.style.display = "grid";
+  } else {
+    statusBadge.innerText = "OFFLINE / LOCAL";
+    statusBadge.classList.remove("active-checkin");
+    userInfoEl.innerText =
+      "Conecte sua conta Google para sincronizar treinos, check-ins, PRs e medidas automaticamente entre dispositivos.";
+    if (loggedOutBox) loggedOutBox.style.display = "grid";
+    if (loggedInBox) loggedInBox.style.display = "none";
+  }
+}
+
+async function loginWithGoogle() {
+  if (!fbAuth) {
+    showToast("CONFIGURE AS CHAVES DO FIREBASE NO SCRIPT.JS", 2800);
+    return;
+  }
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    await fbAuth.signInWithPopup(provider);
+    showToast("CONTA GOOGLE CONECTADA ✓", 2000);
+  } catch (err) {
+    console.error("Erro no login Google:", err);
+    showToast("ERRO AO CONECTAR CONTA GOOGLE", 2400);
+  }
+}
+
+async function logoutGoogle() {
+  if (!fbAuth) return;
+  try {
+    await fbAuth.signOut();
+    currentCloudUser = null;
+    updateCloudUI(null);
+    showToast("DESCONECTADO DA NUVEM", 1800);
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+async function pushToFirestore(silent = true) {
+  if (!fbDb || !currentCloudUser || isSyncing) return;
+  if (!navigator.onLine) {
+    updateCloudUI(currentCloudUser, "OFFLINE (SALVO LOCAL)");
+    return;
+  }
+
+  try {
+    isSyncing = true;
+    updateCloudUI(currentCloudUser, "SINCRONIZANDO...");
+    const payload = collectLocalPayload();
+    const nowTs = Date.now();
+    localStorage.setItem("g_last_local_update", String(nowTs));
+
+    await fbDb.collection("users").doc(currentCloudUser.uid).set(
+      {
+        email: currentCloudUser.email || "",
+        displayName: currentCloudUser.displayName || "",
+        updatedAt: nowTs,
+        payload: payload,
+      },
+      { merge: true },
+    );
+
+    const timeStr = new Date().toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    updateCloudUI(currentCloudUser, `NUVEM OK • ${timeStr}`);
+    if (!silent) showToast("NUVEM SINCRONIZADA COM SUCESSO ☁️", 2000);
+  } catch (err) {
+    console.error("Erro ao enviar para Firestore:", err);
+    updateCloudUI(currentCloudUser, "ERRO DE REDE (LOCAL OK)");
+    if (!silent) showToast("FALHA NA REDE. DADOS SALVOS NO APARELHO.", 2400);
+  } finally {
+    isSyncing = false;
+  }
+}
+
+async function pullFromFirestore(forceOverwrite = false) {
+  if (!fbDb || !currentCloudUser || !navigator.onLine) return;
+
+  try {
+    updateCloudUI(currentCloudUser, "VERIFICANDO NUVEM...");
+    const docRef = fbDb.collection("users").doc(currentCloudUser.uid);
+    const snap = await docRef.get();
+
+    if (!snap.exists) {
+      await pushToFirestore(true);
+      return;
+    }
+
+    const remoteData = snap.data();
+    const remoteUpdated = Number(remoteData.updatedAt) || 0;
+    const localUpdated = Number(localStorage.getItem("g_last_local_update")) || 0;
+
+    if (forceOverwrite || remoteUpdated > localUpdated) {
+      if (remoteData.payload && typeof remoteData.payload === "object") {
+        Object.keys(remoteData.payload).forEach((key) => {
+          if (key.startsWith("g_") || key.startsWith("gh_")) {
+            localStorage.setItem(key, remoteData.payload[key]);
+          }
+        });
+        localStorage.setItem("g_last_local_update", String(remoteUpdated));
+        renderDietScreen();
+        renderDashboard();
+        if (currentDay) {
+          renderWorkout(currentDay);
+          updateTelemetryHUD();
+        }
+      }
+    } else if (localUpdated > remoteUpdated) {
+      await pushToFirestore(true);
+    }
+
+    const timeStr = new Date().toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    updateCloudUI(currentCloudUser, `NUVEM OK • ${timeStr}`);
+  } catch (err) {
+    console.error("Erro ao buscar dados do Firestore:", err);
+    updateCloudUI(currentCloudUser, "OFFLINE / LOCAL");
+  }
+}
+
+async function manualCloudSync() {
+  if (!currentCloudUser) return;
+  await pushToFirestore(false);
+}
+
+if (fbAuth) {
+  fbAuth.onAuthStateChanged(async (user) => {
+    currentCloudUser = user;
+    updateCloudUI(user);
+    if (user) {
+      await pullFromFirestore(false);
+    }
+  });
+}
+
+window.addEventListener("online", () => {
+  if (currentCloudUser) {
+    pushToFirestore(true);
+  }
+});
+
 /* REGISTRO DO SERVICE WORKER (PWA OFFLINE) */
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
@@ -559,7 +760,6 @@ function handleImgError(imgEl, path) {
   parent.innerHTML = `<div class="img-placeholder-msg">Ilustração ainda não adicionada.<br>Salve o arquivo no GitHub em:<br><code>${path}</code></div>`;
 }
 
-/* VERIFICA SE BATEU NOVO RECORDE EM TEMPO REAL */
 function checkLiveExercisePR(exIndex) {
   if (!currentDay) return false;
   const ex = workoutData[currentDay].exercises[exIndex];
@@ -806,6 +1006,7 @@ function saveManualCheckin() {
   selectedCalDateISO = dateISO;
 
   renderDashboard();
+  pushToFirestore(true);
   showToast(`CHECK-IN "${cleanLabel.toUpperCase()}" SALVO ✓`, 2000);
 }
 
@@ -813,6 +1014,7 @@ function deleteCheckinItem(checkinId) {
   const history = getCheckinHistory().filter((item) => item.id !== checkinId);
   saveCheckinHistory(history);
   renderDashboard();
+  pushToFirestore(true);
   showToast("CHECK-IN REMOVIDO", 1400);
 }
 
@@ -991,6 +1193,7 @@ function toggleDietMeal(mealId) {
   state.checked[mealId] = !state.checked[mealId];
   saveDietState(state);
   renderDietScreen();
+  pushToFirestore(true);
   showToast(
     state.checked[mealId] ? "REFEIÇÃO REGISTRADA ✓" : "MARCAÇÃO REMOVIDA",
     1000,
@@ -1002,6 +1205,7 @@ function changeDietOption(mealId, idx) {
   state.selected[mealId] = Number(idx) || 0;
   saveDietState(state);
   renderDietScreen();
+  pushToFirestore(true);
 }
 
 function addWater(liters) {
@@ -1009,6 +1213,7 @@ function addWater(liters) {
   state.water = Math.min(6, Number((state.water + liters).toFixed(2)));
   saveDietState(state);
   renderDietScreen();
+  pushToFirestore(true);
   showToast(`+${Math.round(liters * 1000)}ML DE ÁGUA 💧`, 1000);
 }
 
@@ -1018,6 +1223,7 @@ function resetDietDay() {
   state.checked = { cafe: false, almoco: false, lanche: false, jantar: false };
   saveDietState(state);
   renderDietScreen();
+  pushToFirestore(true);
   showToast("CONTROLE DIÁRIO ZERADO", 1300);
 }
 
@@ -1054,6 +1260,7 @@ function saveMeasurements() {
 
   localStorage.setItem("g_measures_list", JSON.stringify(list));
   renderMeasurementsList();
+  pushToFirestore(true);
   showToast("MEDIDAS ANTROPOMÉTRICAS SALVAS ✓", 1800);
 }
 
@@ -1189,13 +1396,7 @@ function renderDashboard() {
 }
 
 function exportBackup() {
-  const backup = {};
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (key.startsWith("g_") || key.startsWith("gh_")) {
-      backup[key] = localStorage.getItem(key);
-    }
-  }
+  const backup = collectLocalPayload();
   const jsonStr = JSON.stringify(backup);
   navigator.clipboard
     .writeText(jsonStr)
@@ -1228,6 +1429,7 @@ function importBackup() {
     closeImportModal();
     renderDietScreen();
     renderDashboard();
+    pushToFirestore(true);
     showToast(`BACKUP RESTAURADO (${count} ITENS) ✓`, 2500);
   } catch (e) {
     showToast("CÓDIGO JSON INVÁLIDO!", 2000);
@@ -1316,7 +1518,6 @@ function buildStretchCard(title, items, prefix) {
     </div>`;
 }
 
-/* CONTROLES DA GAVETA DE CARDIO */
 function toggleCardioDrawer() {
   const panel = document.getElementById("cardioDrawerPanel");
   const trigger = document.getElementById("cardioDrawerTrigger");
@@ -1639,13 +1840,10 @@ function saveS(i, j) {
   );
 }
 
-/* NOVA SESSÃO INTELIGENTE: DESMARCA CHECKS MAS MANTÉM AS ÚLTIMAS CARGAS */
 function resetWorkout() {
   if (
     confirm(
-      `Iniciar NOVA SESSÃO de ${workoutData[currentDay].dayName}?
-
-Isso desmarca os ✓ mantendo suas últimas cargas salvas.`,
+      `Iniciar NOVA SESSÃO de ${workoutData[currentDay].dayName}?\n\nIsso desmarca os ✓ mantendo suas últimas cargas salvas.`,
     )
   ) {
     workoutData[currentDay].exercises.forEach((ex, i) => {
@@ -1668,26 +1866,24 @@ Isso desmarca os ✓ mantendo suas últimas cargas salvas.`,
     stopTimer();
     renderWorkout(currentDay);
     updateTelemetryHUD();
+    pushToFirestore(true);
     showToast("NOVA SESSÃO PRONTA (CARGAS MANTIDAS) ⚡", 2000);
   }
 }
 
 function copyWorkoutReport() {
-  let r = `*HUD CYBERGYM: ${workoutData[currentDay].dayName.toUpperCase()}*
-`;
+  let r = `*HUD CYBERGYM: ${workoutData[currentDay].dayName.toUpperCase()}*\n`;
 
   workoutData[currentDay].exercises.forEach((ex, i) => {
     const setsArr = getExerciseSetsList(currentDay, i);
-    r += `
-- ${ex.name}:`;
+    r += `\n- ${ex.name}:`;
     setsArr.forEach((s, j) => {
       const done = document
         .getElementById(`c_${i}_${j}`)
         .classList.contains("checked")
         ? "✓"
         : "○";
-      r += `
-  - S${j + 1}: ${document.getElementById(`k_${i}_${j}`).value}kg x ${document.getElementById(`r_${i}_${j}`).value} (${done})`;
+      r += `\n  - S${j + 1}: ${document.getElementById(`k_${i}_${j}`).value}kg x ${document.getElementById(`r_${i}_${j}`).value} (${done})`;
     });
   });
 
@@ -1698,9 +1894,7 @@ function copyWorkoutReport() {
   const cTime = document.getElementById("c_t").value;
   const cKcal = document.getElementById("c_k").value;
 
-  r += `
-
-⚡ *Cardio Pós-Treino (${cType}):* ${cTime} min • ${cKcal} kcal`;
+  r += `\n\n⚡ *Cardio Pós-Treino (${cType}):* ${cTime} min • ${cKcal} kcal`;
 
   navigator.clipboard
     .writeText(r)
@@ -1747,7 +1941,6 @@ function saveWorkoutHistory() {
   });
 
   if (count > 0) {
-    // Registra Check-in automático no calendário GymRats
     const activeBtn = document.querySelector(".cardio-type-btn.active");
     const cType = activeBtn ? activeBtn.dataset.type : d.cardio.type;
     const cTime = document.getElementById("c_t")
@@ -1785,6 +1978,7 @@ function saveWorkoutHistory() {
     calViewYear = new Date().getFullYear();
     calViewMonth = new Date().getMonth();
 
+    pushToFirestore(true);
     showToast(`CHECK-IN ${d.dayName.toUpperCase()} REGISTRADO! 🚀`, 3000);
   } else {
     showToast("MARQUE AO MENOS UMA SÉRIE PARA SALVAR", 2500);
@@ -1884,6 +2078,7 @@ function addManualWeight() {
   }
 
   localStorage.setItem(`gh_${currentEx}`, JSON.stringify(h));
+  pushToFirestore(true);
   showToast(`CARGA DE ${v}KG GRAVADA!`, 2000);
   showH(currentEx);
 
