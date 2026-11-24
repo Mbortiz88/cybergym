@@ -25,12 +25,13 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="tkd.css" />
   </head>
   <body>
     <div class="scanline"></div>
     <div id="toast">SÉRIE COMPUTADA ✓</div>
 
-    <!-- CABEÇALHO PRINCIPAL (APENAS NA HOME/DIETA/EVOLUÇÃO) -->
+    <!-- CABEÇALHO PRINCIPAL (APENAS NA HOME/TKD/DIETA/EVOLUÇÃO) -->
     <header id="mainHeader">
       <div class="logo-container">
         <svg class="dumbbell-icon" viewBox="0 0 24 24" fill="currentColor">
@@ -40,12 +41,149 @@
         </svg>
         <h1>Matheus Ortiz <span>Fitness</span></h1>
       </div>
-      <div class="subtitle">CyberHUD v3.6 // Offline PWA Edition</div>
+      <div class="subtitle">CyberHUD v3.8 // Offline PWA Edition</div>
     </header>
 
     <!-- TELA 1: MENU DE TREINOS -->
     <div id="homeScreen" class="app-screen active">
       <div class="menu-list" id="menuList"></div>
+    </div>
+
+    <!-- TELA TKD: TAEKWONDO (GRADUAÇÃO, TÉCNICAS & EVOLUÇÃO) -->
+    <div id="tkdScreen" class="app-screen">
+      <!-- CARD DE GRADUAÇÃO ATUAL E PRÓXIMO NÍVEL -->
+      <div class="dash-section-card tkd-belt-card" id="tkdBeltCard">
+        <div class="cal-card-header">
+          <div class="dash-section-title" style="border: none; padding: 0; margin: 0">
+            🥋 GRADUAÇÃO &amp; FAIXAS (WTF)
+          </div>
+          <span class="cdd-badge active-checkin" id="tkdCurrentGubBadge">10º GUB</span>
+        </div>
+
+        <div class="tkd-belt-showcase">
+          <div class="tkd-belt-box current">
+            <span class="tkd-box-label">FAIXA ATUAL</span>
+            <div class="tkd-belt-visual" id="tkdCurrentBeltVisual"></div>
+            <strong id="tkdCurrentBeltName">BRANCA</strong>
+            <small id="tkdCurrentBeltSub">10º Gub • Iniciante</small>
+          </div>
+
+          <div class="tkd-arrow-next">➔</div>
+
+          <div class="tkd-belt-box next">
+            <span class="tkd-box-label">PRÓXIMO NÍVEL</span>
+            <div class="tkd-belt-visual" id="tkdNextBeltVisual"></div>
+            <strong id="tkdNextBeltName">CINZA</strong>
+            <small id="tkdNextBeltSub">9º Gub • Próximo Exame</small>
+          </div>
+        </div>
+
+        <!-- BARRA DE PRONTIDÃO PARA O EXAME -->
+        <div class="tkd-exam-progress-wrap">
+          <div class="tkd-exam-progress-top">
+            <span>PRONTIDÃO TÉCNICA PARA O EXAME</span>
+            <strong id="tkdReadinessPct">0%</strong>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="tkdReadinessFill" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- CONTROLES DE GRADUAÇÃO -->
+        <div class="tkd-belt-controls">
+          <select id="tkdBeltSelect" class="tkd-select" onchange="changeTkdBelt(this.value)"></select>
+          <button type="button" class="btn-backup export" onclick="promoteTkdBelt()">
+            🎖️ AVANÇAR FAIXA
+          </button>
+        </div>
+      </div>
+
+      <!-- ESTATÍSTICAS DE AULAS E TÉCNICAS -->
+      <div class="dash-stats-grid three-cols" id="tkdStatsGrid">
+        <div class="dash-stat-box">
+          <span class="dash-stat-label">Aulas na Faixa</span>
+          <span class="dash-stat-value" id="tkdSessionsInBelt">0</span>
+        </div>
+        <div class="dash-stat-box">
+          <span class="dash-stat-label">Aulas Totais</span>
+          <span class="dash-stat-value" id="tkdTotalSessions">0</span>
+        </div>
+        <div class="dash-stat-box">
+          <span class="dash-stat-label">Técnicas OK</span>
+          <span class="dash-stat-value" id="tkdTechCount">0/0</span>
+        </div>
+      </div>
+
+      <!-- CHECK-IN RÁPIDO NO DOJANG -->
+      <div class="dash-section-card">
+        <div class="cal-card-header">
+          <div class="dash-section-title" style="border: none; padding: 0; margin: 0">
+            ⚡ REGISTRO DE TREINO NO TATAME
+          </div>
+          <span class="cdd-badge active-checkin">DOJANG</span>
+        </div>
+        <p class="dash-desc" style="margin-bottom: 10px">
+          Registre sua aula de Taekwondo diretamente no calendário de frequência e some treinos na faixa atual.
+        </p>
+        <div class="tkd-checkin-row">
+          <input
+            type="text"
+            id="tkdSessionFocusInput"
+            class="tkd-text-input"
+            placeholder="Foco da aula (ex: Chutes básicos, Kibon, Elasticidade...)"
+          />
+          <button
+            type="button"
+            class="btn-backup export"
+            style="width: 100%; padding: 11px"
+            onclick="registerTkdCheckin()"
+          >
+            ✓ REGISTRAR TREINO TKD
+          </button>
+        </div>
+      </div>
+
+      <!-- LINHA DO TEMPO COMPLETA DAS 12 GRADUAÇÕES -->
+      <div class="dash-section-card">
+        <button
+          type="button"
+          class="eq-toggle-btn"
+          onclick="toggleTkdTimelineDrawer()"
+        >
+          <span>📊 MAPA DE GRADUAÇÕES (10º GUB AO 1º DAN)</span>
+          <span id="tkdTimelineArrow">▾</span>
+        </button>
+        <div class="tkd-timeline-panel" id="tkdTimelinePanel">
+          <div class="tkd-timeline-list" id="tkdTimelineList"></div>
+        </div>
+      </div>
+
+      <!-- CHECKLIST DE TÉCNICAS, CHUTES E POOMSAE DA GRADUAÇÃO -->
+      <div class="dash-section-card">
+        <div class="cal-card-header">
+          <div class="dash-section-title" style="border: none; padding: 0; margin: 0">
+            🎯 CURRÍCULO TÉCNICO &amp; POOMSAE
+          </div>
+          <span class="cdd-badge active-checkin" id="tkdCurriculumBeltTag">10º GUB • BRANCA</span>
+        </div>
+        <p class="dash-desc" style="margin-bottom: 10px">
+          Marque as técnicas que você já domina para o próximo exame de faixa.
+        </p>
+        <div id="tkdChecklistContainer" class="tkd-checklist"></div>
+
+        <!-- ADICIONAR TÉCNICA PERSONALIZADA DO MESTRE -->
+        <div class="tkd-add-custom-box">
+          <input
+            type="text"
+            id="tkdCustomTechInput"
+            class="tkd-text-input"
+            placeholder="Adicionar movimento ou observação do mestre..."
+          />
+          <button type="button" class="btn-backup import" onclick="addCustomTkdTech()">
+            + ADD
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- TELA 2: DIETA & NUTRIÇÃO -->
@@ -165,7 +303,7 @@
           <span class="cdd-badge" id="cloudSyncStatus">OFFLINE / LOCAL</span>
         </div>
         <p class="dash-desc" id="cloudUserInfo" style="margin-bottom: 10px">
-          Conecte sua conta Google para sincronizar treinos, check-ins, PRs e medidas automaticamente entre dispositivos.
+          Conecte sua conta Google para sincronizar treinos, Taekwondo, check-ins, PRs e medidas automaticamente entre dispositivos.
         </p>
         <div class="backup-actions" id="cloudLoggedOutActions">
           <button
@@ -389,7 +527,7 @@
       </div>
     </div>
 
-    <!-- BOTTOM NAV HOME -->
+    <!-- BOTTOM NAV HOME (4 ABAS NO PADRÃO ORIGINAL) -->
     <div class="main-nav-container" id="mainNavContainer">
       <div
         class="nav-tab active"
@@ -403,6 +541,19 @@
           <rect x="14" y="14" width="7" height="7" rx="1.5" />
         </svg>
         <span class="nav-label">TREINOS</span>
+      </div>
+      <div
+        class="nav-tab"
+        id="tabTkd"
+        onclick="switchMainTab('tkdScreen', this)"
+      >
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="5" r="2.2" />
+          <path d="M9 11l3-2 4 2" />
+          <path d="M12 9v5l-3 6" />
+          <path d="M12 14l7-3" />
+        </svg>
+        <span class="nav-label">TKD</span>
       </div>
       <div
         class="nav-tab"
@@ -521,5 +672,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
     <script src="script.js"></script>
+    <script src="tkd.js"></script>
   </body>
 </html>
