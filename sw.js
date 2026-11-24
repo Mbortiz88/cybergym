@@ -1,4 +1,4 @@
-const CACHE_NAME = "cybergym-hud-v3.6";
+const CACHE_NAME = "cybergym-hud-v3.7";
 const ASSETS = [
   "./",
   "./index.html",
@@ -31,6 +31,10 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
+  if (!event.request.url.startsWith(self.location.origin)) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then((cached) => {
       return (
