@@ -1687,7 +1687,7 @@ function copyWorkoutReport() {
         ? "✓"
         : "○";
       r += `
-  - S${j + 1}: ${document.getElementById(`k_${i}_${j}`).value}kg x ${document.getElementById(`r_${i}_${j}`).value} (${done})`;
+- S${j + 1}: ${document.getElementById(`k_${i}_${j}`).value}kg x ${document.getElementById(`r_${i}_${j}`).value} (${done})`;
     });
   });
 
@@ -1966,3 +1966,249 @@ document.addEventListener("visibilitychange", () => {
 });
 
 window.onload = initApp;
+
+/* =========================================================
+   SINCRONIZAÇÃO NUVEM (FIREBASE GOOGLE AUTH + FIRESTORE)
+   ========================================================= */
+// Substitua pelos dados do seu projeto no Firebase Console caso ainda não tenha configurado
+const FIREBASE_CONFIG = {
+  apiKey: "",
+  authDomain: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: "",
+};
+
+let fbApp = null;
+let fbAuth = null;
+let fbDb = null;
+let currentCloudUser = null;
+
+function isFirebaseConfigured() {
+  return Boolean(
+    FIREBASE_CONFIG &&
+      FIREBASE_CONFIG.apiKey &&
+      FIREBASE_CONFIG.projectId &&
+      FIREBASE_CONFIG.appId,
+  );
+}
+
+function updateCloudUI(statusText, infoText, loggedIn) {
+  const statusEl = document.getElementById("cloudSyncStatus");
+  const infoEl = document.getElementById("cloudUserInfo");
+  const loggedOutBox = document.getElementById("cloudLoggedOutActions");
+  const loggedInBox = document.getElementById("cloudLoggedInActions");
+
+  if (statusEl) {
+    statusEl.innerText = statusText;
+    if (loggedIn) {
+      statusEl.classList.add("active-checkin");
+    } else {
+      statusEl.classList.remove("active-checkin");
+    }
+  }
+
+  if (infoEl && infoText) {
+    infoEl.innerText = infoText;
+  }
+
+  if (loggedOutBox && loggedInBox) {
+    loggedOutBox.style.display = loggedIn ? "none" : "grid";
+    loggedInBox.style.display = loggedIn ? "grid" : "none";
+  }
+}
+
+function initFirebaseCloud() {
+  if (
+    !isFirebaseConfigured() ||
+    typeof window.firebase === "undefined" ||
+    !window.firebase.apps
+  ) {
+    updateCloudUI(
+      "LOCAL / SEM CHAVE",
+      "Modo offline ativo. Configure FIREBASE_CONFIG em script.js para habilitar o login Google na nuvem.",
+      false,
+    );
+    return;
+  }
+
+  try {
+    if (!window.firebase.apps.length) {
+      fbApp = window.firebase.initializeApp(FIREBASE_CONFIG);
+    } else {
+      fbApp = window.firebase.app();
+    }
+    fbAuth = window.firebase.auth();
+    fbDb = window.firebase.firestore();
+
+    fbAuth.onAuthStateChanged(async (user) => {
+      currentCloudUser = user || null;
+      if (user) {
+        updateCloudUI(
+          "CONECTADO",
+          `Conta: ${user.displayName || user.email || "Usuário Google"}`,
+          true,
+        );
+        await pullFromFirestore(true);
+      } else {
+        updateCloudUI(
+          "OFFLINE / LOCAL",
+          "Conecte sua conta Google para sincronizar treinos, Taekwondo, check-ins, PRs e medidas automaticamente entre dispositivos.",
+          false,
+        );
+      }
+    });
+  } catch (err) {
+    updateCloudUI(
+      "ERRO NUVEM",
+      "Não foi possível inicializar o Firebase. Dados salvos localmente.",
+      false,
+    );
+  }
+}
+
+function collectLocalAppData() {
+  const payload = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && (key.startsWith("g_") || key.startsWith("gh_"))) {
+      payload[key] = localStorage.getItem(key);
+    }
+  }
+  return payload;
+}
+
+function applyCloudDataToLocal(data) {
+  if (!data || typeof data !== "object") return;
+  Object.keys(data).forEach((key) => {
+    if ((key.startsWith("g_") || key.startsWith("gh_")) && typeof data[key] === "string") {
+      localStorage.setItem(key, data[key]);
+    }
+  });
+  renderDietScreen();
+  renderDashboard();
+  if (typeof renderTkdScreen === "function") {
+    renderTkdScreen();
+  }
+}
+
+async function pushToFirestore(silent = false) {
+  if (!fbDb || !currentCloudUser) return false;
+  try {
+    const data = collectLocalAppData();
+    await fbDb
+      .collection("users")
+      .doc(currentCloudUser.uid)
+      .collection("cybergym")
+      .doc("state")
+      .set(
+        {
+          data,
+          updatedAt: Date.now(),
+          email: currentCloudUser.email || "",
+        },
+        { merge: true },
+      );
+
+    if (!silent) {
+      updateCloudUI(
+        "SINCRONIZADO ✓",
+        `Conta: ${currentCloudUser.displayName || currentCloudUser.email || "Google"} • Atualizado agora`,
+        true,
+      );
+      showToast("DADOS SINCRONIZADOS NA NUVEM ✓", 1800);
+    }
+    return true;
+  } catch (err) {
+    if (!silent) {
+      showToast("FALHA AO ENVIAR PARA A NUVEM", 2000);
+    }
+    return false;
+  }
+}
+
+async function pullFromFirestore(silent = false) {
+  if (!fbDb || !currentCloudUser) return false;
+  try {
+    const docSnap = await fbDb
+      .collection("users")
+      .doc(currentCloudUser.uid)
+      .collection("cybergym")
+      .doc("state")
+      .get();
+
+    if (docSnap.exists) {
+      const remote = docSnap.data() || {};
+      if (remote.data) {
+        applyCloudDataToLocal(remote.data);
+      }
+    } else {
+      await pushToFirestore(true);
+    }
+
+    if (!silent) {
+      showToast("NUVEM ATUALIZADA ✓", 1800);
+    }
+    return true;
+  } catch (err) {
+    if (!silent) {
+      showToast("FALHA AO BUSCAR DADOS DA NUVEM", 2000);
+    }
+    return false;
+  }
+}
+
+async function loginWithGoogle() {
+  if (!isFirebaseConfigured()) {
+    updateCloudUI(
+      "LOCAL / SEM CHAVE",
+      "Configure o FIREBASE_CONFIG no script.js para ativar o login com Google.",
+      false,
+    );
+    showToast("CONFIGURE O FIREBASE_CONFIG NO SCRIPT.JS", 2600);
+    return;
+  }
+
+  try {
+    if (!fbAuth) initFirebaseCloud();
+    const provider = new window.firebase.auth.GoogleAuthProvider();
+    await fbAuth.signInWithPopup(provider);
+  } catch (err) {
+    showToast("LOGIN GOOGLE CANCELADO OU BLOQUEADO", 2200);
+  }
+}
+
+async function logoutGoogle() {
+  try {
+    if (fbAuth) {
+      await fbAuth.signOut();
+    }
+    currentCloudUser = null;
+    updateCloudUI(
+      "OFFLINE / LOCAL",
+      "Desconectado da conta Google. Seus dados continuam salvos neste aparelho.",
+      false,
+    );
+    showToast("VOCÊ SAIU DA CONTA GOOGLE", 1800);
+  } catch (err) {
+    showToast("ERRO AO SAIR DA CONTA", 1800);
+  }
+}
+
+async function manualCloudSync() {
+  if (!currentCloudUser) {
+    showToast("ENTRE COM O GOOGLE PRIMEIRO", 1800);
+    return;
+  }
+  await pushToFirestore(false);
+}
+
+window.loginWithGoogle = loginWithGoogle;
+window.logoutGoogle = logoutGoogle;
+window.manualCloudSync = manualCloudSync;
+window.pushToFirestore = pushToFirestore;
+
+document.addEventListener("DOMContentLoaded", () => {
+  initFirebaseCloud();
+});
