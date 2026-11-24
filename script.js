@@ -444,6 +444,32 @@ let currentEx = "";
 let wakeLock = null;
 let audioCtx = null;
 
+function getTodayISO() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function isoToBR(iso) {
+  if (!iso || typeof iso !== "string" || !iso.includes("-")) return iso || "";
+  const [y, m, d] = iso.split("-");
+  return `${d}/${m}/${y}`;
+}
+
+function brToISO(br) {
+  if (!br || typeof br !== "string") return "";
+  if (br.includes("-")) return br;
+  const parts = br.split("/");
+  if (parts.length !== 3) return "";
+  return `${parts[2]}-${parts[1].padStart(2, "0")}-${parts[0].padStart(2, "0")}`;
+}
+
+let calViewYear = new Date().getFullYear();
+let calViewMonth = new Date().getMonth();
+let selectedCalDateISO = getTodayISO();
+
 /* REGISTRO DO SERVICE WORKER (PWA OFFLINE) */
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
@@ -627,6 +653,270 @@ function updateTelemetryHUD() {
   }
 }
 
+/* =========================================================
+   CHECK-IN ESTILO GYMRATS + STREAK + CALENDÁRIO MENSAL
+   ========================================================= */
+function getCheckinHistory() {
+  try {
+    const raw = localStorage.getItem("g_checkin_history");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    }
+  } catch (e) {}
+
+  const legacyDates = new Set();
+  Object.values(workoutData).forEach((day) => {
+    day.exercises.forEach((ex) => {
+      const h = JSON.parse(localStorage.getItem(`gh_${ex.name}`)) || [];
+      h.forEach((entry) => {
+        if (entry && entry.date) legacyDates.add(entry.date);
+      });
+    });
+  });
+
+  if (legacyDates.size > 0) {
+    const migrated = Array.from(legacyDates).map((brDate, idx) => ({
+      id: `legacy_${idx}_${Date.now()}`,
+      isoDate: brToISO(brDate),
+      date: brDate,
+      badge: "✓",
+      title: "Treino Registrado",
+      details: "Histórico importado automaticamente",
+      isManual: false,
+    }));
+    localStorage.setItem("g_checkin_history", JSON.stringify(migrated));
+    return migrated;
+  }
+
+  return [];
+}
+
+function saveCheckinHistory(list) {
+  localStorage.setItem("g_checkin_history", JSON.stringify(list));
+}
+
+function calculateStreak(history) {
+  if (!Array.isArray(history) || !history.length) return 0;
+  const uniqueDates = new Set();
+  history.forEach((item) => {
+    if (!item) return;
+    const iso = item.isoDate || brToISO(item.date);
+    if (iso) uniqueDates.add(iso);
+  });
+
+  const sorted = Array.from(uniqueDates).sort().reverse();
+  if (!sorted.length) return 0;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+
+  const latestDate = new Date(sorted[0] + "T00:00:00");
+  if (isNaN(latestDate.getTime()) || latestDate < yesterday) return 0;
+
+  let streak = 1;
+  let cursor = new Date(latestDate);
+
+  for (let i = 1; i < sorted.length; i++) {
+    const prev = new Date(sorted[i] + "T00:00:00");
+    if (isNaN(prev.getTime())) continue;
+    const diffDays = Math.round((cursor - prev) / (1000 * 60 * 60 * 24));
+    if (diffDays === 1) {
+      streak++;
+      cursor = prev;
+    } else if (diffDays > 1) {
+      break;
+    }
+  }
+  return streak;
+}
+
+function changeCalendarMonth(delta) {
+  calViewMonth += delta;
+  if (calViewMonth < 0) {
+    calViewMonth = 11;
+    calViewYear--;
+  } else if (calViewMonth > 11) {
+    calViewMonth = 0;
+    calViewYear++;
+  }
+  renderGymRatsCalendar();
+}
+
+function selectCalendarDay(isoDate) {
+  selectedCalDateISO = isoDate;
+  const mcDateInput = document.getElementById("mcDate");
+  if (mcDateInput) mcDateInput.value = isoDate;
+  renderGymRatsCalendar();
+}
+
+function applyQuickSport(name, icon) {
+  const input = document.getElementById("mcActivity");
+  if (!input) return;
+  input.value = `${icon} ${name}`;
+  input.focus();
+}
+
+function saveManualCheckin() {
+  const rawActivity = document.getElementById("mcActivity").value.trim();
+  const dateISO = document.getElementById("mcDate").value || getTodayISO();
+  const duration = document.getElementById("mcDuration").value.trim();
+  const note = document.getElementById("mcNote").value.trim();
+
+  if (!rawActivity) {
+    showToast("INFORME A ATIVIDADE!", 1600);
+    return;
+  }
+
+  const history = getCheckinHistory();
+  const cleanLabel =
+    rawActivity.replace(/^[^\wÀ-ú]+\s*/, "").trim() || rawActivity;
+  const badgeTag = cleanLabel.slice(0, 5).toUpperCase();
+
+  const detailParts = [];
+  if (duration) detailParts.push(`${duration} min`);
+  if (note) detailParts.push(note);
+  const detailsText = detailParts.length
+    ? detailParts.join(" • ")
+    : "Check-in manual";
+
+  history.unshift({
+    id: `chk_${Date.now()}`,
+    isoDate: dateISO,
+    date: isoToBR(dateISO),
+    badge: badgeTag,
+    title: rawActivity,
+    details: detailsText,
+    isManual: true,
+  });
+
+  saveCheckinHistory(history);
+
+  document.getElementById("mcActivity").value = "";
+  document.getElementById("mcDuration").value = "";
+  document.getElementById("mcNote").value = "";
+
+  const [y, m] = dateISO.split("-").map(Number);
+  if (y && m) {
+    calViewYear = y;
+    calViewMonth = m - 1;
+  }
+  selectedCalDateISO = dateISO;
+
+  renderDashboard();
+  showToast(`CHECK-IN "${cleanLabel.toUpperCase()}" SALVO ✓`, 2000);
+}
+
+function deleteCheckinItem(checkinId) {
+  const history = getCheckinHistory().filter((item) => item.id !== checkinId);
+  saveCheckinHistory(history);
+  renderDashboard();
+  showToast("CHECK-IN REMOVIDO", 1400);
+}
+
+function renderGymRatsCalendar() {
+  const gridEl = document.getElementById("calDaysGrid");
+  if (!gridEl) return;
+
+  const history = getCheckinHistory();
+  const monthNames = [
+    "JANEIRO",
+    "FEVEREIRO",
+    "MARÇO",
+    "ABRIL",
+    "MAIO",
+    "JUNHO",
+    "JULHO",
+    "AGOSTO",
+    "SETEMBRO",
+    "OUTUBRO",
+    "NOVEMBRO",
+    "DEZEMBRO",
+  ];
+
+  document.getElementById("calMonthLabel").innerText =
+    `${monthNames[calViewMonth]} ${calViewYear}`;
+
+  const checkinsMap = {};
+  history.forEach((item) => {
+    if (!item) return;
+    const iso = item.isoDate || brToISO(item.date);
+    if (!iso) return;
+    if (!checkinsMap[iso]) checkinsMap[iso] = [];
+    checkinsMap[iso].push(item);
+  });
+
+  const firstDayWeekday = new Date(calViewYear, calViewMonth, 1).getDay();
+  const daysInMonth = new Date(calViewYear, calViewMonth + 1, 0).getDate();
+  const todayISO = getTodayISO();
+
+  let monthCheckinDays = 0;
+  let cellsHtml = "";
+
+  for (let i = 0; i < firstDayWeekday; i++) {
+    cellsHtml += `<div class="cal-day-cell empty"></div>`;
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const mStr = String(calViewMonth + 1).padStart(2, "0");
+    const dStr = String(day).padStart(2, "0");
+    const iso = `${calViewYear}-${mStr}-${dStr}`;
+    const dayLogs = checkinsMap[iso] || [];
+    const hasCheckin = dayLogs.length > 0;
+    if (hasCheckin) monthCheckinDays++;
+
+    const isToday = iso === todayISO;
+    const isSelected = iso === selectedCalDateISO;
+
+    let badgeText = "";
+    if (hasCheckin) {
+      badgeText = dayLogs.map((l) => l.badge || "✓").join("+");
+    }
+
+    cellsHtml += `
+      <div
+        class="cal-day-cell ${hasCheckin ? "checked-in" : ""} ${isToday ? "today" : ""} ${isSelected ? "selected-day" : ""}"
+        onclick="selectCalendarDay('${iso}')"
+      >
+        <span class="day-num">${day}</span>
+        ${hasCheckin ? `<span class="cal-day-badge">${badgeText}</span>` : ""}
+      </div>`;
+  }
+
+  gridEl.innerHTML = cellsHtml;
+  document.getElementById("calMonthCheckinsCount").innerText =
+    `${monthCheckinDays} ${monthCheckinDays === 1 ? "dia" : "dias"} no mês`;
+
+  const selLogs = checkinsMap[selectedCalDateISO] || [];
+  const titleEl = document.getElementById("cddDateTitle");
+  const badgeEl = document.getElementById("cddStatusBadge");
+  const contentEl = document.getElementById("cddContent");
+
+  titleEl.innerText = `DIA ${isoToBR(selectedCalDateISO)}`;
+  if (selLogs.length > 0) {
+    badgeEl.innerText = "CHECK-IN CONCLUÍDO ✓";
+    badgeEl.classList.add("active-checkin");
+    contentEl.innerHTML = selLogs
+      .map(
+        (l) => `
+        <div class="cdd-log-item">
+          <div>
+            <strong>${l.title}</strong><br/>
+            <span style="color:#8ea4bf;font-size:10px;">${l.details || ""}</span>
+          </div>
+          <button type="button" class="btn-del-checkin" onclick="deleteCheckinItem('${l.id}')">✕</button>
+        </div>`,
+      )
+      .join("");
+  } else {
+    badgeEl.innerText = "SEM CHECK-IN";
+    badgeEl.classList.remove("active-checkin");
+    contentEl.innerText = "Nenhum treino ou atividade registrada nesta data.";
+  }
+}
+
 /* DIETA, HIDRATAÇÃO E MEDIDAS */
 function getDietState() {
   const defaultState = {
@@ -797,6 +1087,11 @@ function initApp() {
   const list = document.getElementById("menuList");
   list.innerHTML = "";
 
+  const mcDateInput = document.getElementById("mcDate");
+  if (mcDateInput && !mcDateInput.value) {
+    mcDateInput.value = getTodayISO();
+  }
+
   Object.keys(workoutData).forEach((k) => {
     const d = workoutData[k];
     const hasStretch = d.preStretch || d.postStretch;
@@ -815,6 +1110,7 @@ function initApp() {
   });
 
   renderDietScreen();
+  renderDashboard();
 }
 
 function switchMainTab(id, tabEl) {
@@ -844,8 +1140,9 @@ function switchMainTab(id, tabEl) {
 function renderDashboard() {
   const statsGrid = document.getElementById("dashStatsGrid");
   const prList = document.getElementById("prSummaryList");
+  const checkinHistory = getCheckinHistory();
+  const streak = calculateStreak(checkinHistory);
 
-  let allDates = new Set();
   let prRowsHtml = "";
   let totalPRs = 0;
 
@@ -856,8 +1153,6 @@ function renderDashboard() {
 
   uniqueExercises.forEach((name) => {
     const h = JSON.parse(localStorage.getItem(`gh_${name}`)) || [];
-    h.forEach((entry) => allDates.add(entry.date));
-
     const maxKg = h.length
       ? Math.max(...h.map((item) => Number(item.max) || 0))
       : 0;
@@ -871,20 +1166,21 @@ function renderDashboard() {
     }
   });
 
-  const measuresCount = (
-    JSON.parse(localStorage.getItem("g_measures_list")) || []
-  ).length;
-
   statsGrid.innerHTML = `
     <div class="dash-stat-box">
-        <span class="dash-stat-label">Sessões Registradas</span>
-        <span class="dash-stat-value">${allDates.size}</span>
+        <span class="dash-stat-label">Check-ins Totais</span>
+        <span class="dash-stat-value">${checkinHistory.length}</span>
     </div>
     <div class="dash-stat-box">
-        <span class="dash-stat-label">PRs / Medidas</span>
-        <span class="dash-stat-value">${totalPRs} / ${measuresCount}</span>
+        <span class="dash-stat-label">Sequência Atual</span>
+        <span class="dash-stat-value streak-accent">🔥 ${streak}d</span>
+    </div>
+    <div class="dash-stat-box">
+        <span class="dash-stat-label">Recordes (PRs)</span>
+        <span class="dash-stat-value">${totalPRs}</span>
     </div>`;
 
+  renderGymRatsCalendar();
   renderMeasurementsList();
 
   prList.innerHTML =
@@ -1347,7 +1643,9 @@ function saveS(i, j) {
 function resetWorkout() {
   if (
     confirm(
-      `Iniciar NOVA SESSÃO de ${workoutData[currentDay].dayName}?\n\nIsso desmarca os ✓ mantendo suas últimas cargas salvas.`,
+      `Iniciar NOVA SESSÃO de ${workoutData[currentDay].dayName}?
+
+Isso desmarca os ✓ mantendo suas últimas cargas salvas.`,
     )
   ) {
     workoutData[currentDay].exercises.forEach((ex, i) => {
@@ -1375,18 +1673,21 @@ function resetWorkout() {
 }
 
 function copyWorkoutReport() {
-  let r = `*HUD CYBERGYM: ${workoutData[currentDay].dayName.toUpperCase()}*\n`;
+  let r = `*HUD CYBERGYM: ${workoutData[currentDay].dayName.toUpperCase()}*
+`;
 
   workoutData[currentDay].exercises.forEach((ex, i) => {
     const setsArr = getExerciseSetsList(currentDay, i);
-    r += `\n- ${ex.name}:`;
+    r += `
+- ${ex.name}:`;
     setsArr.forEach((s, j) => {
       const done = document
         .getElementById(`c_${i}_${j}`)
         .classList.contains("checked")
         ? "✓"
         : "○";
-      r += `\n  - S${j + 1}: ${document.getElementById(`k_${i}_${j}`).value}kg x ${document.getElementById(`r_${i}_${j}`).value} (${done})`;
+      r += `
+  - S${j + 1}: ${document.getElementById(`k_${i}_${j}`).value}kg x ${document.getElementById(`r_${i}_${j}`).value} (${done})`;
     });
   });
 
@@ -1397,7 +1698,9 @@ function copyWorkoutReport() {
   const cTime = document.getElementById("c_t").value;
   const cKcal = document.getElementById("c_k").value;
 
-  r += `\n\n⚡ *Cardio Pós-Treino (${cType}):* ${cTime} min • ${cKcal} kcal`;
+  r += `
+
+⚡ *Cardio Pós-Treino (${cType}):* ${cTime} min • ${cKcal} kcal`;
 
   navigator.clipboard
     .writeText(r)
@@ -1406,18 +1709,24 @@ function copyWorkoutReport() {
 
 function saveWorkoutHistory() {
   const date = new Date().toLocaleDateString("pt-BR");
+  const todayISO = getTodayISO();
+  const d = workoutData[currentDay];
   let count = 0;
+  let totalVolume = 0;
 
-  workoutData[currentDay].exercises.forEach((ex, i) => {
+  d.exercises.forEach((ex, i) => {
     const setsArr = getExerciseSetsList(currentDay, i);
     let max = 0,
       ok = false;
 
     setsArr.forEach((s, j) => {
-      const d = JSON.parse(localStorage.getItem(`g_${currentDay}_e${i}_s${j}`));
-      if (d && d.checked) {
+      const item = JSON.parse(
+        localStorage.getItem(`g_${currentDay}_e${i}_s${j}`),
+      );
+      if (item && item.checked) {
         ok = true;
-        if (d.kg > max) max = d.kg;
+        if (item.kg > max) max = item.kg;
+        totalVolume += (Number(item.kg) || 0) * (Number(item.reps) || 0);
       }
     });
 
@@ -1438,7 +1747,45 @@ function saveWorkoutHistory() {
   });
 
   if (count > 0) {
-    showToast(`SALVO! ${count} REGISTROS ATUALIZADOS 🚀`, 3000);
+    // Registra Check-in automático no calendário GymRats
+    const activeBtn = document.querySelector(".cardio-type-btn.active");
+    const cType = activeBtn ? activeBtn.dataset.type : d.cardio.type;
+    const cTime = document.getElementById("c_t")
+      ? document.getElementById("c_t").value
+      : d.cardio.time;
+    const letterMatch = d.dayName.match(/Treino\s+([A-D])/i);
+    const badgeLetter = letterMatch ? letterMatch[1].toUpperCase() : "✓";
+
+    const checkinHistory = getCheckinHistory();
+    const existingIdx = checkinHistory.findIndex(
+      (c) => c.isoDate === todayISO && c.badge === badgeLetter && !c.isManual,
+    );
+
+    const entryData = {
+      id:
+        existingIdx !== -1
+          ? checkinHistory[existingIdx].id
+          : `chk_${Date.now()}`,
+      isoDate: todayISO,
+      date: date,
+      badge: badgeLetter,
+      title: `${d.dayName} (${d.region})`,
+      details: `${count} exercícios • ${totalVolume.toLocaleString("pt-BR")} kg movidos • Cardio: ${cType} (${cTime} min)`,
+      isManual: false,
+    };
+
+    if (existingIdx !== -1) {
+      checkinHistory[existingIdx] = entryData;
+    } else {
+      checkinHistory.unshift(entryData);
+    }
+    saveCheckinHistory(checkinHistory);
+
+    selectedCalDateISO = todayISO;
+    calViewYear = new Date().getFullYear();
+    calViewMonth = new Date().getMonth();
+
+    showToast(`CHECK-IN ${d.dayName.toUpperCase()} REGISTRADO! 🚀`, 3000);
   } else {
     showToast("MARQUE AO MENOS UMA SÉRIE PARA SALVAR", 2500);
   }
