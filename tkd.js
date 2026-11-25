@@ -10,13 +10,48 @@ const TKD_BELTS = [
     color: "#f8fafc",
     cssClass: "",
     curriculum: [
-      { id: "b10_1", cat: "BASE (SOGUI)", title: "Juchum Sogui & Ap Kubi", sub: "Base do cavaleiro e base frontal longa" },
-      { id: "b10_2", cat: "DEFESA (MAKI)", title: "Are Maki & Olgul Maki", sub: "Defesa baixa e defesa alta" },
-      { id: "b10_3", cat: "ATAQUE (JIRUGUI)", title: "Momtong Bandae Jirugui", sub: "Soco médio no centro do tronco" },
-      { id: "b10_4", cat: "CHUTE (CHAGUI)", title: "Ap Chagui & Bal Ap Chagui", sub: "Chute frontal com a ponta do pé / peito do pé" },
-      { id: "b10_5", cat: "CHUTE (CHAGUI)", title: "Dollyo Chagui (Altura Média)", sub: "Chute circular com giro de quadril e pé de apoio" },
-      { id: "b10_6", cat: "FORMA / KIBON", title: "Kibon Dongjak 1 (Movimentos Básicos)", sub: "Sequência fundamental de defesas e socos" },
-      { id: "b10_7", cat: "FILOSOFIA", title: "Juramento e Saudações (Kyongnye)", sub: "Etiqueta no dojang, contagem em coreano (1 a 10)" },
+      {
+        id: "b10_1",
+        cat: "BASE (SOGUI)",
+        title: "Juchum Sogui & Ap Kubi",
+        sub: "Base do cavaleiro e base frontal longa",
+      },
+      {
+        id: "b10_2",
+        cat: "DEFESA (MAKI)",
+        title: "Are Maki & Olgul Maki",
+        sub: "Defesa baixa e defesa alta",
+      },
+      {
+        id: "b10_3",
+        cat: "ATAQUE (JIRUGUI)",
+        title: "Momtong Bandae Jirugui",
+        sub: "Soco médio no centro do tronco",
+      },
+      {
+        id: "b10_4",
+        cat: "CHUTE (CHAGUI)",
+        title: "Ap Chagui & Bal Ap Chagui",
+        sub: "Chute frontal com a ponta do pé / peito do pé",
+      },
+      {
+        id: "b10_5",
+        cat: "CHUTE (CHAGUI)",
+        title: "Dollyo Chagui (Altura Média)",
+        sub: "Chute circular com giro de quadril e pé de apoio",
+      },
+      {
+        id: "b10_6",
+        cat: "FORMA / KIBON",
+        title: "Kibon Dongjak 1 (Movimentos Básicos)",
+        sub: "Sequência fundamental de defesas e socos",
+      },
+      {
+        id: "b10_7",
+        cat: "FILOSOFIA",
+        title: "Juramento e Saudações (Kyongnye)",
+        sub: "Etiqueta no dojang, contagem em coreano (1 a 10)",
+      },
     ],
   },
   {
@@ -27,11 +62,36 @@ const TKD_BELTS = [
     color: "#9ca3af",
     cssClass: "",
     curriculum: [
-      { id: "b9_1", cat: "BASE (SOGUI)", title: "Ap Sogui & Dwit Kubi", sub: "Base curta de caminhada e base recuada em L" },
-      { id: "b9_2", cat: "DEFESA (MAKI)", title: "Momtong An Maki", sub: "Defesa média de fora para dentro" },
-      { id: "b9_3", cat: "CHUTE (CHAGUI)", title: "Yop Chagui (Chute Lateral)", sub: "Impacto com a faca do pé e calcanhar" },
-      { id: "b9_4", cat: "CHUTE (CHAGUI)", title: "Neryo Chagui (Chute Machado)", sub: "Elevação frontal descendo o calcanhar" },
-      { id: "b9_5", cat: "POOMSAE", title: "Taegeuk Il (1) Jang", sub: "18 movimentos • Princípio Keon (Céu e Luz)" },
+      {
+        id: "b9_1",
+        cat: "BASE (SOGUI)",
+        title: "Ap Sogui & Dwit Kubi",
+        sub: "Base curta de caminhada e base recuada em L",
+      },
+      {
+        id: "b9_2",
+        cat: "DEFESA (MAKI)",
+        title: "Momtong An Maki",
+        sub: "Defesa média de fora para dentro",
+      },
+      {
+        id: "b9_3",
+        cat: "CHUTE (CHAGUI)",
+        title: "Yop Chagui (Chute Lateral)",
+        sub: "Impacto com a faca do pé e calcanhar",
+      },
+      {
+        id: "b9_4",
+        cat: "CHUTE (CHAGUI)",
+        title: "Neryo Chagui (Chute Machado)",
+        sub: "Elevação frontal descendo o calcanhar",
+      },
+      {
+        id: "b9_5",
+        cat: "POOMSAE",
+        title: "Taegeuk Il (1) Jang",
+        sub: "18 movimentos • Princípio Keon (Céu e Luz)",
+      },
     ],
   },
   {
@@ -42,10 +102,30 @@ const TKD_BELTS = [
     color: "#facc15",
     cssClass: "",
     curriculum: [
-      { id: "b8_1", cat: "DEFESA (MAKI)", title: "Han Sonnal Momtong Bakat Maki", sub: "Defesa média com faca da mão" },
-      { id: "b8_2", cat: "CHUTE (CHAGUI)", title: "Dwit Chagui (Chute para Trás)", sub: "Giro por cima do ombro com impacto de calcanhar" },
-      { id: "b8_3", cat: "COMBINAÇÃO", title: "Dollyo Chagui + Dwit Chagui", sub: "Sequência fluida de contra-ataque" },
-      { id: "b8_4", cat: "POOMSAE", title: "Taegeuk I (2) Jang", sub: "18 movimentos • Princípio Tae (Alegria)" },
+      {
+        id: "b8_1",
+        cat: "DEFESA (MAKI)",
+        title: "Han Sonnal Momtong Bakat Maki",
+        sub: "Defesa média com faca da mão",
+      },
+      {
+        id: "b8_2",
+        cat: "CHUTE (CHAGUI)",
+        title: "Dwit Chagui (Chute para Trás)",
+        sub: "Giro por cima do ombro com impacto de calcanhar",
+      },
+      {
+        id: "b8_3",
+        cat: "COMBINAÇÃO",
+        title: "Dollyo Chagui + Dwit Chagui",
+        sub: "Sequência fluida de contra-ataque",
+      },
+      {
+        id: "b8_4",
+        cat: "POOMSAE",
+        title: "Taegeuk I (2) Jang",
+        sub: "18 movimentos • Princípio Tae (Alegria)",
+      },
     ],
   },
   {
@@ -56,9 +136,24 @@ const TKD_BELTS = [
     color: "#f97316",
     cssClass: "",
     curriculum: [
-      { id: "b7_1", cat: "CHUTE (CHAGUI)", title: "Bandal Chagui & Dubal Dangsang", sub: "Chute semicircular rápido e chute duplo no ar" },
-      { id: "b7_2", cat: "ATAQUE", title: "Sonnal Mok Chigui", sub: "Ataque no pescoço com a faca da mão" },
-      { id: "b7_3", cat: "POOMSAE", title: "Taegeuk Sam (3) Jang", sub: "20 movimentos • Princípio Ri (Fogo e Sol)" },
+      {
+        id: "b7_1",
+        cat: "CHUTE (CHAGUI)",
+        title: "Bandal Chagui & Dubal Dangsang",
+        sub: "Chute semicircular rápido e chute duplo no ar",
+      },
+      {
+        id: "b7_2",
+        cat: "ATAQUE",
+        title: "Sonnal Mok Chigui",
+        sub: "Ataque no pescoço com a faca da mão",
+      },
+      {
+        id: "b7_3",
+        cat: "POOMSAE",
+        title: "Taegeuk Sam (3) Jang",
+        sub: "20 movimentos • Princípio Ri (Fogo e Sol)",
+      },
     ],
   },
   {
@@ -69,9 +164,24 @@ const TKD_BELTS = [
     color: "#16a34a",
     cssClass: "",
     curriculum: [
-      { id: "b6_1", cat: "DEFESA (MAKI)", title: "Sonnal Momtong Maki", sub: "Defesa dupla com faca da mão em Dwit Kubi" },
-      { id: "b6_2", cat: "CHUTE (CHAGUI)", title: "Furio Chagui (Chute Gancho)", sub: "Chute chicote horizontal na altura da cabeça" },
-      { id: "b6_3", cat: "POOMSAE", title: "Taegeuk Sa (4) Jang", sub: "20 movimentos • Princípio Jin (Trovão)" },
+      {
+        id: "b6_1",
+        cat: "DEFESA (MAKI)",
+        title: "Sonnal Momtong Maki",
+        sub: "Defesa dupla com faca da mão em Dwit Kubi",
+      },
+      {
+        id: "b6_2",
+        cat: "CHUTE (CHAGUI)",
+        title: "Furio Chagui (Chute Gancho)",
+        sub: "Chute chicote horizontal na altura da cabeça",
+      },
+      {
+        id: "b6_3",
+        cat: "POOMSAE",
+        title: "Taegeuk Sa (4) Jang",
+        sub: "20 movimentos • Princípio Jin (Trovão)",
+      },
     ],
   },
   {
@@ -82,9 +192,24 @@ const TKD_BELTS = [
     color: "#7e22ce",
     cssClass: "",
     curriculum: [
-      { id: "b5_1", cat: "ATAQUE", title: "Me Jumok Neryo Chigui & Palkup", sub: "Martelo de punho e cotovelada frontal" },
-      { id: "b5_2", cat: "CHUTE (CHAGUI)", title: "Momi Dollyo Chagui (360º)", sub: "Chute giratório com giro completo de tronco" },
-      { id: "b5_3", cat: "POOMSAE", title: "Taegeuk O (5) Jang", sub: "20 movimentos • Princípio Seon (Vento)" },
+      {
+        id: "b5_1",
+        cat: "ATAQUE",
+        title: "Me Jumok Neryo Chigui & Palkup",
+        sub: "Martelo de punho e cotovelada frontal",
+      },
+      {
+        id: "b5_2",
+        cat: "CHUTE (CHAGUI)",
+        title: "Momi Dollyo Chagui (360º)",
+        sub: "Chute giratório com giro completo de tronco",
+      },
+      {
+        id: "b5_3",
+        cat: "POOMSAE",
+        title: "Taegeuk O (5) Jang",
+        sub: "20 movimentos • Princípio Seon (Vento)",
+      },
     ],
   },
   {
@@ -95,9 +220,24 @@ const TKD_BELTS = [
     color: "#1d4ed8",
     cssClass: "",
     curriculum: [
-      { id: "b4_1", cat: "DEFESA (MAKI)", title: "Olgul Bakat Maki & Batangson", sub: "Defesa alta externa e defesa com palma da mão" },
-      { id: "b4_2", cat: "CHUTE (CHAGUI)", title: "Tuit Furio Chagui (Chute Rodado)", sub: "Giro pelas costas com impacto de calcanhar" },
-      { id: "b4_3", cat: "POOMSAE", title: "Taegeuk Yuk (6) Jang", sub: "19 movimentos • Princípio Gam (Água)" },
+      {
+        id: "b4_1",
+        cat: "DEFESA (MAKI)",
+        title: "Olgul Bakat Maki & Batangson",
+        sub: "Defesa alta externa e defesa com palma da mão",
+      },
+      {
+        id: "b4_2",
+        cat: "CHUTE (CHAGUI)",
+        title: "Tuit Furio Chagui (Chute Rodado)",
+        sub: "Giro pelas costas com impacto de calcanhar",
+      },
+      {
+        id: "b4_3",
+        cat: "POOMSAE",
+        title: "Taegeuk Yuk (6) Jang",
+        sub: "19 movimentos • Princípio Gam (Água)",
+      },
     ],
   },
   {
@@ -108,9 +248,24 @@ const TKD_BELTS = [
     color: "#5c3a21",
     cssClass: "",
     curriculum: [
-      { id: "b3_1", cat: "BASE (SOGUI)", title: "Beom Sogui (Base do Tigre)", sub: "Peso 90% na perna de trás, ponta do pé à frente" },
-      { id: "b3_2", cat: "DEFESA", title: "Kawi Maki (Defesa Tesoura)", sub: "Bloqueio simultâneo alto e baixo" },
-      { id: "b3_3", cat: "POOMSAE", title: "Taegeuk Chil (7) Jang", sub: "25 movimentos • Princípio Gan (Montanha)" },
+      {
+        id: "b3_1",
+        cat: "BASE (SOGUI)",
+        title: "Beom Sogui (Base do Tigre)",
+        sub: "Peso 90% na perna de trás, ponta do pé à frente",
+      },
+      {
+        id: "b3_2",
+        cat: "DEFESA",
+        title: "Kawi Maki (Defesa Tesoura)",
+        sub: "Bloqueio simultâneo alto e baixo",
+      },
+      {
+        id: "b3_3",
+        cat: "POOMSAE",
+        title: "Taegeuk Chil (7) Jang",
+        sub: "25 movimentos • Princípio Gan (Montanha)",
+      },
     ],
   },
   {
@@ -121,9 +276,24 @@ const TKD_BELTS = [
     color: "#dc2626",
     cssClass: "",
     curriculum: [
-      { id: "b2_1", cat: "CHUTE SALTADO", title: "Twio Ap Chagui & Twio Yop Chagui", sub: "Chutes saltados com explosão e aterrissagem firme" },
-      { id: "b2_2", cat: "QUEBRAMENTO", title: "Kyokpa (Quebramento de Madeira)", sub: "Precisão de foco e potência em tábua" },
-      { id: "b2_3", cat: "POOMSAE", title: "Taegeuk Pal (8) Jang", sub: "27 movimentos • Princípio Gon (Terra)" },
+      {
+        id: "b2_1",
+        cat: "CHUTE SALTADO",
+        title: "Twio Ap Chagui & Twio Yop Chagui",
+        sub: "Chutes saltados com explosão e aterrissagem firme",
+      },
+      {
+        id: "b2_2",
+        cat: "QUEBRAMENTO",
+        title: "Kyokpa (Quebramento de Madeira)",
+        sub: "Precisão de foco e potência em tábua",
+      },
+      {
+        id: "b2_3",
+        cat: "POOMSAE",
+        title: "Taegeuk Pal (8) Jang",
+        sub: "27 movimentos • Princípio Gon (Terra)",
+      },
     ],
   },
   {
@@ -134,9 +304,24 @@ const TKD_BELTS = [
     color: "#dc2626",
     cssClass: "belt-ver-preta",
     curriculum: [
-      { id: "b1_1", cat: "REVISÃO GERAL", title: "Todos os Taegeuk (1 ao 8)", sub: "Execução contínua com ritmo, potência e Kihap" },
-      { id: "b1_2", cat: "DEFESA PESSOAL", title: "Hosinsul (Defesa contra agarres)", sub: "Torções, projeções e contra-ataques rápidos" },
-      { id: "b1_3", cat: "CHUTE SALTADO", title: "Twio Dwit Chagui & Tuit Furio", sub: "Domínio aéreo e controle de equilíbrio" },
+      {
+        id: "b1_1",
+        cat: "REVISÃO GERAL",
+        title: "Todos os Taegeuk (1 ao 8)",
+        sub: "Execução contínua com ritmo, potência e Kihap",
+      },
+      {
+        id: "b1_2",
+        cat: "DEFESA PESSOAL",
+        title: "Hosinsul (Defesa contra agarres)",
+        sub: "Torções, projeções e contra-ataques rápidos",
+      },
+      {
+        id: "b1_3",
+        cat: "CHUTE SALTADO",
+        title: "Twio Dwit Chagui & Tuit Furio",
+        sub: "Domínio aéreo e controle de equilíbrio",
+      },
     ],
   },
   {
@@ -147,8 +332,18 @@ const TKD_BELTS = [
     color: "#0d0d0d",
     cssClass: "belt-poom",
     curriculum: [
-      { id: "bp_1", cat: "POOMSAE SUPERIOR", title: "Koryo Poomsae", sub: "30 movimentos • Espírito dos antigos guerreiros" },
-      { id: "bp_2", cat: "TÉCNICA AVANÇADA", title: "Combinações de 3 Chutes sem baixar a perna", sub: "Controle isométrico de quadril e core" },
+      {
+        id: "bp_1",
+        cat: "POOMSAE SUPERIOR",
+        title: "Koryo Poomsae",
+        sub: "30 movimentos • Espírito dos antigos guerreiros",
+      },
+      {
+        id: "bp_2",
+        cat: "TÉCNICA AVANÇADA",
+        title: "Combinações de 3 Chutes sem baixar a perna",
+        sub: "Controle isométrico de quadril e core",
+      },
     ],
   },
   {
@@ -159,8 +354,18 @@ const TKD_BELTS = [
     color: "#0d0d0d",
     cssClass: "",
     curriculum: [
-      { id: "bd_1", cat: "POOMSAE DAN", title: "Koryo & Keumgang Poomsae", sub: "Domínio técnico, base de grou (Hakdari Sogui)" },
-      { id: "bd_2", cat: "LIDERANÇA", title: "Auxílio de instrução no Dojang", sub: "Condução de aquecimento e fundamentos para Gub" },
+      {
+        id: "bd_1",
+        cat: "POOMSAE DAN",
+        title: "Koryo & Keumgang Poomsae",
+        sub: "Domínio técnico, base de grou (Hakdari Sogui)",
+      },
+      {
+        id: "bd_2",
+        cat: "LIDERANÇA",
+        title: "Auxílio de instrução no Dojang",
+        sub: "Condução de aquecimento e fundamentos para Gub",
+      },
     ],
   },
 ];
@@ -321,9 +526,7 @@ function toggleTkdTech(techId) {
   renderTkdScreen();
   if (typeof showToast === "function") {
     showToast(
-      state.checkedTechs[techId]
-        ? "TÉCNICA DOMINADA ✓"
-        : "MARCAÇÃO REMOVIDA",
+      state.checkedTechs[techId] ? "TÉCNICA DOMINADA ✓" : "MARCAÇÃO REMOVIDA",
     );
   }
 }
