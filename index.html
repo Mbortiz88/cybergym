@@ -54,10 +54,15 @@
       <!-- CARD DE GRADUAÇÃO ATUAL E PRÓXIMO NÍVEL -->
       <div class="dash-section-card tkd-belt-card" id="tkdBeltCard">
         <div class="cal-card-header">
-          <div class="dash-section-title" style="border: none; padding: 0; margin: 0">
+          <div
+            class="dash-section-title"
+            style="border: none; padding: 0; margin: 0"
+          >
             🥋 GRADUAÇÃO &amp; FAIXAS (WTF)
           </div>
-          <span class="cdd-badge active-checkin" id="tkdCurrentGubBadge">10º GUB</span>
+          <span class="cdd-badge active-checkin" id="tkdCurrentGubBadge"
+            >10º GUB</span
+          >
         </div>
 
         <div class="tkd-belt-showcase">
@@ -85,14 +90,26 @@
             <strong id="tkdReadinessPct">0%</strong>
           </div>
           <div class="progress-track">
-            <div class="progress-fill" id="tkdReadinessFill" style="width: 0%"></div>
+            <div
+              class="progress-fill"
+              id="tkdReadinessFill"
+              style="width: 0%"
+            ></div>
           </div>
         </div>
 
         <!-- CONTROLES DE GRADUAÇÃO -->
         <div class="tkd-belt-controls">
-          <select id="tkdBeltSelect" class="tkd-select" onchange="changeTkdBelt(this.value)"></select>
-          <button type="button" class="btn-backup export" onclick="promoteTkdBelt()">
+          <select
+            id="tkdBeltSelect"
+            class="tkd-select"
+            onchange="changeTkdBelt(this.value)"
+          ></select>
+          <button
+            type="button"
+            class="btn-backup export"
+            onclick="promoteTkdBelt()"
+          >
             🎖️ AVANÇAR FAIXA
           </button>
         </div>
@@ -117,13 +134,17 @@
       <!-- CHECK-IN RÁPIDO NO DOJANG -->
       <div class="dash-section-card">
         <div class="cal-card-header">
-          <div class="dash-section-title" style="border: none; padding: 0; margin: 0">
+          <div
+            class="dash-section-title"
+            style="border: none; padding: 0; margin: 0"
+          >
             ⚡ REGISTRO DE TREINO NO TATAME
           </div>
           <span class="cdd-badge active-checkin">DOJANG</span>
         </div>
         <p class="dash-desc" style="margin-bottom: 10px">
-          Registre sua aula de Taekwondo diretamente no calendário de frequência e some treinos na faixa atual.
+          Registre sua aula de Taekwondo diretamente no calendário de frequência
+          e some treinos na faixa atual.
         </p>
         <div class="tkd-checkin-row">
           <input
@@ -161,10 +182,15 @@
       <!-- CHECKLIST DE TÉCNICAS, CHUTES E POOMSAE DA GRADUAÇÃO -->
       <div class="dash-section-card">
         <div class="cal-card-header">
-          <div class="dash-section-title" style="border: none; padding: 0; margin: 0">
+          <div
+            class="dash-section-title"
+            style="border: none; padding: 0; margin: 0"
+          >
             🎯 CURRÍCULO TÉCNICO &amp; POOMSAE
           </div>
-          <span class="cdd-badge active-checkin" id="tkdCurriculumBeltTag">10º GUB • BRANCA</span>
+          <span class="cdd-badge active-checkin" id="tkdCurriculumBeltTag"
+            >10º GUB • BRANCA</span
+          >
         </div>
         <p class="dash-desc" style="margin-bottom: 10px">
           Marque as técnicas que você já domina para o próximo exame de faixa.
@@ -179,7 +205,11 @@
             class="tkd-text-input"
             placeholder="Adicionar movimento ou observação do mestre..."
           />
-          <button type="button" class="btn-backup import" onclick="addCustomTkdTech()">
+          <button
+            type="button"
+            class="btn-backup import"
+            onclick="addCustomTkdTech()"
+          >
             + ADD
           </button>
         </div>
@@ -297,13 +327,17 @@
       <!-- SINCRONIZAÇÃO NUVEM (FIREBASE GOOGLE) -->
       <div class="dash-section-card" id="cloudSyncCard">
         <div class="cal-card-header">
-          <div class="dash-section-title" style="border: none; padding: 0; margin: 0">
+          <div
+            class="dash-section-title"
+            style="border: none; padding: 0; margin: 0"
+          >
             ☁️ NUVEM & CONTA GOOGLE
           </div>
           <span class="cdd-badge" id="cloudSyncStatus">OFFLINE / LOCAL</span>
         </div>
         <p class="dash-desc" id="cloudUserInfo" style="margin-bottom: 10px">
-          Conecte sua conta Google para sincronizar treinos, Taekwondo, check-ins, PRs e medidas automaticamente entre dispositivos.
+          Conecte sua conta Google para sincronizar treinos, Taekwondo,
+          check-ins, PRs e medidas automaticamente entre dispositivos.
         </p>
         <div class="backup-actions" id="cloudLoggedOutActions">
           <button
@@ -315,11 +349,23 @@
             🔐 ENTRAR COM GOOGLE
           </button>
         </div>
-        <div class="backup-actions" id="cloudLoggedInActions" style="display: none">
-          <button type="button" class="btn-backup export" onclick="manualCloudSync()">
+        <div
+          class="backup-actions"
+          id="cloudLoggedInActions"
+          style="display: none"
+        >
+          <button
+            type="button"
+            class="btn-backup export"
+            onclick="manualCloudSync()"
+          >
             🔄 SINCRONIZAR AGORA
           </button>
-          <button type="button" class="btn-backup reset-water" onclick="logoutGoogle()">
+          <button
+            type="button"
+            class="btn-backup reset-water"
+            onclick="logoutGoogle()"
+          >
             SAIR DA CONTA
           </button>
         </div>
@@ -328,18 +374,31 @@
       <!-- CALENDÁRIO ESTILO GYMRATS -->
       <div class="dash-section-card">
         <div class="cal-card-header">
-          <div class="dash-section-title" style="border: none; padding: 0; margin: 0">
+          <div
+            class="dash-section-title"
+            style="border: none; padding: 0; margin: 0"
+          >
             📅 CHECK-INS (GYMRATS)
           </div>
-          <span class="cal-month-count" id="calMonthCheckinsCount">0 dias no mês</span>
+          <span class="cal-month-count" id="calMonthCheckinsCount"
+            >0 dias no mês</span
+          >
         </div>
 
         <div class="cal-nav-bar">
-          <button type="button" class="cal-nav-btn" onclick="changeCalendarMonth(-1)">
+          <button
+            type="button"
+            class="cal-nav-btn"
+            onclick="changeCalendarMonth(-1)"
+          >
             ❮
           </button>
           <span class="cal-month-label" id="calMonthLabel">NOVEMBRO 2026</span>
-          <button type="button" class="cal-nav-btn" onclick="changeCalendarMonth(1)">
+          <button
+            type="button"
+            class="cal-nav-btn"
+            onclick="changeCalendarMonth(1)"
+          >
             ❯
           </button>
         </div>
@@ -369,18 +428,36 @@
 
       <!-- REGISTRO MANUAL DE ATIVIDADE / ESPORTES (TAEKWONDO, CORRIDA, ETC.) -->
       <div class="dash-section-card">
-        <div class="dash-section-title">⚡ CHECK-IN MANUAL (OUTRAS ATIVIDADES)</div>
+        <div class="dash-section-title">
+          ⚡ CHECK-IN MANUAL (OUTRAS ATIVIDADES)
+        </div>
         <div class="quick-sports-row">
-          <button type="button" class="quick-sport-chip" onclick="applyQuickSport('Taekwondo', '🥋')">
+          <button
+            type="button"
+            class="quick-sport-chip"
+            onclick="applyQuickSport('Taekwondo', '🥋')"
+          >
             🥋 Taekwondo
           </button>
-          <button type="button" class="quick-sport-chip" onclick="applyQuickSport('Corrida', '🏃‍♂️')">
+          <button
+            type="button"
+            class="quick-sport-chip"
+            onclick="applyQuickSport('Corrida', '🏃‍♂️')"
+          >
             🏃‍♂️ Corrida
           </button>
-          <button type="button" class="quick-sport-chip" onclick="applyQuickSport('Muay Thai', '🥊')">
+          <button
+            type="button"
+            class="quick-sport-chip"
+            onclick="applyQuickSport('Muay Thai', '🥊')"
+          >
             🥊 Muay Thai
           </button>
-          <button type="button" class="quick-sport-chip" onclick="applyQuickSport('Bike', '🚴')">
+          <button
+            type="button"
+            class="quick-sport-chip"
+            onclick="applyQuickSport('Bike', '🚴')"
+          >
             🚴 Bike
           </button>
         </div>
@@ -401,6 +478,23 @@
           <div class="measure-field">
             <label>Observação</label>
             <input type="text" id="mcNote" placeholder="Ex: Treino de chutes" />
+          </div>
+        </div>
+
+
+        <div class="photo-attach-box">
+          <label class="photo-attach-btn" for="manualPhotoInput">
+            📷 TIRAR OU ESCOLHER FOTO DO CHECK-IN
+          </label>
+          <div class="photo-preview-wrap" id="manualPhotoPreviewWrap">
+            <img id="manualPhotoPreviewImg" src="" alt="Prévia da foto" />
+            <button
+              type="button"
+              class="btn-remove-photo"
+              onclick="clearPendingPhoto('manual')"
+            >
+              ✕ REMOVER
+            </button>
           </div>
         </div>
 
@@ -464,8 +558,8 @@
       <div class="dash-section-card">
         <div class="dash-section-title">💾 BACKUP & SINCRONIZAÇÃO</div>
         <p class="dash-desc">
-          Exporte seus recordes, check-ins, medidas e dieta para guardar segurança ou
-          transferir para outro aparelho.
+          Exporte seus recordes, check-ins, medidas e dieta para guardar
+          segurança ou transferir para outro aparelho.
         </p>
         <div class="backup-actions">
           <button class="btn-backup export" onclick="exportBackup()">
@@ -673,5 +767,32 @@
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
     <script src="script.js"></script>
     <script src="tkd.js"></script>
-  </body>
+  
+  <!-- Inputs ocultos para tirar/anexar foto em Treino ABCD, Check-in Manual e TKD -->
+  <input
+    type="file"
+    id="workoutPhotoInput"
+    accept="image/*"
+    capture="environment"
+    style="display: none"
+    onchange="handlePhotoFileSelect(this, 'workout')"
+  />
+  <input
+    type="file"
+    id="manualPhotoInput"
+    accept="image/*"
+    capture="environment"
+    style="display: none"
+    onchange="handlePhotoFileSelect(this, 'manual')"
+  />
+  <input
+    type="file"
+    id="tkdPhotoInput"
+    accept="image/*"
+    capture="environment"
+    style="display: none"
+    onchange="handlePhotoFileSelect(this, 'tkd')"
+  />
+
+</body>
 </html>
