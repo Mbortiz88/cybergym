@@ -443,6 +443,17 @@ let currentDay = null;
 let currentEx = "";
 let wakeLock = null;
 let audioCtx = null;
+let cloudSyncDebounce = null;
+
+function scheduleCloudSync() {
+  localStorage.setItem("g_last_local_update", String(Date.now()));
+  clearTimeout(cloudSyncDebounce);
+  cloudSyncDebounce = setTimeout(() => {
+    if (typeof pushToFirestore === "function") {
+      pushToFirestore(true);
+    }
+  }, 1500);
+}
 
 function getTodayISO() {
   const now = new Date();
@@ -694,6 +705,7 @@ function getCheckinHistory() {
 
 function saveCheckinHistory(list) {
   localStorage.setItem("g_checkin_history", JSON.stringify(list));
+  scheduleCloudSync();
 }
 
 function calculateStreak(history) {
@@ -939,11 +951,13 @@ function getDietState() {
 
 function saveDietState(state) {
   localStorage.setItem("g_diet_state", JSON.stringify(state));
+  scheduleCloudSync();
 }
 
 function renderDietScreen() {
   const state = getDietState();
   const listEl = document.getElementById("dietMealsList");
+  if (!listEl) return;
   listEl.innerHTML = "";
 
   let doneMeals = 0;
@@ -1053,6 +1067,7 @@ function saveMeasurements() {
   });
 
   localStorage.setItem("g_measures_list", JSON.stringify(list));
+  scheduleCloudSync();
   renderMeasurementsList();
   showToast("MEDIDAS ANTROPOMÉTRICAS SALVAS ✓", 1800);
 }
@@ -1123,6 +1138,8 @@ function switchMainTab(id, tabEl) {
     renderDietScreen();
   } else if (id === "dashboardScreen") {
     renderDashboard();
+  } else if (id === "tkdScreen" && typeof renderTkdScreen === "function") {
+    renderTkdScreen();
   }
 
   document
@@ -1140,6 +1157,8 @@ function switchMainTab(id, tabEl) {
 function renderDashboard() {
   const statsGrid = document.getElementById("dashStatsGrid");
   const prList = document.getElementById("prSummaryList");
+  if (!statsGrid || !prList) return;
+
   const checkinHistory = getCheckinHistory();
   const streak = calculateStreak(checkinHistory);
 
@@ -1228,6 +1247,10 @@ function importBackup() {
     closeImportModal();
     renderDietScreen();
     renderDashboard();
+    if (typeof renderTkdScreen === "function") {
+      renderTkdScreen();
+    }
+    scheduleCloudSync();
     showToast(`BACKUP RESTAURADO (${count} ITENS) ✓`, 2500);
   } catch (e) {
     showToast("CÓDIGO JSON INVÁLIDO!", 2000);
@@ -1239,11 +1262,13 @@ function openDay(k) {
   document.getElementById("mainHeader").style.display = "none";
   document.getElementById("mainNavContainer").style.display = "none";
   document.getElementById("homeScreen").classList.remove("active");
+  document.getElementById("tkdScreen").classList.remove("active");
   document.getElementById("dietScreen").classList.remove("active");
   document.getElementById("dashboardScreen").classList.remove("active");
 
   setTimeout(() => {
     document.getElementById("homeScreen").style.display = "none";
+    document.getElementById("tkdScreen").style.display = "none";
     document.getElementById("dietScreen").style.display = "none";
     document.getElementById("dashboardScreen").style.display = "none";
     document.getElementById("workoutScreen").style.display = "flex";
@@ -1330,6 +1355,7 @@ function toggleCardioDrawer() {
 
 function selectCardioType(typeId) {
   localStorage.setItem(`g_${currentDay}_c_type`, typeId);
+  scheduleCloudSync();
   const mod =
     cardioModalities.find((m) => m.id === typeId) || cardioModalities[0];
 
@@ -1367,6 +1393,7 @@ function saveC() {
     `g_${currentDay}_c_k`,
     document.getElementById("c_k").value,
   );
+  scheduleCloudSync();
 }
 
 function addExtraSet(exIndex) {
@@ -1391,6 +1418,7 @@ function addExtraSet(exIndex) {
     `g_${currentDay}_e${exIndex}_sets`,
     JSON.stringify(currentList),
   );
+  scheduleCloudSync();
   renderWorkout(currentDay);
   updateTelemetryHUD();
   showToast("+1 SÉRIE ADICIONADA", 1100);
@@ -1410,6 +1438,7 @@ function removeExtraSet(exIndex) {
     `g_${currentDay}_e${exIndex}_sets`,
     JSON.stringify(currentList),
   );
+  scheduleCloudSync();
   renderWorkout(currentDay);
   updateTelemetryHUD();
   showToast("SÉRIE EXTRA REMOVIDA", 1100);
@@ -1637,6 +1666,7 @@ function saveS(i, j) {
     `g_${currentDay}_e${i}_s${j}`,
     JSON.stringify({ kg, reps, checked: chk }),
   );
+  scheduleCloudSync();
 }
 
 /* NOVA SESSÃO INTELIGENTE: DESMARCA CHECKS MAS MANTÉM AS ÚLTIMAS CARGAS */
@@ -1665,6 +1695,7 @@ Isso desmarca os ✓ mantendo suas últimas cargas salvas.`,
       });
     });
 
+    scheduleCloudSync();
     stopTimer();
     renderWorkout(currentDay);
     updateTelemetryHUD();
@@ -1747,7 +1778,6 @@ function saveWorkoutHistory() {
   });
 
   if (count > 0) {
-    // Registra Check-in automático no calendário GymRats
     const activeBtn = document.querySelector(".cardio-type-btn.active");
     const cType = activeBtn ? activeBtn.dataset.type : d.cardio.type;
     const cTime = document.getElementById("c_t")
@@ -1884,6 +1914,7 @@ function addManualWeight() {
   }
 
   localStorage.setItem(`gh_${currentEx}`, JSON.stringify(h));
+  scheduleCloudSync();
   showToast(`CARGA DE ${v}KG GRAVADA!`, 2000);
   showH(currentEx);
 
@@ -1901,7 +1932,7 @@ function closeHistory() {
   document.getElementById("historyModal").classList.remove("active");
 }
 
-function showToast(m, d) {
+function showToast(m, d = 1600) {
   const t = document.getElementById("toast");
   t.innerText = m;
   t.classList.add("show");
@@ -1965,12 +1996,9 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
-window.onload = initApp;
-
 /* =========================================================
    SINCRONIZAÇÃO NUVEM (FIREBASE GOOGLE AUTH + FIRESTORE)
    ========================================================= */
-// Substitua pelos dados do seu projeto no Firebase Console caso ainda não tenha configurado
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyAoT05zjZH9W9fdmNeCGCppJwGeEJTxXos",
   authDomain: "cybergym-matheus-ortiz.firebaseapp.com",
@@ -1978,7 +2006,7 @@ const FIREBASE_CONFIG = {
   storageBucket: "cybergym-matheus-ortiz.firebasestorage.app",
   messagingSenderId: "867243931319",
   appId: "1:867243931319:web:e666e71d57ab6e024a7f32",
-  measurementId: "G-Z5Q9Q7D83K"
+  measurementId: "G-Z5Q9Q7D83K",
 };
 
 let fbApp = null;
@@ -2051,7 +2079,7 @@ function initFirebaseCloud() {
           `Conta: ${user.displayName || user.email || "Usuário Google"}`,
           true,
         );
-        await pullFromFirestore(true);
+        await syncCloudOnAuth();
       } else {
         updateCloudUI(
           "OFFLINE / LOCAL",
@@ -2073,7 +2101,11 @@ function collectLocalAppData() {
   const payload = {};
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
-    if (key && (key.startsWith("g_") || key.startsWith("gh_"))) {
+    if (
+      key &&
+      key !== "g_last_local_update" &&
+      (key.startsWith("g_") || key.startsWith("gh_"))
+    ) {
       payload[key] = localStorage.getItem(key);
     }
   }
@@ -2083,7 +2115,11 @@ function collectLocalAppData() {
 function applyCloudDataToLocal(data) {
   if (!data || typeof data !== "object") return;
   Object.keys(data).forEach((key) => {
-    if ((key.startsWith("g_") || key.startsWith("gh_")) && typeof data[key] === "string") {
+    if (
+      key !== "g_last_local_update" &&
+      (key.startsWith("g_") || key.startsWith("gh_")) &&
+      typeof data[key] === "string"
+    ) {
       localStorage.setItem(key, data[key]);
     }
   });
@@ -2094,10 +2130,43 @@ function applyCloudDataToLocal(data) {
   }
 }
 
+async function syncCloudOnAuth() {
+  if (!fbDb || !currentCloudUser) return false;
+  try {
+    const docSnap = await fbDb
+      .collection("users")
+      .doc(currentCloudUser.uid)
+      .collection("cybergym")
+      .doc("state")
+      .get();
+
+    const localUpdatedAt =
+      Number(localStorage.getItem("g_last_local_update")) || 0;
+
+    if (docSnap.exists) {
+      const remote = docSnap.data() || {};
+      const remoteUpdatedAt = Number(remote.updatedAt) || 0;
+
+      if (localUpdatedAt > remoteUpdatedAt && Object.keys(collectLocalAppData()).length > 0) {
+        await pushToFirestore(true);
+      } else if (remote.data) {
+        applyCloudDataToLocal(remote.data);
+        localStorage.setItem("g_last_local_update", String(remoteUpdatedAt));
+      }
+    } else {
+      await pushToFirestore(true);
+    }
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
 async function pushToFirestore(silent = false) {
   if (!fbDb || !currentCloudUser) return false;
   try {
     const data = collectLocalAppData();
+    const nowTs = Date.now();
     await fbDb
       .collection("users")
       .doc(currentCloudUser.uid)
@@ -2106,11 +2175,13 @@ async function pushToFirestore(silent = false) {
       .set(
         {
           data,
-          updatedAt: Date.now(),
+          updatedAt: nowTs,
           email: currentCloudUser.email || "",
         },
         { merge: true },
       );
+
+    localStorage.setItem("g_last_local_update", String(nowTs));
 
     if (!silent) {
       updateCloudUI(
@@ -2143,6 +2214,9 @@ async function pullFromFirestore(silent = false) {
       const remote = docSnap.data() || {};
       if (remote.data) {
         applyCloudDataToLocal(remote.data);
+        if (remote.updatedAt) {
+          localStorage.setItem("g_last_local_update", String(remote.updatedAt));
+        }
       }
     } else {
       await pushToFirestore(true);
@@ -2211,5 +2285,6 @@ window.manualCloudSync = manualCloudSync;
 window.pushToFirestore = pushToFirestore;
 
 document.addEventListener("DOMContentLoaded", () => {
+  initApp();
   initFirebaseCloud();
 });
