@@ -1,5 +1,5 @@
 /* =========================================================
-   MÓDULO TAEKWONDO HUD (COMPATÍVEL COM CYBERHUD V3.6/V3.8)
+   MÓDULO TAEKWONDO HUD (COMPATÍVEL COM CYBERHUD V3.8)
    ========================================================= */
 .tkd-belt-card {
   border-color: rgba(229, 46, 46, 0.5) !important;
@@ -132,15 +132,23 @@
 
 .tkd-select {
   width: 100%;
+  min-width: 0;
   height: 38px;
-  background: rgba(4, 9, 20, 0.9);
+  background: rgba(4, 9, 20, 0.92);
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 8px;
-  padding: 0 10px;
+  padding: 0 8px;
   color: #ffffff;
   font-family: "Montserrat", sans-serif;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.72rem;
+  font-weight: 700;
+  outline: none;
+  text-overflow: ellipsis;
+}
+
+.tkd-select option {
+  background: #0a1220;
+  color: #ffffff;
 }
 
 .tkd-checkin-row {
@@ -151,6 +159,7 @@
 
 .tkd-text-input {
   width: 100%;
+  min-width: 0;
   background: rgba(4, 9, 20, 0.88);
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 8px;
@@ -165,16 +174,15 @@
   border-color: #e52e2e;
 }
 
-/* LINHA DO TEMPO DAS 12 GRADUAÇÕES */
+/* LINHA DO TEMPO DAS 12 GRADUAÇÕES (SEM CORTE DE ALTURA) */
 .tkd-timeline-panel {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.32s ease;
+  display: none;
+  margin-top: 10px;
 }
 
 .tkd-timeline-panel.open {
-  max-height: 820px;
-  margin-top: 10px;
+  display: block;
+  animation: fadeInDrawer 0.25s ease;
 }
 
 .tkd-timeline-list {
@@ -319,6 +327,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-shrink: 0;
 }
 
 .tkd-check-btn {
