@@ -445,6 +445,89 @@ let wakeLock = null;
 let audioCtx = null;
 let cloudSyncDebounce = null;
 
+const pendingPhotos = {
+  workout: null,
+  manual: null,
+  tkd: null,
+};
+
+function compressImageToDataUrl(file, maxDim = 760, quality = 0.72) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.onerror = reject;
+      img.src = ev.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handlePhotoFileSelect(inputEl, scope) {
+  const file = inputEl && inputEl.files && inputEl.files[0];
+  if (!file) return;
+  try {
+    const compressedDataUrl = await compressImageToDataUrl(file);
+    pendingPhotos[scope] = compressedDataUrl;
+    const wrap = document.getElementById(`${scope}PhotoPreviewWrap`);
+    const imgEl = document.getElementById(`${scope}PhotoPreviewImg`);
+    if (imgEl) imgEl.src = compressedDataUrl;
+    if (wrap) wrap.style.display = "flex";
+    showToast("FOTO ANEXADA ✓", 1100);
+  } catch (e) {
+    showToast("ERRO AO PROCESSAR IMAGEM", 1600);
+  }
+}
+
+function clearPendingPhoto(scope) {
+  pendingPhotos[scope] = null;
+  const wrap = document.getElementById(`${scope}PhotoPreviewWrap`);
+  const imgEl = document.getElementById(`${scope}PhotoPreviewImg`);
+  const inputEl = document.getElementById(`${scope}PhotoInput`);
+  if (imgEl) imgEl.src = "";
+  if (wrap) wrap.style.display = "none";
+  if (inputEl) inputEl.value = "";
+}
+
+function getPendingPhoto(scope) {
+  return pendingPhotos[scope] || null;
+}
+
+function openPhotoLightbox(checkinId) {
+  const item = getCheckinHistory().find((c) => c.id === checkinId);
+  if (!item || !item.photo) return;
+  document.getElementById("lightboxTitle").innerText = item.title || "Registro";
+  document.getElementById("lightboxImg").src = item.photo;
+  document.getElementById("lightboxCaption").innerHTML =
+    `<strong>${item.date}</strong><br/>${item.details || ""}`;
+  document.getElementById("photoLightboxModal").classList.add("active");
+}
+
+function closePhotoLightbox(ev) {
+  if (ev && ev.target && ev.target.id !== "photoLightboxModal") return;
+  document.getElementById("photoLightboxModal").classList.remove("active");
+}
+
 function scheduleCloudSync() {
   localStorage.setItem("g_last_local_update", String(Date.now()));
   clearTimeout(cloudSyncDebounce);
@@ -477,18 +560,29 @@ function brToISO(br) {
   return `${parts[2]}-${parts[1].padStart(2, "0")}-${parts[0].padStart(2, "0")}`;
 }
 
+function formatSyncTimestamp(ts) {
+  if (!ts) return "";
+  const d = new Date(Number(ts));
+  if (isNaN(d.getTime())) return "";
+  const dateStr = d.toLocaleDateString("pt-BR");
+  const timeStr = d.toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+  return `${dateStr} às ${timeStr}`;
+}
+
 let calViewYear = new Date().getFullYear();
 let calViewMonth = new Date().getMonth();
 let selectedCalDateISO = getTodayISO();
 
-/* REGISTRO DO SERVICE WORKER (PWA OFFLINE) */
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("./sw.js").catch(() => {});
   });
 }
 
-/* SINO SINTETIZADO OFFLINE (WEB AUDIO API) */
 function unlockAudio() {
   try {
     if (!audioCtx) {
@@ -570,7 +664,6 @@ function handleImgError(imgEl, path) {
   parent.innerHTML = `<div class="img-placeholder-msg">Ilustração ainda não adicionada.<br>Salve o arquivo no GitHub em:<br><code>${path}</code></div>`;
 }
 
-/* VERIFICA SE BATEU NOVO RECORDE EM TEMPO REAL */
 function checkLiveExercisePR(exIndex) {
   if (!currentDay) return false;
   const ex = workoutData[currentDay].exercises[exIndex];
@@ -664,9 +757,6 @@ function updateTelemetryHUD() {
   }
 }
 
-/* =========================================================
-   CHECK-IN ESTILO GYMRATS + STREAK + CALENDÁRIO MENSAL
-   ========================================================= */
 function getCheckinHistory() {
   try {
     const raw = localStorage.getItem("g_checkin_history");
@@ -695,6 +785,7 @@ function getCheckinHistory() {
       title: "Treino Registrado",
       details: "Histórico importado automaticamente",
       isManual: false,
+      photo: null,
     }));
     localStorage.setItem("g_checkin_history", JSON.stringify(migrated));
     return migrated;
@@ -704,7 +795,14 @@ function getCheckinHistory() {
 }
 
 function saveCheckinHistory(list) {
-  localStorage.setItem("g_checkin_history", JSON.stringify(list));
+  try {
+    localStorage.setItem("g_checkin_history", JSON.stringify(list));
+  } catch (e) {
+    const trimmed = list.map((item, idx) =>
+      idx > 12 ? { ...item, photo: null } : item,
+    );
+    localStorage.setItem("g_checkin_history", JSON.stringify(trimmed));
+  }
   scheduleCloudSync();
 }
 
@@ -776,6 +874,7 @@ function saveManualCheckin() {
   const dateISO = document.getElementById("mcDate").value || getTodayISO();
   const duration = document.getElementById("mcDuration").value.trim();
   const note = document.getElementById("mcNote").value.trim();
+  const photoData = getPendingPhoto("manual");
 
   if (!rawActivity) {
     showToast("INFORME A ATIVIDADE!", 1600);
@@ -802,6 +901,7 @@ function saveManualCheckin() {
     title: rawActivity,
     details: detailsText,
     isManual: true,
+    photo: photoData,
   });
 
   saveCheckinHistory(history);
@@ -809,6 +909,7 @@ function saveManualCheckin() {
   document.getElementById("mcActivity").value = "";
   document.getElementById("mcDuration").value = "";
   document.getElementById("mcNote").value = "";
+  clearPendingPhoto("manual");
 
   const [y, m] = dateISO.split("-").map(Number);
   if (y && m) {
@@ -877,6 +978,8 @@ function renderGymRatsCalendar() {
     const iso = `${calViewYear}-${mStr}-${dStr}`;
     const dayLogs = checkinsMap[iso] || [];
     const hasCheckin = dayLogs.length > 0;
+    const photoLog = dayLogs.find((l) => Boolean(l.photo));
+    const hasPhoto = Boolean(photoLog);
     if (hasCheckin) monthCheckinDays++;
 
     const isToday = iso === todayISO;
@@ -889,9 +992,10 @@ function renderGymRatsCalendar() {
 
     cellsHtml += `
       <div
-        class="cal-day-cell ${hasCheckin ? "checked-in" : ""} ${isToday ? "today" : ""} ${isSelected ? "selected-day" : ""}"
+        class="cal-day-cell ${hasCheckin ? "checked-in" : ""} ${hasPhoto ? "has-photo" : ""} ${isToday ? "today" : ""} ${isSelected ? "selected-day" : ""}"
         onclick="selectCalendarDay('${iso}')"
       >
+        ${hasPhoto ? `<img src="${photoLog.photo}" alt="Check-in dia ${day}" class="cal-day-photo-bg" />` : ""}
         <span class="day-num">${day}</span>
         ${hasCheckin ? `<span class="cal-day-badge">${badgeText}</span>` : ""}
       </div>`;
@@ -914,7 +1018,12 @@ function renderGymRatsCalendar() {
       .map(
         (l) => `
         <div class="cdd-log-item">
-          <div>
+          ${
+            l.photo
+              ? `<img src="${l.photo}" alt="Foto" class="cdd-photo-thumb" onclick="openPhotoLightbox('${l.id}')" />`
+              : ""
+          }
+          <div style="flex: 1">
             <strong>${l.title}</strong><br/>
             <span style="color:#8ea4bf;font-size:10px;">${l.details || ""}</span>
           </div>
@@ -929,7 +1038,6 @@ function renderGymRatsCalendar() {
   }
 }
 
-/* DIETA, HIDRATAÇÃO E MEDIDAS */
 function getDietState() {
   const defaultState = {
     water: 0,
@@ -1024,6 +1132,10 @@ function addWater(liters) {
   saveDietState(state);
   renderDietScreen();
   showToast(`+${Math.round(liters * 1000)}ML DE ÁGUA 💧`, 1000);
+}
+
+function resetWater() {
+  resetDietDay();
 }
 
 function resetDietDay() {
@@ -1151,7 +1263,7 @@ function switchMainTab(id, tabEl) {
       .forEach((s) => (s.style.display = "none"));
     document.getElementById(id).style.display = "flex";
     setTimeout(() => document.getElementById(id).classList.add("active"), 10);
-  }, 200);
+  }, 150);
 }
 
 function renderDashboard() {
@@ -1282,7 +1394,7 @@ function openDay(k) {
       () => document.getElementById("workoutScreen").classList.add("active"),
       10,
     );
-  }, 200);
+  }, 150);
 }
 
 function goHome() {
@@ -1293,7 +1405,7 @@ function goHome() {
     document.getElementById("workoutScreen").style.display = "none";
     document.getElementById("mainHeader").style.display = "block";
     document.getElementById("homeScreen").style.display = "flex";
-    document.getElementById("mainNavContainer").style.display = "flex";
+    document.getElementById("mainNavContainer").style.display = "grid";
     document
       .querySelectorAll(".nav-tab")
       .forEach((t) => t.classList.remove("active"));
@@ -1303,7 +1415,7 @@ function goHome() {
       10,
     );
     stopTimer();
-  }, 200);
+  }, 150);
 }
 
 function buildStretchCard(title, items, prefix) {
@@ -1311,7 +1423,7 @@ function buildStretchCard(title, items, prefix) {
     .map((st, idx) => {
       const drawerId = `st_img_${prefix}_${idx}`;
       const imgBtn = st.img
-        ? `<button class="btn-stretch-img" onclick="toggleImgDrawer('${drawerId}', this)">👁️ VER</button>`
+        ? `<button type="button" class="btn-stretch-img" onclick="toggleImgDrawer('${drawerId}', this)">👁️ VER</button>`
         : "";
       const imgDrawer = st.img
         ? `<div class="img-drawer" id="${drawerId}" style="margin-top:6px;margin-bottom:0;">
@@ -1341,7 +1453,6 @@ function buildStretchCard(title, items, prefix) {
     </div>`;
 }
 
-/* CONTROLES DA GAVETA DE CARDIO */
 function toggleCardioDrawer() {
   const panel = document.getElementById("cardioDrawerPanel");
   const trigger = document.getElementById("cardioDrawerTrigger");
@@ -1469,11 +1580,11 @@ function renderWorkout(k) {
 
     const drawerId = `ex_img_${i}`;
     const imgBtnHtml = ex.img
-      ? `<button class="btn-img-toggle" onclick="toggleImgDrawer('${drawerId}', this)">👁️ EXECUÇÃO</button>`
+      ? `<button type="button" class="btn-img-toggle" onclick="toggleImgDrawer('${drawerId}', this)">👁️ EXECUÇÃO</button>`
       : "";
 
     const platesBtnHtml = ex.hasPlates
-      ? `<button class="btn-plates" onclick="openPlateModal('${ex.name}', ${i})">🏋️ ANILHAS</button>`
+      ? `<button type="button" class="btn-plates" onclick="openPlateModal('${ex.name}', ${i})">🏋️ ANILHAS</button>`
       : "";
 
     const imgDrawerHtml = ex.img
@@ -1505,25 +1616,25 @@ function renderWorkout(k) {
             <div class="set-label">${j + 1}</div>
             
             <div class="control-group">
-                <button class="btn-adjust" onclick="uV(${i},${j},'kg',-1)">-</button>
+                <button type="button" class="btn-adjust" onclick="uV(${i},${j},'kg',-1)">-</button>
                 <input type="number" class="val-input" id="k_${i}_${j}" value="${s.kg}" onchange="saveS(${i},${j})" step="1">
-                <button class="btn-adjust" onclick="uV(${i},${j},'kg',1)">+</button>
+                <button type="button" class="btn-adjust" onclick="uV(${i},${j},'kg',1)">+</button>
             </div>
             
             <div class="control-group">
-                <button class="btn-adjust" onclick="uV(${i},${j},'rp',-1)">-</button>
+                <button type="button" class="btn-adjust" onclick="uV(${i},${j},'rp',-1)">-</button>
                 <input type="number" class="val-input" id="r_${i}_${j}" value="${s.reps}" onchange="saveS(${i},${j})">
-                <button class="btn-adjust" onclick="uV(${i},${j},'rp',1)">+</button>
+                <button type="button" class="btn-adjust" onclick="uV(${i},${j},'rp',1)">+</button>
             </div>
             
-            <button class="check-btn ${s.checked ? "checked" : ""}" id="c_${i}_${j}" onclick="tC(${i},${j})">✓</button>
+            <button type="button" class="check-btn ${s.checked ? "checked" : ""}" id="c_${i}_${j}" onclick="tC(${i},${j})">✓</button>
         </div>`;
     });
     sHtml += `</div>`;
 
     const removeExtraBtn =
       setsArr.length > defaultLen
-        ? `<button class="btn-set-extra remove" onclick="removeExtraSet(${i})">- REMOVER EXTRA</button>`
+        ? `<button type="button" class="btn-set-extra remove" onclick="removeExtraSet(${i})">- REMOVER EXTRA</button>`
         : "";
 
     cont.innerHTML += `
@@ -1541,7 +1652,7 @@ function renderWorkout(k) {
                       ${platesBtnHtml}
                       ${imgBtnHtml}
                   </div>
-                  <button class="btn-history" onclick="showH('${ex.name}')">📈 HISTÓRICO</button>
+                  <button type="button" class="btn-history" onclick="showH('${ex.name}')">📈 HISTÓRICO</button>
               </div>
           </div>
           ${imgDrawerHtml}
@@ -1549,7 +1660,7 @@ function renderWorkout(k) {
           ${sHtml}
           <div class="set-extra-controls">
               ${removeExtraBtn}
-              <button class="btn-set-extra" onclick="addExtraSet(${i})">+ SÉRIE EXTRA</button>
+              <button type="button" class="btn-set-extra" onclick="addExtraSet(${i})">+ SÉRIE EXTRA</button>
           </div>
       </div>`;
 
@@ -1616,6 +1727,27 @@ function renderWorkout(k) {
       "post",
     );
   }
+
+  cont.innerHTML += `
+    <div class="workout-photo-card" id="workoutPhotoCard">
+        <div class="workout-photo-card-header">
+            <span>📷 FOTO DO TREINO (${d.dayName.toUpperCase()})</span>
+            <span style="font-family:'Montserrat',sans-serif;font-size:9px;font-weight:800;color:var(--muted);">OPCIONAL</span>
+        </div>
+        <p style="font-size:11px;color:#b7c9df;margin-bottom:8px;line-height:1.35;">
+            Anexe sua foto do treino para sair junto no check-in do calendário GymRats.
+        </p>
+        <div class="photo-attach-box" style="margin-bottom:0;">
+            <label class="photo-attach-btn" for="workoutPhotoInput">
+                📷 TIRAR OU ESCOLHER FOTO DO TREINO
+            </label>
+            <div class="photo-preview-wrap" id="workoutPhotoPreviewWrap" style="display:${getPendingPhoto("workout") ? "flex" : "none"}">
+                <img id="workoutPhotoPreviewImg" src="${getPendingPhoto("workout") || ""}" alt="Foto do Treino" />
+                <button type="button" class="btn-remove-photo" onclick="clearPendingPhoto('workout')">✕ REMOVER</button>
+            </div>
+        </div>
+    </div>`;
+
 }
 
 function uV(i, j, f, d) {
@@ -1669,7 +1801,6 @@ function saveS(i, j) {
   scheduleCloudSync();
 }
 
-/* NOVA SESSÃO INTELIGENTE: DESMARCA CHECKS MAS MANTÉM AS ÚLTIMAS CARGAS */
 function resetWorkout() {
   if (
     confirm(
@@ -1738,7 +1869,43 @@ function copyWorkoutReport() {
     .then(() => showToast("RELATÓRIO COPIADO!", 2000));
 }
 
-function saveWorkoutHistory() {
+function openWorkoutFinishModal() {
+  if (!currentDay) return;
+  const d = workoutData[currentDay];
+  let hasChecked = false;
+  d.exercises.forEach((ex, i) => {
+    const setsArr = getExerciseSetsList(currentDay, i);
+    setsArr.forEach((s, j) => {
+      const item = JSON.parse(
+        localStorage.getItem(`g_${currentDay}_e${i}_s${j}`),
+      );
+      if (item && item.checked) hasChecked = true;
+    });
+  });
+
+  if (!hasChecked) {
+    showToast("MARQUE AO MENOS UMA SÉRIE PARA SALVAR", 2400);
+    return;
+  }
+
+  clearPendingPhoto("workout");
+  document.getElementById("workoutCheckinModalTitle").innerText =
+    `Check-in • ${d.dayName}`;
+  document.getElementById("workoutCheckinModal").classList.add("active");
+}
+
+function closeWorkoutFinishModal() {
+  document.getElementById("workoutCheckinModal").classList.remove("active");
+}
+
+function confirmWorkoutSave() {
+  const photoData = getPendingPhoto("workout");
+  closeWorkoutFinishModal();
+  saveWorkoutHistory(photoData);
+  clearPendingPhoto("workout");
+}
+
+function saveWorkoutHistory(photoData = null) {
   const date = new Date().toLocaleDateString("pt-BR");
   const todayISO = getTodayISO();
   const d = workoutData[currentDay];
@@ -1791,6 +1958,9 @@ function saveWorkoutHistory() {
       (c) => c.isoDate === todayISO && c.badge === badgeLetter && !c.isManual,
     );
 
+    const prevPhoto =
+      existingIdx !== -1 ? checkinHistory[existingIdx].photo || null : null;
+
     const entryData = {
       id:
         existingIdx !== -1
@@ -1802,6 +1972,7 @@ function saveWorkoutHistory() {
       title: `${d.dayName} (${d.region})`,
       details: `${count} exercícios • ${totalVolume.toLocaleString("pt-BR")} kg movidos • Cardio: ${cType} (${cTime} min)`,
       isManual: false,
+      photo: photoData || prevPhoto,
     };
 
     if (existingIdx !== -1) {
@@ -1821,7 +1992,6 @@ function saveWorkoutHistory() {
   }
 }
 
-/* CALCULADORA DE ANILHAS */
 function openPlateModal(exName, exIndex) {
   document.getElementById("plateModalTitle").innerText = exName;
   const setsArr = getExerciseSetsList(currentDay, exIndex);
@@ -1996,9 +2166,6 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
-/* =========================================================
-   SINCRONIZAÇÃO NUVEM (FIREBASE GOOGLE AUTH + FIRESTORE)
-   ========================================================= */
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyAoT05zjZH9W9fdmNeCGCppJwGeEJTxXos",
   authDomain: "cybergym-matheus-ortiz.firebaseapp.com",
@@ -2017,9 +2184,9 @@ let currentCloudUser = null;
 function isFirebaseConfigured() {
   return Boolean(
     FIREBASE_CONFIG &&
-      FIREBASE_CONFIG.apiKey &&
-      FIREBASE_CONFIG.projectId &&
-      FIREBASE_CONFIG.appId,
+    FIREBASE_CONFIG.apiKey &&
+    FIREBASE_CONFIG.projectId &&
+    FIREBASE_CONFIG.appId,
   );
 }
 
@@ -2048,6 +2215,19 @@ function updateCloudUI(statusText, infoText, loggedIn) {
   }
 }
 
+function renderConnectedCloudBanner(syncTs) {
+  if (!currentCloudUser) return;
+  const userLabel =
+    currentCloudUser.displayName || currentCloudUser.email || "Usuário Google";
+  const lastSyncStr = formatSyncTimestamp(
+    syncTs || localStorage.getItem("g_last_cloud_sync_time"),
+  );
+  const infoMsg = lastSyncStr
+    ? `Conta: ${userLabel} • Última sincronização: ${lastSyncStr}`
+    : `Conta: ${userLabel} • Sincronização automática ativa`;
+  updateCloudUI("ATIVO • SINCRONIZADO", infoMsg, true);
+}
+
 function initFirebaseCloud() {
   if (
     !isFirebaseConfigured() ||
@@ -2074,16 +2254,12 @@ function initFirebaseCloud() {
     fbAuth.onAuthStateChanged(async (user) => {
       currentCloudUser = user || null;
       if (user) {
-        updateCloudUI(
-          "CONECTADO",
-          `Conta: ${user.displayName || user.email || "Usuário Google"}`,
-          true,
-        );
+        renderConnectedCloudBanner();
         await syncCloudOnAuth();
       } else {
         updateCloudUI(
           "OFFLINE / LOCAL",
-          "Conecte sua conta Google para sincronizar treinos, Taekwondo, check-ins, PRs e medidas automaticamente entre dispositivos.",
+          "Conecte sua conta Google para sincronizar treinos, Taekwondo, check-ins, fotos, PRs e medidas automaticamente entre dispositivos.",
           false,
         );
       }
@@ -2104,6 +2280,7 @@ function collectLocalAppData() {
     if (
       key &&
       key !== "g_last_local_update" &&
+      key !== "g_last_cloud_sync_time" &&
       (key.startsWith("g_") || key.startsWith("gh_"))
     ) {
       payload[key] = localStorage.getItem(key);
@@ -2117,6 +2294,7 @@ function applyCloudDataToLocal(data) {
   Object.keys(data).forEach((key) => {
     if (
       key !== "g_last_local_update" &&
+      key !== "g_last_cloud_sync_time" &&
       (key.startsWith("g_") || key.startsWith("gh_")) &&
       typeof data[key] === "string"
     ) {
@@ -2147,11 +2325,17 @@ async function syncCloudOnAuth() {
       const remote = docSnap.data() || {};
       const remoteUpdatedAt = Number(remote.updatedAt) || 0;
 
-      if (localUpdatedAt > remoteUpdatedAt && Object.keys(collectLocalAppData()).length > 0) {
+      if (
+        localUpdatedAt > remoteUpdatedAt &&
+        Object.keys(collectLocalAppData()).length > 0
+      ) {
         await pushToFirestore(true);
       } else if (remote.data) {
         applyCloudDataToLocal(remote.data);
-        localStorage.setItem("g_last_local_update", String(remoteUpdatedAt));
+        const syncTime = remoteUpdatedAt || Date.now();
+        localStorage.setItem("g_last_local_update", String(syncTime));
+        localStorage.setItem("g_last_cloud_sync_time", String(syncTime));
+        renderConnectedCloudBanner(syncTime);
       }
     } else {
       await pushToFirestore(true);
@@ -2182,13 +2366,10 @@ async function pushToFirestore(silent = false) {
       );
 
     localStorage.setItem("g_last_local_update", String(nowTs));
+    localStorage.setItem("g_last_cloud_sync_time", String(nowTs));
+    renderConnectedCloudBanner(nowTs);
 
     if (!silent) {
-      updateCloudUI(
-        "SINCRONIZADO ✓",
-        `Conta: ${currentCloudUser.displayName || currentCloudUser.email || "Google"} • Atualizado agora`,
-        true,
-      );
       showToast("DADOS SINCRONIZADOS NA NUVEM ✓", 1800);
     }
     return true;
@@ -2200,47 +2381,8 @@ async function pushToFirestore(silent = false) {
   }
 }
 
-async function pullFromFirestore(silent = false) {
-  if (!fbDb || !currentCloudUser) return false;
-  try {
-    const docSnap = await fbDb
-      .collection("users")
-      .doc(currentCloudUser.uid)
-      .collection("cybergym")
-      .doc("state")
-      .get();
-
-    if (docSnap.exists) {
-      const remote = docSnap.data() || {};
-      if (remote.data) {
-        applyCloudDataToLocal(remote.data);
-        if (remote.updatedAt) {
-          localStorage.setItem("g_last_local_update", String(remote.updatedAt));
-        }
-      }
-    } else {
-      await pushToFirestore(true);
-    }
-
-    if (!silent) {
-      showToast("NUVEM ATUALIZADA ✓", 1800);
-    }
-    return true;
-  } catch (err) {
-    if (!silent) {
-      showToast("FALHA AO BUSCAR DADOS DA NUVEM", 2000);
-    }
-    return false;
-  }
-}
-
 async function loginWithGoogle() {
   if (!isFirebaseConfigured()) {
-    updateCloudUI(
-      "LOCAL / SEM CHAVE",
-      "Configure o FIREBASE_CONFIG no script.js para ativar o login com Google.",
-      false,
-    );
     showToast("CONFIGURE O FIREBASE_CONFIG NO SCRIPT.JS", 2600);
     return;
   }
