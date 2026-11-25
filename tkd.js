@@ -189,7 +189,9 @@ function getTkdState() {
 
 function saveTkdState(state) {
   localStorage.setItem("g_tkd_state", JSON.stringify(state));
-  if (typeof pushToFirestore === "function") {
+  if (typeof scheduleCloudSync === "function") {
+    scheduleCloudSync();
+  } else if (typeof pushToFirestore === "function") {
     pushToFirestore(true);
   }
 }
@@ -204,8 +206,9 @@ function renderTkdScreen() {
   const nextBelt =
     beltIdx + 1 < TKD_BELTS.length ? TKD_BELTS[beltIdx + 1] : null;
 
-  document.getElementById("tkdCurrentGubBadge").innerText =
-    currentBelt.gub.toUpperCase();
+  const badgeEl = document.getElementById("tkdCurrentGubBadge");
+  if (!badgeEl) return;
+  badgeEl.innerText = currentBelt.gub.toUpperCase();
 
   const curVis = document.getElementById("tkdCurrentBeltVisual");
   curVis.className = `tkd-belt-visual ${currentBelt.cssClass}`;
@@ -450,13 +453,3 @@ function registerTkdCheckin() {
 document.addEventListener("DOMContentLoaded", () => {
   renderTkdScreen();
 });
-
-const _origSwitchMainTab = window.switchMainTab;
-window.switchMainTab = function (id, tabEl) {
-  if (id === "tkdScreen") {
-    renderTkdScreen();
-  }
-  if (typeof _origSwitchMainTab === "function") {
-    _origSwitchMainTab(id, tabEl);
-  }
-};
