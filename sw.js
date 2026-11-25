@@ -1,4 +1,4 @@
-const CACHE_NAME = "cybergym-hud-v3.9";
+const CACHE_NAME = "cybergym-hud-v3.15";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
@@ -8,25 +8,27 @@ const ASSETS_TO_CACHE = [
   "./tkd.js",
   "./manifest.json",
   "./icon-192.png",
-  "./icon-512.png"
+  "./icon-512.png",
 ];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE)),
   );
   self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys
-          .filter((key) => key !== CACHE_NAME)
-          .map((key) => caches.delete(key))
-      )
-    )
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(
+          keys
+            .filter((key) => key !== CACHE_NAME)
+            .map((key) => caches.delete(key)),
+        ),
+      ),
   );
   self.clients.claim();
 });
@@ -48,6 +50,6 @@ self.addEventListener("fetch", (event) => {
         .catch(() => cachedResponse);
 
       return cachedResponse || fetchPromise;
-    })
+    }),
   );
 });
