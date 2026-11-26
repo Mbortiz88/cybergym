@@ -1211,6 +1211,12 @@ function renderMeasurementsList() {
 }
 
 function initApp() {
+  if (!localStorage.getItem("g_annual_checkin_baselines")) {
+    localStorage.setItem(
+      "g_annual_checkin_baselines",
+      JSON.stringify(DEFAULT_ANNUAL_CHECKIN_BASELINES),
+    );
+  }
   const list = document.getElementById("menuList");
   list.innerHTML = "";
 
@@ -1266,6 +1272,109 @@ function switchMainTab(id, tabEl) {
   }, 150);
 }
 
+
+const DEFAULT_ANNUAL_CHECKIN_BASELINES = {
+  2026: 241,
+};
+
+function getAnnualCheckinBaselines() {
+  try {
+    const raw = localStorage.getItem("g_annual_checkin_baselines");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") {
+        return { ...DEFAULT_ANNUAL_CHECKIN_BASELINES, ...parsed };
+      }
+    }
+  } catch (e) {}
+  return { ...DEFAULT_ANNUAL_CHECKIN_BASELINES };
+}
+
+function saveAnnualCheckinBaselines(map) {
+  localStorage.setItem("g_annual_checkin_baselines", JSON.stringify(map));
+  scheduleCloudSync();
+}
+
+function getCheckinYear(item) {
+  if (!item) return null;
+  const iso = item.isoDate || brToISO(item.date);
+  if (iso && iso.length >= 4) {
+    const y = parseInt(iso.slice(0, 4), 10);
+    if (!isNaN(y)) return y;
+  }
+  return null;
+}
+
+function getYearlyCheckinSummary(history) {
+  const baselines = getAnnualCheckinBaselines();
+  const currentYear = new Date().getFullYear();
+  const countsByYear = {};
+
+  Object.keys(baselines).forEach((yr) => {
+    const yNum = Number(yr);
+    if (!isNaN(yNum)) {
+      countsByYear[yNum] = Number(baselines[yr]) || 0;
+    }
+  });
+
+  if (countsByYear[currentYear] === undefined) {
+    countsByYear[currentYear] = 0;
+  }
+
+  (Array.isArray(history) ? history : []).forEach((item) => {
+    const y = getCheckinYear(item);
+    if (y) {
+      countsByYear[y] = (countsByYear[y] || 0) + 1;
+    }
+  });
+
+  return {
+    currentYear,
+    currentYearTotal: countsByYear[currentYear] || 0,
+    countsByYear,
+    baselines,
+  };
+}
+
+function openBaselineModal() {
+  const currentYear = new Date().getFullYear();
+  const baselines = getAnnualCheckinBaselines();
+  const yearInput = document.getElementById("baselineYearInput");
+  const countInput = document.getElementById("baselineCountInput");
+  if (yearInput) yearInput.value = currentYear;
+  if (countInput) countInput.value = baselines[currentYear] ?? 0;
+  document.getElementById("baselineModal").classList.add("active");
+}
+
+function closeBaselineModal() {
+  document.getElementById("baselineModal").classList.remove("active");
+}
+
+function onBaselineYearChange() {
+  const year = parseInt(document.getElementById("baselineYearInput").value, 10);
+  const baselines = getAnnualCheckinBaselines();
+  document.getElementById("baselineCountInput").value =
+    !isNaN(year) && baselines[year] !== undefined ? baselines[year] : 0;
+}
+
+function saveBaselineFromModal() {
+  const year = parseInt(document.getElementById("baselineYearInput").value, 10);
+  const count = Math.max(
+    0,
+    parseInt(document.getElementById("baselineCountInput").value, 10) || 0,
+  );
+  if (isNaN(year) || year < 2000 || year > 2100) {
+    showToast("ANO INVÁLIDO!", 1500);
+    return;
+  }
+  const baselines = getAnnualCheckinBaselines();
+  baselines[year] = count;
+  saveAnnualCheckinBaselines(baselines);
+  closeBaselineModal();
+  renderDashboard();
+  showToast(`SALDO ${year} ATUALIZADO: ${count} CHECK-INS ✓`, 2200);
+}
+
 function renderDashboard() {
   const statsGrid = document.getElementById("dashStatsGrid");
   const prList = document.getElementById("prSummaryList");
@@ -1273,6 +1382,7 @@ function renderDashboard() {
 
   const checkinHistory = getCheckinHistory();
   const streak = calculateStreak(checkinHistory);
+  const yearly = getYearlyCheckinSummary(checkinHistory);
 
   let prRowsHtml = "";
   let totalPRs = 0;
@@ -1298,9 +1408,9 @@ function renderDashboard() {
   });
 
   statsGrid.innerHTML = `
-    <div class="dash-stat-box">
-        <span class="dash-stat-label">Check-ins Totais</span>
-        <span class="dash-stat-value">${checkinHistory.length}</span>
+    <div class="dash-stat-box" onclick="openBaselineModal()" style="cursor:pointer;" title="Toque para ajustar o saldo inicial do ano">
+        <span class="dash-stat-label">Check-ins ${yearly.currentYear}</span>
+        <span class="dash-stat-value">${yearly.currentYearTotal}</span>
     </div>
     <div class="dash-stat-box">
         <span class="dash-stat-label">Sequência Atual</span>
@@ -1310,6 +1420,33 @@ function renderDashboard() {
         <span class="dash-stat-label">Recordes (PRs)</span>
         <span class="dash-stat-value">${totalPRs}</span>
     </div>`;
+
+  const seasonsBox = document.getElementById("annualSeasonsBox");
+  if (seasonsBox) {
+    const sortedYears = Object.keys(yearly.countsByYear)
+      .map(Number)
+      .sort((a, b) => b - a);
+    seasonsBox.innerHTML = sortedYears
+      .map((yr) => {
+        const isCurrent = yr === yearly.currentYear;
+        const baseVal = Number(yearly.baselines[yr]) || 0;
+        const appLogsCount = yearly.countsByYear[yr] - baseVal;
+        const subNote =
+          baseVal > 0
+            ? ` (${baseVal} GymRats + ${appLogsCount} no app)`
+            : "";
+        return `
+          <div class="season-archive-row ${isCurrent ? "current-season" : ""}">
+            <div>
+              <strong>TEMPORADA ${yr}</strong>
+              ${isCurrent ? '<span class="season-tag-active">ATIVA</span>' : '<span class="season-tag-archived">ENCERRADA</span>'}
+              <div class="season-sub-note">Zera automaticamente em 01/01/${yr + 1}${subNote}</div>
+            </div>
+            <div class="season-total-val">${yearly.countsByYear[yr]} <span>check-ins</span></div>
+          </div>`;
+      })
+      .join("");
+  }
 
   renderGymRatsCalendar();
   renderMeasurementsList();
