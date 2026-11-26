@@ -1746,6 +1746,24 @@ function renderWorkout(k) {
                 <button type="button" class="btn-remove-photo" onclick="clearPendingPhoto('workout')">✕ REMOVER</button>
             </div>
         </div>
+    </div>
+
+    <div class="workout-end-actions-card" id="workoutEndActionsCard">
+        <div class="workout-end-actions-header">
+            <span>🏁 CONCLUIR SESSÃO (${d.dayName.toUpperCase()})</span>
+            <span class="workout-end-hint">REGISTRAR NO GYM RATS</span>
+        </div>
+        <div class="actions-row workout-end-actions-row">
+            <button type="button" class="action-btn btn-reset" onclick="resetWorkout()">
+                🔄 Nova Sessão
+            </button>
+            <button type="button" class="action-btn btn-copy" onclick="copyWorkoutReport()">
+                📋 Copiar
+            </button>
+            <button type="button" class="action-btn btn-save" onclick="finishCurrentWorkout()">
+                ✅ Finalizar & Salvar
+            </button>
+        </div>
     </div>`;
 
 }
@@ -1869,40 +1887,12 @@ function copyWorkoutReport() {
     .then(() => showToast("RELATÓRIO COPIADO!", 2000));
 }
 
-function openWorkoutFinishModal() {
-  if (!currentDay) return;
-  const d = workoutData[currentDay];
-  let hasChecked = false;
-  d.exercises.forEach((ex, i) => {
-    const setsArr = getExerciseSetsList(currentDay, i);
-    setsArr.forEach((s, j) => {
-      const item = JSON.parse(
-        localStorage.getItem(`g_${currentDay}_e${i}_s${j}`),
-      );
-      if (item && item.checked) hasChecked = true;
-    });
-  });
-
-  if (!hasChecked) {
-    showToast("MARQUE AO MENOS UMA SÉRIE PARA SALVAR", 2400);
-    return;
-  }
-
-  clearPendingPhoto("workout");
-  document.getElementById("workoutCheckinModalTitle").innerText =
-    `Check-in • ${d.dayName}`;
-  document.getElementById("workoutCheckinModal").classList.add("active");
-}
-
-function closeWorkoutFinishModal() {
-  document.getElementById("workoutCheckinModal").classList.remove("active");
-}
-
-function confirmWorkoutSave() {
+function finishCurrentWorkout() {
   const photoData = getPendingPhoto("workout");
-  closeWorkoutFinishModal();
-  saveWorkoutHistory(photoData);
-  clearPendingPhoto("workout");
+  const saved = saveWorkoutHistory(photoData);
+  if (saved) {
+    clearPendingPhoto("workout");
+  }
 }
 
 function saveWorkoutHistory(photoData = null) {
@@ -1987,8 +1977,10 @@ function saveWorkoutHistory(photoData = null) {
     calViewMonth = new Date().getMonth();
 
     showToast(`CHECK-IN ${d.dayName.toUpperCase()} REGISTRADO! 🚀`, 3000);
+    return true;
   } else {
     showToast("MARQUE AO MENOS UMA SÉRIE PARA SALVAR", 2500);
+    return false;
   }
 }
 
