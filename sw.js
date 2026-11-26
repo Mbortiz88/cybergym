@@ -1,4 +1,4 @@
-const CACHE_NAME = "cybergym-hud-v3.19";
+const CACHE_NAME = "cybergym-hud-v3.20";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
