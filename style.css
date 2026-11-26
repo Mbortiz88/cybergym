@@ -2594,3 +2594,36 @@ textarea {
   background: rgba(0, 240, 255, 0.2);
   border-color: var(--primary);
 }
+
+
+/* =========================================================
+   CYBERHUD v3.22 — CORREÇÃO DE SOBREPOSIÇÃO E ALINHAMENTO
+   ========================================================= */
+
+.workout-photo-card-header,
+.workout-end-actions-header {
+  gap: 8px;
+}
+
+.cyber-header-title {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cyber-btn-primary {
+  font-size: 18px;
+  line-height: 1;
+  white-space: nowrap;
+  padding: 0 14px;
+}
+
+.cyber-secondary-row .action-btn {
+  min-height: 44px;
+  padding: 0 8px;
+  font-size: 16px;
+  line-height: 1;
+  white-space: nowrap;
+}
