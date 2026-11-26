@@ -1025,7 +1025,7 @@ h1 span {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  padding-bottom: 195px;
+  padding-bottom: 115px;
 }
 
 .cardio-card,
@@ -1787,10 +1787,50 @@ input.val-input {
   color: #ff6b84;
 }
 
+.workout-end-actions-card {
+  background: linear-gradient(180deg, rgba(8, 16, 30, 0.96), rgba(4, 10, 20, 0.98));
+  border: 1px solid rgba(0, 240, 255, 0.35);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.65), inset 0 0 18px rgba(0, 240, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.workout-end-actions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: "Teko", sans-serif;
+  font-size: 18px;
+  letter-spacing: 0.6px;
+  color: var(--primary);
+  border-bottom: 1px solid rgba(0, 240, 255, 0.16);
+  padding-bottom: 6px;
+}
+
+.workout-end-hint {
+  font-family: "Montserrat", sans-serif;
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+}
+
 .actions-row {
   display: grid;
   grid-template-columns: 1fr 1fr 1.6fr;
-  gap: 6px;
+  gap: 8px;
+}
+
+.workout-end-actions-row .action-btn {
+  padding: 12px 8px;
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
 }
 
 .action-btn {
@@ -2178,4 +2218,79 @@ textarea {
   position: relative;
   z-index: 2;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.95);
+}
+
+
+/* CARD DE FOTO DO TREINO (TELA TREINO ATIVO) */
+.workout-photo-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+.workout-photo-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 3px;
+  background: linear-gradient(180deg, var(--primary), var(--success));
+  box-shadow: 0 0 12px var(--primary-glow);
+}
+
+.workout-photo-card-header {
+  font-family: "Teko", sans-serif;
+  font-size: 20px;
+  letter-spacing: 1px;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 6px;
+}
+
+/* LIGHTBOX DE VISUALIZAÇÃO DE FOTO DO CHECK-IN */
+.lightbox-modal-content {
+  max-width: 390px;
+}
+
+.lightbox-img-wrap {
+  width: 100%;
+  background: rgba(2, 5, 10, 0.85);
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  border-radius: 10px;
+  padding: 6px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.lightbox-img-wrap img {
+  width: 100%;
+  max-height: 62vh;
+  object-fit: contain;
+  border-radius: 7px;
+  display: block;
+}
+
+.lightbox-caption {
+  font-size: 11px;
+  color: #dce9f8;
+  line-height: 1.45;
+  background: rgba(2, 5, 10, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 9px 10px;
+}
+
+.lightbox-caption strong {
+  color: var(--primary);
 }
