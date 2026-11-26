@@ -2386,3 +2386,211 @@ textarea {
   color: var(--muted);
   text-transform: uppercase;
 }
+
+
+/* =========================================================
+   CYBERHUD v3.21 — REFINAMENTO DE ÍCONES VETORIAIS & AÇÕES
+   ========================================================= */
+
+.cyber-header-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cyber-day-chip {
+  font-family: "Montserrat", sans-serif;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  color: var(--primary);
+  background: rgba(0, 240, 255, 0.1);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  border-radius: 5px;
+  padding: 2px 6px;
+  line-height: 1.2;
+}
+
+.cyber-tag-pill {
+  font-family: "Montserrat", sans-serif;
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.7px;
+  color: var(--muted);
+  background: rgba(148, 163, 184, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 5px;
+  padding: 3px 7px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.cyber-tag-pill.status-sync {
+  color: var(--success);
+  background: rgba(0, 255, 136, 0.08);
+  border-color: rgba(0, 255, 136, 0.28);
+}
+
+.cyber-card-svg {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+}
+
+.cyber-card-svg.accent-cyan {
+  color: var(--primary);
+  filter: drop-shadow(0 0 6px rgba(0, 240, 255, 0.55));
+}
+
+.cyber-card-svg.accent-emerald {
+  color: var(--success);
+  filter: drop-shadow(0 0 6px rgba(0, 255, 136, 0.55));
+}
+
+.cyber-mod-icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: rgba(0, 240, 255, 0.1);
+  border: 1px solid rgba(0, 240, 255, 0.28);
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.cyber-inline-svg {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+
+.cardio-type-btn .c-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 18px;
+}
+
+.cyber-metric-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.cyber-mini-svg {
+  width: 13px;
+  height: 13px;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.cyber-mini-svg.accent-amber {
+  color: var(--accent);
+}
+
+.cyber-card-subtext {
+  font-size: 11px;
+  color: #9fb4cc;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.cyber-upload-zone {
+  padding: 12px 14px;
+  gap: 8px;
+  background: linear-gradient(180deg, rgba(0, 240, 255, 0.09) 0%, rgba(0, 240, 255, 0.03) 100%);
+  border: 1px dashed rgba(0, 240, 255, 0.45);
+  box-shadow: inset 0 0 14px rgba(0, 240, 255, 0.06);
+}
+
+.cyber-btn-svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.cyber-action-matrix {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.cyber-secondary-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+}
+
+.cyber-btn-primary {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--success) 100%);
+  color: #020812;
+  font-family: "Teko", sans-serif;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 0.9px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 0 4px 20px rgba(0, 240, 255, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.cyber-btn-primary:active {
+  transform: scale(0.985);
+  box-shadow: 0 2px 12px rgba(0, 255, 136, 0.35);
+}
+
+.cyber-btn-ghost {
+  min-height: 42px;
+  padding: 10px 8px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: rgba(10, 18, 32, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  color: #cbd5e1;
+  font-family: "Teko", sans-serif;
+  font-size: 16px;
+  letter-spacing: 0.7px;
+}
+
+.cyber-btn-ghost:active {
+  background: rgba(148, 163, 184, 0.14);
+  border-color: rgba(148, 163, 184, 0.45);
+}
+
+.cyber-btn-cyan-outline {
+  min-height: 42px;
+  padding: 10px 8px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: rgba(0, 240, 255, 0.08);
+  border: 1px solid rgba(0, 240, 255, 0.38);
+  color: var(--primary);
+  font-family: "Teko", sans-serif;
+  font-size: 16px;
+  letter-spacing: 0.7px;
+  box-shadow: inset 0 0 12px rgba(0, 240, 255, 0.06);
+}
+
+.cyber-btn-cyan-outline:active {
+  background: rgba(0, 240, 255, 0.2);
+  border-color: var(--primary);
+}
