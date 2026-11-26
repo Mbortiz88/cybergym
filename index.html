@@ -41,7 +41,7 @@
         </svg>
         <h1>Matheus Ortiz <span>Fitness</span></h1>
       </div>
-      <div class="subtitle">CyberHUD v3.8 // Offline PWA Edition</div>
+      <div class="subtitle">CyberHUD v3.19 // Offline PWA Edition</div>
     </header>
 
     <!-- TELA 1: MENU DE TREINOS -->
@@ -153,6 +153,21 @@
             class="tkd-text-input"
             placeholder="Foco da aula (ex: Chutes básicos, Kibon, Elasticidade...)"
           />
+          <div class="photo-attach-box" style="margin-bottom: 0">
+            <label class="photo-attach-btn" for="tkdPhotoInput">
+              📷 TIRAR OU ESCOLHER FOTO DO DOJANG
+            </label>
+            <div class="photo-preview-wrap" id="tkdPhotoPreviewWrap">
+              <img id="tkdPhotoPreviewImg" src="" alt="Prévia da foto TKD" />
+              <button
+                type="button"
+                class="btn-remove-photo"
+                onclick="clearPendingPhoto('tkd')"
+              >
+                ✕ REMOVER
+              </button>
+            </div>
+          </div>
           <button
             type="button"
             class="btn-backup export"
@@ -481,7 +496,6 @@
           </div>
         </div>
 
-
         <div class="photo-attach-box">
           <label class="photo-attach-btn" for="manualPhotoInput">
             📷 TIRAR OU ESCOLHER FOTO DO CHECK-IN
@@ -593,7 +607,7 @@
       <div class="workout-container" id="workoutView"></div>
     </div>
 
-    <!-- DOCK INFERIOR FLUTUANTE (TIMER + AÇÕES) -->
+    <!-- DOCK INFERIOR FLUTUANTE (TIMER DE DESCANSO) -->
     <div class="floating-dock" id="floatingDock">
       <div class="dock-inner">
         <div class="mini-timer-bar">
@@ -605,18 +619,6 @@
             <button class="timer-pill" onclick="startTimer(120)">2m</button>
             <button class="timer-pill stop" onclick="stopTimer()">✕</button>
           </div>
-        </div>
-
-        <div class="actions-row">
-          <button class="action-btn btn-reset" onclick="resetWorkout()">
-            Nova Sessão
-          </button>
-          <button class="action-btn btn-copy" onclick="copyWorkoutReport()">
-            Copiar
-          </button>
-          <button class="action-btn btn-save" onclick="saveWorkoutHistory()">
-            Finalizar & Salvar
-          </button>
         </div>
       </div>
     </div>
@@ -762,37 +764,54 @@
         </button>
       </div>
     </div>
+
+    <!-- MODAL LIGHTBOX PARA VISUALIZAR FOTO DO CHECK-IN -->
+    <div
+      class="modal-overlay"
+      id="photoLightboxModal"
+      onclick="closePhotoLightbox(event)"
+    >
+      <div class="modal-content lightbox-modal-content">
+        <div class="modal-header">
+          <div class="modal-title" id="lightboxTitle">Registro</div>
+          <button class="close-btn" onclick="closePhotoLightbox()">
+            &times;
+          </button>
+        </div>
+        <div class="lightbox-img-wrap">
+          <img id="lightboxImg" src="" alt="Foto do Check-in" />
+        </div>
+        <div class="lightbox-caption" id="lightboxCaption"></div>
+      </div>
+    </div>
+
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
     <script src="script.js"></script>
     <script src="tkd.js"></script>
-  
-  <!-- Inputs ocultos para tirar/anexar foto em Treino ABCD, Check-in Manual e TKD -->
-  <input
-    type="file"
-    id="workoutPhotoInput"
-    accept="image/*"
-    capture="environment"
-    style="display: none"
-    onchange="handlePhotoFileSelect(this, 'workout')"
-  />
-  <input
-    type="file"
-    id="manualPhotoInput"
-    accept="image/*"
-    capture="environment"
-    style="display: none"
-    onchange="handlePhotoFileSelect(this, 'manual')"
-  />
-  <input
-    type="file"
-    id="tkdPhotoInput"
-    accept="image/*"
-    capture="environment"
-    style="display: none"
-    onchange="handlePhotoFileSelect(this, 'tkd')"
-  />
 
-</body>
+    <!-- Inputs ocultos para tirar/anexar foto (câmera ou galeria) -->
+    <input
+      type="file"
+      id="workoutPhotoInput"
+      accept="image/*"
+      style="display: none"
+      onchange="handlePhotoFileSelect(this, 'workout')"
+    />
+    <input
+      type="file"
+      id="manualPhotoInput"
+      accept="image/*"
+      style="display: none"
+      onchange="handlePhotoFileSelect(this, 'manual')"
+    />
+    <input
+      type="file"
+      id="tkdPhotoInput"
+      accept="image/*"
+      style="display: none"
+      onchange="handlePhotoFileSelect(this, 'tkd')"
+    />
+  </body>
 </html>
