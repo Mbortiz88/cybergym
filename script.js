@@ -432,11 +432,31 @@ const dietMealsData = [
 ];
 
 const cardioModalities = [
-  { id: "Escada", icon: "🪜", label: "Escada" },
-  { id: "Esteira", icon: "🏃‍♂️", label: "Esteira" },
-  { id: "Caminhada", icon: "🚶", label: "Caminhada" },
-  { id: "Corrida", icon: "⚡", label: "Corrida" },
-  { id: "Bicicleta", icon: "🚴", label: "Bicicleta" },
+  {
+    id: "Escada",
+    icon: `<svg class="cyber-inline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4v-4h4v-4h4V8h4V4"/></svg>`,
+    label: "Escada",
+  },
+  {
+    id: "Esteira",
+    icon: `<svg class="cyber-inline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18h16l4-6"/><circle cx="5" cy="18" r="2"/><circle cx="17" cy="18" r="2"/><path d="M18 12l-2-6h-3"/></svg>`,
+    label: "Esteira",
+  },
+  {
+    id: "Caminhada",
+    icon: `<svg class="cyber-inline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="2"/><path d="M10 21l2-7 3 3v4"/><path d="M7 13l3-4 4 2 3-2"/></svg>`,
+    label: "Caminhada",
+  },
+  {
+    id: "Corrida",
+    icon: `<svg class="cyber-inline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
+    label: "Corrida",
+  },
+  {
+    id: "Bicicleta",
+    icon: `<svg class="cyber-inline-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-3 11.5V14l-3-3 4-3 2 3h2"/></svg>`,
+    label: "Bicicleta",
+  },
 ];
 
 let currentDay = null;
@@ -1613,7 +1633,7 @@ function selectCardioType(typeId) {
 
   const selectedEl = document.getElementById("cardioSelectedDisplay");
   if (selectedEl) {
-    selectedEl.innerHTML = `<span style="font-size:16px">${mod.icon}</span> ${mod.label.toUpperCase()}`;
+    selectedEl.innerHTML = `<span class="cyber-mod-icon-wrap">${mod.icon}</span> <span>${mod.label.toUpperCase()}</span>`;
   }
 
   toggleCardioDrawer();
@@ -1822,11 +1842,17 @@ function renderWorkout(k) {
 
   cont.innerHTML += `
     <div class="cardio-card">
-        <div class="cardio-header">⚡ CARDIO PÓS-TREINO</div>
+        <div class="cardio-header">
+            <span class="cyber-header-title">
+                <svg class="cyber-card-svg accent-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                CARDIO PÓS-TREINO
+            </span>
+            <span class="cyber-tag-pill">AERÓBIO</span>
+        </div>
         
         <button type="button" class="cardio-drawer-trigger" id="cardioDrawerTrigger" onclick="toggleCardioDrawer()">
             <div class="cardio-selected-info" id="cardioSelectedDisplay">
-                <span style="font-size:16px">${activeMod.icon}</span> ${activeMod.label.toUpperCase()}
+                <span class="cyber-mod-icon-wrap">${activeMod.icon}</span> <span>${activeMod.label.toUpperCase()}</span>
             </div>
             <span class="cardio-drawer-hint">MODALIDADE <span id="cardioDrawerArrow">▾</span></span>
         </button>
@@ -1839,17 +1865,29 @@ function renderWorkout(k) {
 
         <div class="cardio-metrics-grid">
             <div class="cardio-metric-box">
-                <div class="cardio-metric-label">⏱️ Tempo <span>(min)</span></div>
+                <div class="cardio-metric-label">
+                    <span class="cyber-metric-title">
+                        <svg class="cyber-mini-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M5 3 2 6"/><path d="m22 6-3-3"/><path d="M10 2h4"/></svg>
+                        TEMPO
+                    </span>
+                    <span>(MIN)</span>
+                </div>
                 <div class="cardio-stepper">
-                    <button type="button" onclick="adjustCardioMetric('c_t', -1)">-</button>
+                    <button type="button" onclick="adjustCardioMetric('c_t', -1)">−</button>
                     <input type="number" id="c_t" value="${savedTime}" oninput="saveC()">
                     <button type="button" onclick="adjustCardioMetric('c_t', 1)">+</button>
                 </div>
             </div>
             <div class="cardio-metric-box">
-                <div class="cardio-metric-label">🔥 Calorias <span>(kcal)</span></div>
+                <div class="cardio-metric-label">
+                    <span class="cyber-metric-title">
+                        <svg class="cyber-mini-svg accent-amber" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+                        CALORIAS
+                    </span>
+                    <span>(KCAL)</span>
+                </div>
                 <div class="cardio-stepper">
-                    <button type="button" onclick="adjustCardioMetric('c_k', -10)">-</button>
+                    <button type="button" onclick="adjustCardioMetric('c_k', -10)">−</button>
                     <input type="number" id="c_k" value="${savedKcal}" oninput="saveC()">
                     <button type="button" onclick="adjustCardioMetric('c_k', 10)">+</button>
                 </div>
@@ -1859,7 +1897,7 @@ function renderWorkout(k) {
 
   if (d.postStretch && d.postStretch.length > 0) {
     cont.innerHTML += buildStretchCard(
-      "🥋 ELASTICIDADE PÓS-TREINO (TIMER 45s/60s ABAIXO)",
+      "ELASTICIDADE PÓS-TREINO • TIMER 45s/60s",
       d.postStretch,
       "post",
     );
@@ -1868,15 +1906,19 @@ function renderWorkout(k) {
   cont.innerHTML += `
     <div class="workout-photo-card" id="workoutPhotoCard">
         <div class="workout-photo-card-header">
-            <span>📷 FOTO DO TREINO (${d.dayName.toUpperCase()})</span>
-            <span style="font-family:'Montserrat',sans-serif;font-size:9px;font-weight:800;color:var(--muted);">OPCIONAL</span>
+            <span class="cyber-header-title">
+                <svg class="cyber-card-svg accent-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                FOTO DO TREINO <span class="cyber-day-chip">${d.dayName.toUpperCase()}</span>
+            </span>
+            <span class="cyber-tag-pill">OPCIONAL</span>
         </div>
-        <p style="font-size:11px;color:#b7c9df;margin-bottom:8px;line-height:1.35;">
-            Anexe sua foto do treino para sair junto no check-in do calendário GymRats.
+        <p class="cyber-card-subtext">
+            Anexe o registro visual da sessão para sincronizar com o calendário GymRats.
         </p>
         <div class="photo-attach-box" style="margin-bottom:0;">
-            <label class="photo-attach-btn" for="workoutPhotoInput">
-                📷 TIRAR OU ESCOLHER FOTO DO TREINO
+            <label class="photo-attach-btn cyber-upload-zone" for="workoutPhotoInput">
+                <svg class="cyber-btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <span>CAPTURAR OU SELECIONAR IMAGEM</span>
             </label>
             <div class="photo-preview-wrap" id="workoutPhotoPreviewWrap" style="display:${getPendingPhoto("workout") ? "flex" : "none"}">
                 <img id="workoutPhotoPreviewImg" src="${getPendingPhoto("workout") || ""}" alt="Foto do Treino" />
@@ -1887,19 +1929,27 @@ function renderWorkout(k) {
 
     <div class="workout-end-actions-card" id="workoutEndActionsCard">
         <div class="workout-end-actions-header">
-            <span>🏁 CONCLUIR SESSÃO (${d.dayName.toUpperCase()})</span>
-            <span class="workout-end-hint">REGISTRAR NO GYM RATS</span>
+            <span class="cyber-header-title">
+                <svg class="cyber-card-svg accent-emerald" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                CONCLUIR SESSÃO <span class="cyber-day-chip">${d.dayName.toUpperCase()}</span>
+            </span>
+            <span class="cyber-tag-pill status-sync">GYMRATS SYNC</span>
         </div>
-        <div class="actions-row workout-end-actions-row">
-            <button type="button" class="action-btn btn-reset" onclick="resetWorkout()">
-                🔄 Nova Sessão
+        <div class="cyber-action-matrix">
+            <button type="button" class="action-btn btn-save cyber-btn-primary" onclick="finishCurrentWorkout()">
+                <svg class="cyber-btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>FINALIZAR &amp; SALVAR SESSÃO</span>
             </button>
-            <button type="button" class="action-btn btn-copy" onclick="copyWorkoutReport()">
-                📋 Copiar
-            </button>
-            <button type="button" class="action-btn btn-save" onclick="finishCurrentWorkout()">
-                ✅ Finalizar & Salvar
-            </button>
+            <div class="cyber-secondary-row">
+                <button type="button" class="action-btn btn-reset cyber-btn-ghost" onclick="resetWorkout()">
+                    <svg class="cyber-btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                    <span>NOVA SESSÃO</span>
+                </button>
+                <button type="button" class="action-btn btn-copy cyber-btn-cyan-outline" onclick="copyWorkoutReport()">
+                    <svg class="cyber-btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    <span>COPIAR LOG</span>
+                </button>
+            </div>
         </div>
     </div>`;
 
