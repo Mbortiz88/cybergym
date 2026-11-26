@@ -41,7 +41,7 @@
         </svg>
         <h1>Matheus Ortiz <span>Fitness</span></h1>
       </div>
-      <div class="subtitle">CyberHUD v3.19 // Offline PWA Edition</div>
+      <div class="subtitle">CyberHUD v3.20 // Offline PWA Edition</div>
     </header>
 
     <!-- TELA 1: MENU DE TREINOS -->
@@ -395,9 +395,19 @@
           >
             📅 CHECK-INS (GYMRATS)
           </div>
-          <span class="cal-month-count" id="calMonthCheckinsCount"
-            >0 dias no mês</span
-          >
+          <div style="display: flex; align-items: center; gap: 6px">
+            <button
+              type="button"
+              class="btn-baseline-edit"
+              onclick="openBaselineModal()"
+              title="Ajustar saldo inicial do ano"
+            >
+              ⚙️ SALDO ANUAL
+            </button>
+            <span class="cal-month-count" id="calMonthCheckinsCount"
+              >0 dias no mês</span
+            >
+          </div>
         </div>
 
         <div class="cal-nav-bar">
@@ -439,6 +449,8 @@
             Nenhum treino ou atividade registrada nesta data.
           </div>
         </div>
+
+        <div class="annual-seasons-wrap" id="annualSeasonsBox"></div>
       </div>
 
       <!-- REGISTRO MANUAL DE ATIVIDADE / ESPORTES (TAEKWONDO, CORRIDA, ETC.) -->
@@ -761,6 +773,51 @@
           onclick="importBackup()"
         >
           RESTAURAR DADOS AGORA
+        </button>
+      </div>
+    </div>
+
+    <!-- MODAL DE SALDO INICIAL DE CHECK-INS POR ANO -->
+    <div class="modal-overlay" id="baselineModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title">Saldo Anual de Check-ins</div>
+          <button class="close-btn" onclick="closeBaselineModal()">
+            &times;
+          </button>
+        </div>
+        <p class="dash-desc" style="margin-bottom: 10px">
+          Defina quantos check-ins você já tinha acumulado antes de migrar para
+          o app. Na virada de cada ano (01/01), o contador principal zera
+          automaticamente e arquiva a temporada anterior.
+        </p>
+        <div class="input-history-box">
+          <label>Ano e Quantidade Base (GymRats):</label>
+          <div class="input-row-flex">
+            <input
+              type="number"
+              id="baselineYearInput"
+              value="2026"
+              min="2020"
+              max="2100"
+              oninput="onBaselineYearChange()"
+            />
+            <input
+              type="number"
+              id="baselineCountInput"
+              value="241"
+              min="0"
+              placeholder="Ex: 241"
+            />
+          </div>
+        </div>
+        <button
+          type="button"
+          class="btn-backup export"
+          style="width: 100%; padding: 12px"
+          onclick="saveBaselineFromModal()"
+        >
+          SALVAR SALDO DA TEMPORADA
         </button>
       </div>
     </div>
