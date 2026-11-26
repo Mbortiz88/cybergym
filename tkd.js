@@ -625,6 +625,9 @@ function registerTkdCheckin() {
     (Number(state.sessionsByBelt[belt.id]) || 0) + 1;
   saveTkdState(state);
 
+  const tkdPhotoData =
+    typeof getPendingPhoto === "function" ? getPendingPhoto("tkd") : null;
+
   if (
     typeof getCheckinHistory === "function" &&
     typeof saveCheckinHistory === "function"
@@ -639,11 +642,15 @@ function registerTkdCheckin() {
       title: `🥋 Taekwondo (${belt.gub} - ${belt.name})`,
       details: focusText || "Treino técnico no dojang",
       isManual: true,
+      photo: tkdPhotoData,
     });
     saveCheckinHistory(history);
   }
 
   if (focusInput) focusInput.value = "";
+  if (typeof clearPendingPhoto === "function") {
+    clearPendingPhoto("tkd");
+  }
   renderTkdScreen();
   if (typeof renderDashboard === "function") {
     renderDashboard();
