@@ -471,7 +471,7 @@ const pendingPhotos = {
   tkd: null,
 };
 
-function compressImageToDataUrl(file, maxDim = 760, quality = 0.72) {
+function compressImageToDataUrl(file, maxDim = 640, quality = 0.65) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (ev) => {
@@ -2074,11 +2074,15 @@ function copyWorkoutReport() {
     .then(() => showToast("RELATÓRIO COPIADO!", 2000));
 }
 
-function finishCurrentWorkout() {
+async function finishCurrentWorkout() {
   const photoData = getPendingPhoto("workout");
   const saved = saveWorkoutHistory(photoData);
   if (saved) {
     clearPendingPhoto("workout");
+    if (currentCloudUser && typeof pushToFirestore === "function") {
+      clearTimeout(cloudSyncDebounce);
+      await pushToFirestore(false);
+    }
   }
 }
 
@@ -2363,13 +2367,13 @@ let currentCloudUser = null;
 function isFirebaseConfigured() {
   return Boolean(
     FIREBASE_CONFIG &&
-    FIREBASE_CONFIG.apiKey &&
-    FIREBASE_CONFIG.projectId &&
-    FIREBASE_CONFIG.appId,
+      FIREBASE_CONFIG.apiKey &&
+      FIREBASE_CONFIG.projectId &&
+      FIREBASE_CONFIG.appId,
   );
 }
 
-function updateCloudUI(statusText, infoText, loggedIn) {
+function updateCloudUI(statusText, infoText, loggedIn, isError = false) {
   const statusEl = document.getElementById("cloudSyncStatus");
   const infoEl = document.getElementById("cloudUserInfo");
   const loggedOutBox = document.getElementById("cloudLoggedOutActions");
@@ -2377,7 +2381,13 @@ function updateCloudUI(statusText, infoText, loggedIn) {
 
   if (statusEl) {
     statusEl.innerText = statusText;
-    if (loggedIn) {
+    statusEl.style.background = "";
+    statusEl.style.color = "";
+    if (isError) {
+      statusEl.classList.remove("active-checkin");
+      statusEl.style.background = "rgba(255, 59, 92, 0.2)";
+      statusEl.style.color = "#ff6b84";
+    } else if (loggedIn) {
       statusEl.classList.add("active-checkin");
     } else {
       statusEl.classList.remove("active-checkin");
@@ -2404,7 +2414,7 @@ function renderConnectedCloudBanner(syncTs) {
   const infoMsg = lastSyncStr
     ? `Conta: ${userLabel} • Última sincronização: ${lastSyncStr}`
     : `Conta: ${userLabel} • Sincronização automática ativa`;
-  updateCloudUI("ATIVO • SINCRONIZADO", infoMsg, true);
+  updateCloudUI("ATIVO • SINCRONIZADO", infoMsg, true, false);
 }
 
 function initFirebaseCloud() {
@@ -2446,8 +2456,9 @@ function initFirebaseCloud() {
   } catch (err) {
     updateCloudUI(
       "ERRO NUVEM",
-      "Não foi possível inicializar o Firebase. Dados salvos localmente.",
+      `Não foi possível inicializar o Firebase (${err.code || err.message}).`,
       false,
+      true,
     );
   }
 }
@@ -2465,6 +2476,33 @@ function collectLocalAppData() {
       payload[key] = localStorage.getItem(key);
     }
   }
+
+  // Proteção contra limite rígido de 1 MB do Firestore por documento
+  let serialized = JSON.stringify(payload);
+  if (serialized.length > 850000 && payload.g_checkin_history) {
+    try {
+      const hist = JSON.parse(payload.g_checkin_history);
+      if (Array.isArray(hist)) {
+        const trimmedHist = hist.map((item, idx) =>
+          idx >= 5 ? { ...item, photo: null } : item,
+        );
+        payload.g_checkin_history = JSON.stringify(trimmedHist);
+        serialized = JSON.stringify(payload);
+      }
+    } catch (e) {}
+  }
+
+  if (serialized.length > 920000 && payload.g_checkin_history) {
+    try {
+      const hist = JSON.parse(payload.g_checkin_history);
+      if (Array.isArray(hist)) {
+        payload.g_checkin_history = JSON.stringify(
+          hist.map((item) => ({ ...item, photo: null })),
+        );
+      }
+    } catch (e) {}
+  }
+
   return payload;
 }
 
@@ -2490,18 +2528,15 @@ function applyCloudDataToLocal(data) {
 async function syncCloudOnAuth() {
   if (!fbDb || !currentCloudUser) return false;
   try {
-    const docSnap = await fbDb
-      .collection("users")
-      .doc(currentCloudUser.uid)
-      .collection("cybergym")
-      .doc("state")
-      .get();
+    const userDocRef = fbDb.collection("users").doc(currentCloudUser.uid);
+    const docSnap = await userDocRef.get();
 
     const localUpdatedAt =
       Number(localStorage.getItem("g_last_local_update")) || 0;
 
     if (docSnap.exists) {
       const remote = docSnap.data() || {};
+      const remoteData = remote.data || remote.payload || null;
       const remoteUpdatedAt = Number(remote.updatedAt) || 0;
 
       if (
@@ -2509,8 +2544,8 @@ async function syncCloudOnAuth() {
         Object.keys(collectLocalAppData()).length > 0
       ) {
         await pushToFirestore(true);
-      } else if (remote.data) {
-        applyCloudDataToLocal(remote.data);
+      } else if (remoteData) {
+        applyCloudDataToLocal(remoteData);
         const syncTime = remoteUpdatedAt || Date.now();
         localStorage.setItem("g_last_local_update", String(syncTime));
         localStorage.setItem("g_last_cloud_sync_time", String(syncTime));
@@ -2521,6 +2556,13 @@ async function syncCloudOnAuth() {
     }
     return true;
   } catch (err) {
+    const errCode = err && err.code ? err.code : "erro-leitura";
+    updateCloudUI(
+      "ERRO DE PERMISSÃO",
+      `Falha ao ler nuvem (${errCode}). Verifique sua conta Google ou regras do Firestore.`,
+      true,
+      true,
+    );
     return false;
   }
 }
@@ -2533,13 +2575,12 @@ async function pushToFirestore(silent = false) {
     await fbDb
       .collection("users")
       .doc(currentCloudUser.uid)
-      .collection("cybergym")
-      .doc("state")
       .set(
         {
+          displayName: currentCloudUser.displayName || "",
+          email: currentCloudUser.email || "",
           data,
           updatedAt: nowTs,
-          email: currentCloudUser.email || "",
         },
         { merge: true },
       );
@@ -2549,12 +2590,21 @@ async function pushToFirestore(silent = false) {
     renderConnectedCloudBanner(nowTs);
 
     if (!silent) {
-      showToast("DADOS SINCRONIZADOS NA NUVEM ✓", 1800);
+      showToast("DADOS SINCRONIZADOS NA NUVEM ✓", 2000);
     }
     return true;
   } catch (err) {
+    const errCode = err && err.code ? err.code : "erro-envio";
+    const userLabel =
+      currentCloudUser.displayName || currentCloudUser.email || "Conta Google";
+    updateCloudUI(
+      "ERRO AO SINCRONIZAR",
+      `${userLabel} • Falha (${errCode}). Toque em SINCRONIZAR AGORA.`,
+      true,
+      true,
+    );
     if (!silent) {
-      showToast("FALHA AO ENVIAR PARA A NUVEM", 2000);
+      showToast(`FALHA NA NUVEM: ${errCode.toUpperCase()}`, 2600);
     }
     return false;
   }
@@ -2571,7 +2621,8 @@ async function loginWithGoogle() {
     const provider = new window.firebase.auth.GoogleAuthProvider();
     await fbAuth.signInWithPopup(provider);
   } catch (err) {
-    showToast("LOGIN GOOGLE CANCELADO OU BLOQUEADO", 2200);
+    const errCode = err && err.code ? err.code : "";
+    showToast(`LOGIN GOOGLE BLOQUEADO ${errCode}`, 2400);
   }
 }
 
