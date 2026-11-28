@@ -1,9 +1,9 @@
-const CACHE_NAME = "cybergym-hud-v4.1.0";
+const CACHE_NAME = "cybergym-hud-v4.1.1";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
   "./style.css",
-  "./iphone-polish.css?v=4.1.0",
+  "./iphone-polish.css?v=4.1.1",
   "./script.js?v=4.0.0",
   "./tkd.css",
   "./tkd.js",
