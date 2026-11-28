@@ -1,479 +1,856 @@
-/* =========================================================
-   CYBERHUD v4.1.2 • POLIMENTO VISUAL IPHONE + FEIXE SCANNER LENTO
-   ========================================================= */
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <title>Matheus Ortiz Fitness • CyberHUD v4.1</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="apple-touch-icon" href="icon-512.jpg" />
+    <meta name="theme-color" content="#04070d" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Teko:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.cdnfonts.com/css/digital-7-mono"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="tkd.css" />
+    <link rel="stylesheet" href="iphone-polish.css?v=4.1.2" />
+  </head>
+  <body>
+    <div class="scanline"></div>
+    <div id="toast">SÉRIE COMPUTADA ✓</div>
 
-:root {
-  --safe-top: env(safe-area-inset-top, 0px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-}
+    <!-- CABEÇALHO PRINCIPAL (APENAS NA HOME/TKD/DIETA/EVOLUÇÃO) -->
+    <header id="mainHeader">
+      <div class="logo-container">
+        <svg class="dumbbell-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"
+          />
+        </svg>
+        <h1>Matheus Ortiz <span>Fitness</span></h1>
+      </div>
+      <div class="subtitle">CyberHUD v4.1 // Cloud Sync v4</div>
+    </header>
 
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
-  -webkit-text-size-adjust: 100%;
-  -webkit-tap-highlight-color: transparent;
-}
+    <!-- TELA 1: MENU DE TREINOS -->
+    <div id="homeScreen" class="app-screen active">
+      <div class="menu-list" id="menuList"></div>
+    </div>
 
-/* Evita zoom automático do Safari/Chrome iOS ao focar nos campos */
-input,
-select,
-textarea {
-  font-size: 16px !important;
-}
+    <!-- TELA TKD: TAEKWONDO (GRADUAÇÃO, TÉCNICAS & EVOLUÇÃO) -->
+    <div id="tkdScreen" class="app-screen">
+      <div class="dash-section-card tkd-belt-card" id="tkdBeltCard">
+        <div class="cal-card-header">
+          <div
+            class="dash-section-title"
+            style="border: none; padding: 0; margin: 0"
+          >
+            🥋 GRADUAÇÃO &amp; FAIXAS (WTF)
+          </div>
+          <span class="cdd-badge active-checkin" id="tkdCurrentGubBadge"
+            >10º GUB</span
+          >
+        </div>
 
-/* =========================================================
-   ANIMAÇÃO DA LINHA / FEIXE DE LUZ DESLIZANTE (SCANNER BEAM)
-   ========================================================= */
-@keyframes cyberHeaderSweep {
-  0% {
-    transform: translateX(-110%);
-    opacity: 0.25;
-  }
-  15% {
-    opacity: 1;
-  }
-  85% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(310%);
-    opacity: 0.25;
-  }
-}
+        <div class="tkd-belt-showcase">
+          <div class="tkd-belt-box current">
+            <span class="tkd-box-label">FAIXA ATUAL</span>
+            <div class="tkd-belt-visual" id="tkdCurrentBeltVisual"></div>
+            <strong id="tkdCurrentBeltName">BRANCA</strong>
+            <small id="tkdCurrentBeltSub">10º Gub • Iniciante</small>
+          </div>
 
-/* =========================================================
-   1. CABEÇALHO PRINCIPAL (HOME) + LINHA ANIMADA EMBAIXO
-   ========================================================= */
-#mainHeader {
-  position: relative !important;
-  overflow: hidden !important;
-  padding-top: calc(var(--safe-top) + 14px) !important;
-  padding-bottom: 15px !important;
-  padding-left: 16px !important;
-  padding-right: 16px !important;
-  margin-bottom: 10px !important;
-  text-align: center !important;
-  width: 100% !important;
-  box-sizing: border-box !important;
-  border-bottom: 1px solid rgba(0, 229, 255, 0.16) !important;
-}
+          <div class="tkd-arrow-next">➔</div>
 
-/* Trilho base sutil */
-#mainHeader::before {
-  content: "" !important;
-  position: absolute !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  height: 2px !important;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(0, 229, 255, 0.22) 50%,
-    transparent 100%
-  ) !important;
-  pointer-events: none !important;
-}
+          <div class="tkd-belt-box next">
+            <span class="tkd-box-label">PRÓXIMO NÍVEL</span>
+            <div class="tkd-belt-visual" id="tkdNextBeltVisual"></div>
+            <strong id="tkdNextBeltName">CINZA</strong>
+            <small id="tkdNextBeltSub">9º Gub • Próximo Exame</small>
+          </div>
+        </div>
 
-/* Feixe luminoso que passa suavemente de um lado ao outro (6.5s) */
-#mainHeader::after {
-  content: "" !important;
-  position: absolute !important;
-  left: 0 !important;
-  bottom: 0 !important;
-  width: 34% !important;
-  height: 2.5px !important;
-  border-radius: 999px !important;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(0, 229, 255, 0.45) 25%,
-    #7df9ff 50%,
-    #00e5ff 75%,
-    transparent 100%
-  ) !important;
-  box-shadow:
-    0 0 10px rgba(0, 229, 255, 0.9),
-    0 0 18px rgba(0, 229, 255, 0.55) !important;
-  animation: cyberHeaderSweep 6.5s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite !important;
-  pointer-events: none !important;
-}
+        <div class="tkd-exam-progress-wrap">
+          <div class="tkd-exam-progress-top">
+            <span>PRONTIDÃO TÉCNICA PARA O EXAME</span>
+            <strong id="tkdReadinessPct">0%</strong>
+          </div>
+          <div class="progress-track">
+            <div
+              class="progress-fill"
+              id="tkdReadinessFill"
+              style="width: 0%"
+            ></div>
+          </div>
+        </div>
 
-#mainHeader .logo-container {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 8px !important;
-  flex-wrap: nowrap !important;
-  max-width: 100% !important;
-}
+        <div class="tkd-belt-controls">
+          <select
+            id="tkdBeltSelect"
+            class="tkd-select"
+            onchange="changeTkdBelt(this.value)"
+          ></select>
+          <button
+            type="button"
+            class="btn-backup export"
+            onclick="promoteTkdBelt()"
+          >
+            🎖️ AVANÇAR FAIXA
+          </button>
+        </div>
+      </div>
 
-#mainHeader .dumbbell-icon {
-  width: 24px !important;
-  height: 24px !important;
-  min-width: 24px !important;
-  flex-shrink: 0 !important;
-  margin: 0 !important;
-}
+      <div class="dash-stats-grid three-cols" id="tkdStatsGrid">
+        <div class="dash-stat-box">
+          <span class="dash-stat-label">Aulas na Faixa</span>
+          <span class="dash-stat-value" id="tkdSessionsInBelt">0</span>
+        </div>
+        <div class="dash-stat-box">
+          <span class="dash-stat-label">Aulas Totais</span>
+          <span class="dash-stat-value" id="tkdTotalSessions">0</span>
+        </div>
+        <div class="dash-stat-box">
+          <span class="dash-stat-label">Técnicas OK</span>
+          <span class="dash-stat-value" id="tkdTechCount">0/0</span>
+        </div>
+      </div>
 
-#mainHeader h1 {
-  font-size: clamp(22px, 6.2vw, 28px) !important;
-  line-height: 1.05 !important;
-  white-space: nowrap !important;
-  letter-spacing: 0.8px !important;
-  margin: 0 !important;
-  display: inline-flex !important;
-  align-items: baseline !important;
-  gap: 6px !important;
-}
+      <div class="dash-section-card">
+        <div class="cal-card-header">
+          <div
+            class="dash-section-title"
+            style="border: none; padding: 0; margin: 0"
+          >
+            ⚡ REGISTRO DE TREINO NO TATAME
+          </div>
+          <span class="cdd-badge active-checkin">DOJANG</span>
+        </div>
+        <p class="dash-desc" style="margin-bottom: 10px">
+          Registre sua aula de Taekwondo diretamente no calendário de frequência
+          e some treinos na faixa atual.
+        </p>
+        <div class="tkd-checkin-row">
+          <input
+            type="text"
+            id="tkdSessionFocusInput"
+            class="tkd-text-input"
+            placeholder="Foco da aula (ex: Chutes básicos, Kibon, Elasticidade...)"
+          />
+          <div class="photo-attach-box" style="margin-bottom: 0">
+            <label class="photo-attach-btn" for="tkdPhotoInput">
+              📷 TIRAR OU ESCOLHER FOTO DO DOJANG
+            </label>
+            <div class="photo-preview-wrap" id="tkdPhotoPreviewWrap">
+              <img id="tkdPhotoPreviewImg" src="" alt="Prévia da foto TKD" />
+              <button
+                type="button"
+                class="btn-remove-photo"
+                onclick="clearPendingPhoto('tkd')"
+              >
+                ✕ REMOVER
+              </button>
+            </div>
+          </div>
+          <button
+            type="button"
+            class="btn-backup export"
+            style="width: 100%; padding: 11px"
+            onclick="registerTkdCheckin()"
+          >
+            ✓ REGISTRAR TREINO TKD
+          </button>
+        </div>
+      </div>
 
-#mainHeader .subtitle {
-  margin-top: 5px !important;
-  font-size: 10px !important;
-  letter-spacing: 2px !important;
-  opacity: 0.85 !important;
-}
+      <div class="dash-section-card">
+        <button
+          type="button"
+          class="eq-toggle-btn"
+          onclick="toggleTkdTimelineDrawer()"
+        >
+          <span>📊 MAPA DE GRADUAÇÕES (10º GUB AO 1º DAN)</span>
+          <span id="tkdTimelineArrow">▾</span>
+        </button>
+        <div class="tkd-timeline-panel" id="tkdTimelinePanel">
+          <div class="tkd-timeline-list" id="tkdTimelineList"></div>
+        </div>
+      </div>
 
-/* =========================================================
-   2. MENU DE TREINOS (4 CARDS IDÊNTICOS PREENCHENDO A TELA)
-   ========================================================= */
-#homeScreen.app-screen.active {
-  display: flex !important;
-  flex-direction: column !important;
-  min-height: calc(100dvh - 88px - var(--safe-top)) !important;
-  padding-top: 2px !important;
-  padding-bottom: calc(82px + var(--safe-bottom)) !important;
-  padding-left: 14px !important;
-  padding-right: 14px !important;
-  box-sizing: border-box !important;
-}
+      <div class="dash-section-card">
+        <div class="cal-card-header">
+          <div
+            class="dash-section-title"
+            style="border: none; padding: 0; margin: 0"
+          >
+            🎯 CURRÍCULO TÉCNICO &amp; POOMSAE
+          </div>
+          <span class="cdd-badge active-checkin" id="tkdCurriculumBeltTag"
+            >10º GUB • BRANCA</span
+          >
+        </div>
+        <p class="dash-desc" style="margin-bottom: 10px">
+          Marque as técnicas que você já domina para o próximo exame de faixa.
+        </p>
+        <div id="tkdChecklistContainer" class="tkd-checklist"></div>
 
-#menuList.menu-list {
-  display: grid !important;
-  grid-template-rows: repeat(4, minmax(112px, 1fr)) !important;
-  gap: 12px !important;
-  flex: 1 !important;
-  width: 100% !important;
-  margin: 0 !important;
-}
+        <div class="tkd-add-custom-box">
+          <input
+            type="text"
+            id="tkdCustomTechInput"
+            class="tkd-text-input"
+            placeholder="Adicionar movimento ou observação do mestre..."
+          />
+          <button
+            type="button"
+            class="btn-backup import"
+            onclick="addCustomTkdTech()"
+          >
+            + ADD
+          </button>
+        </div>
+      </div>
+    </div>
 
-#menuList .menu-item {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  min-height: 112px !important;
-  height: 100% !important;
-  padding: 16px 18px !important;
-  margin: 0 !important;
-  border-radius: 16px !important;
-  box-sizing: border-box !important;
-  background: linear-gradient(
-    145deg,
-    rgba(13, 23, 38, 0.96) 0%,
-    rgba(8, 15, 26, 0.98) 100%
-  ) !important;
-  border: 1px solid rgba(0, 229, 255, 0.22) !important;
-  border-left: 4px solid #00e5ff !important;
-  box-shadow:
-    0 8px 20px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
-  transition:
-    transform 0.14s ease,
-    border-color 0.14s ease !important;
-}
+    <!-- TELA 2: DIETA & NUTRIÇÃO -->
+    <div id="dietScreen" class="app-screen">
+      <div class="dash-section-card">
+        <div class="dash-section-title">🥗 METAS & RECOMPOSIÇÃO</div>
+        <div class="diet-macros-grid">
+          <div class="diet-macro-box">
+            <span class="dash-stat-label">VET ALVO</span>
+            <span class="diet-macro-val">~2.250</span>
+          </div>
+          <div class="diet-macro-box">
+            <span class="dash-stat-label">PROTEÍNAS</span>
+            <span class="diet-macro-val">175G</span>
+          </div>
+          <div class="diet-macro-box">
+            <span class="dash-stat-label">CARBOS</span>
+            <span class="diet-macro-val">245G</span>
+          </div>
+          <div class="diet-macro-box">
+            <span class="dash-stat-label">REFEIÇÕES</span>
+            <span class="diet-macro-val" id="dietMealsCount">0/4</span>
+          </div>
+        </div>
 
-#menuList .menu-item:active {
-  transform: scale(0.985) !important;
-  border-color: rgba(0, 229, 255, 0.55) !important;
-}
+        <div class="water-box">
+          <div class="water-top-row">
+            <span>💧 HIDRATAÇÃO (META: 3,2 L)</span>
+            <strong id="waterDisplay">0,00 L</strong>
+          </div>
+          <div class="progress-track" style="margin-bottom: 10px">
+            <div class="progress-fill" id="waterProgressFill"></div>
+          </div>
+          <div class="water-btn-row">
+            <button class="btn-backup import" onclick="addWater(0.25)">
+              +250ML
+            </button>
+            <button class="btn-backup import" onclick="addWater(0.5)">
+              +500ML
+            </button>
+            <button class="btn-backup reset-water" onclick="resetDietDay()">
+              ZERAR DIA
+            </button>
+          </div>
+        </div>
+      </div>
 
-#menuList .menu-info {
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: center !important;
-  gap: 8px !important;
-  flex: 1 !important;
-  min-width: 0 !important;
-  padding-right: 10px !important;
-}
+      <div id="dietMealsList" class="diet-meals-list"></div>
 
-#menuList .menu-day-name {
-  font-size: 27px !important;
-  line-height: 1 !important;
-  letter-spacing: 0.6px !important;
-}
+      <div class="dash-section-card">
+        <button
+          type="button"
+          class="eq-toggle-btn"
+          id="eqToggleBtn"
+          onclick="toggleEquivalenceDrawer()"
+        >
+          <span>⚖️ GUIA DE EQUIVALÊNCIA (PESO PRONTO)</span>
+          <span id="eqToggleArrow">▾</span>
+        </button>
+        <div class="eq-drawer-panel" id="eqDrawerPanel">
+          <div class="eq-block">
+            <div class="eq-block-title">PROTEÍNAS (~40–45G PROT)</div>
+            <div class="eq-line">
+              • Peito de frango grelhado: <strong>170g</strong>
+            </div>
+            <div class="eq-line">
+              • Patinho / Coxão de fora: <strong>160g</strong>
+            </div>
+            <div class="eq-line">• Filé de tilápia: <strong>200g</strong></div>
+            <div class="eq-line">
+              • Sobrecoxa sem pele: <strong>160g</strong>
+            </div>
+            <div class="eq-line">
+              • Atum drenado (1 lata) + <strong>2 ovos</strong>
+            </div>
+          </div>
+          <div class="eq-block">
+            <div class="eq-block-title">CARBOIDRATOS (~35–40G CARB)</div>
+            <div class="eq-line">• Arroz cozido: <strong>140g</strong></div>
+            <div class="eq-line">
+              • Batata-doce cozida/assada: <strong>160g</strong>
+            </div>
+            <div class="eq-line">
+              • Batata-inglesa / Mandioquinha: <strong>200g</strong>
+            </div>
+            <div class="eq-line">
+              • Macarrão integral cozido: <strong>120g</strong>
+            </div>
+            <div class="eq-line">
+              • Pão integral (2 fatias) + <strong>1 banana</strong>
+            </div>
+          </div>
+          <div class="eq-block" style="margin-bottom: 0">
+            <div class="eq-block-title">GORDURAS BOAS (~10G LIPÍDIOS)</div>
+            <div class="eq-line">
+              • Azeite de oliva: <strong>1 col. sopa (10ml)</strong>
+            </div>
+            <div class="eq-line">• Abacate fresco: <strong>70g</strong></div>
+            <div class="eq-line">
+              • Homus: <strong>30g</strong> | Castanhas/Amendoim:
+              <strong>20g</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-#menuList .menu-tags {
-  display: flex !important;
-  flex-wrap: wrap !important;
-  align-items: center !important;
-  gap: 6px !important;
-}
+    <!-- TELA 3: EVOLUÇÃO, CHECK-IN GYMRATS, MEDIDAS & BACKUP -->
+    <div id="dashboardScreen" class="app-screen">
+      <div class="dash-stats-grid three-cols" id="dashStatsGrid"></div>
+      <div class="dash-section-card" id="cloudSyncCard">
+        <div class="cal-card-header">
+          <div
+            class="dash-section-title"
+            style="border: none; padding: 0; margin: 0"
+          >
+            ☁️ NUVEM & CONTA GOOGLE
+          </div>
+          <span class="cdd-badge" id="cloudSyncStatus">OFFLINE / LOCAL</span>
+        </div>
+        <p class="dash-desc" id="cloudUserInfo" style="margin-bottom: 10px">
+          Conecte sua conta Google para sincronizar treinos, Taekwondo,
+          check-ins, PRs e medidas automaticamente entre dispositivos.
+        </p>
+        <div class="backup-actions" id="cloudLoggedOutActions">
+          <button
+            type="button"
+            class="btn-backup export"
+            style="grid-column: span 2"
+            onclick="loginWithGoogle()"
+          >
+            🔐 ENTRAR COM GOOGLE
+          </button>
+        </div>
+        <div
+          class="backup-actions"
+          id="cloudLoggedInActions"
+          style="display: none"
+        >
+          <button
+            type="button"
+            class="btn-backup export"
+            onclick="manualCloudSync()"
+          >
+            🔄 SINCRONIZAR AGORA
+          </button>
+          <button
+            type="button"
+            class="btn-backup reset-water"
+            onclick="logoutGoogle()"
+          >
+            SAIR DA CONTA
+          </button>
+        </div>
+      </div>
 
-#menuList .menu-region-badge,
-#menuList .menu-ex-count,
-#menuList .menu-stretch-badge {
-  font-size: 9.5px !important;
-  padding: 4px 8px !important;
-  border-radius: 6px !important;
-  line-height: 1.1 !important;
-}
+      <div class="dash-section-card">
+        <div class="cal-card-header">
+          <div
+            class="dash-section-title"
+            style="border: none; padding: 0; margin: 0"
+          >
+            📅 CHECK-INS (GYMRATS)
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px">
+            <button
+              type="button"
+              class="btn-baseline-edit"
+              onclick="openBaselineModal()"
+              title="Ajustar saldo inicial do ano"
+            >
+              ⚙️ SALDO ANUAL
+            </button>
+            <span class="cal-month-count" id="calMonthCheckinsCount"
+              >0 dias no mês</span
+            >
+          </div>
+        </div>
 
-#menuList .menu-action {
-  width: 38px !important;
-  height: 38px !important;
-  min-width: 38px !important;
-  border-radius: 50% !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  background: rgba(0, 229, 255, 0.08) !important;
-  border: 1px solid rgba(0, 229, 255, 0.28) !important;
-  font-size: 14px !important;
-}
+        <div class="cal-nav-bar">
+          <button
+            type="button"
+            class="cal-nav-btn"
+            onclick="changeCalendarMonth(-1)"
+          >
+            ❮
+          </button>
+          <span class="cal-month-label" id="calMonthLabel">NOVEMBRO 2026</span>
+          <button
+            type="button"
+            class="cal-nav-btn"
+            onclick="changeCalendarMonth(1)"
+          >
+            ❯
+          </button>
+        </div>
 
-/* =========================================================
-   3. CABEÇALHO DO TREINO ATIVO + FEIXE SCANNER INFERIOR (6.5s)
-   ========================================================= */
-#workoutScreen {
-  padding-bottom: calc(92px + var(--safe-bottom)) !important;
-}
+        <div class="cal-weekdays-row">
+          <span>DOM</span>
+          <span>SEG</span>
+          <span>TER</span>
+          <span>QUA</span>
+          <span>QUI</span>
+          <span>SEX</span>
+          <span>SÁB</span>
+        </div>
 
-.workout-hud-header {
-  position: sticky !important;
-  top: 0 !important;
-  z-index: 90 !important;
-  overflow: hidden !important;
-  padding-top: calc(var(--safe-top) + 10px) !important;
-  padding-bottom: 10px !important;
-  padding-left: 12px !important;
-  padding-right: 12px !important;
-  background: rgba(6, 12, 22, 0.94) !important;
-  backdrop-filter: blur(14px) !important;
-  -webkit-backdrop-filter: blur(14px) !important;
-  border-bottom: 1px solid rgba(0, 229, 255, 0.18) !important;
-}
+        <div class="cal-days-grid" id="calDaysGrid"></div>
 
-.workout-hud-header::after {
-  content: "" !important;
-  position: absolute !important;
-  left: 0 !important;
-  bottom: 0 !important;
-  width: 34% !important;
-  height: 2px !important;
-  border-radius: 999px !important;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(0, 229, 255, 0.45) 25%,
-    #7df9ff 50%,
-    #00e5ff 75%,
-    transparent 100%
-  ) !important;
-  box-shadow: 0 0 10px rgba(0, 229, 255, 0.85) !important;
-  animation: cyberHeaderSweep 6.5s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite !important;
-  pointer-events: none !important;
-}
+        <div class="cal-day-details" id="calDayDetails">
+          <div class="cdd-top">
+            <span id="cddDateTitle">DIA --/--/----</span>
+            <span class="cdd-badge" id="cddStatusBadge">SEM CHECK-IN</span>
+          </div>
+          <div class="cdd-content" id="cddContent">
+            Nenhum treino ou atividade registrada nesta data.
+          </div>
+        </div>
 
-.workout-nav-row {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 8px !important;
-}
+        <div class="annual-seasons-wrap" id="annualSeasonsBox"></div>
+      </div>
 
-.workout-title-group {
-  display: flex !important;
-  align-items: center !important;
-  gap: 8px !important;
-  min-width: 0 !important;
-}
+      <div class="dash-section-card">
+        <div class="dash-section-title">
+          ⚡ CHECK-IN MANUAL (OUTRAS ATIVIDADES)
+        </div>
+        <div class="quick-sports-row">
+          <button
+            type="button"
+            class="quick-sport-chip"
+            onclick="applyQuickSport('Taekwondo', '🥋')"
+          >
+            🥋 Taekwondo
+          </button>
+          <button
+            type="button"
+            class="quick-sport-chip"
+            onclick="applyQuickSport('Corrida', '🏃‍♂️')"
+          >
+            🏃‍♂️ Corrida
+          </button>
+          <button
+            type="button"
+            class="quick-sport-chip"
+            onclick="applyQuickSport('Muay Thai', '🥊')"
+          >
+            🥊 Muay Thai
+          </button>
+          <button
+            type="button"
+            class="quick-sport-chip"
+            onclick="applyQuickSport('Bike', '🚴')"
+          >
+            🚴 Bike
+          </button>
+        </div>
 
-.btn-back {
-  padding: 6px 10px !important;
-  font-size: 11px !important;
-  border-radius: 8px !important;
-  white-space: nowrap !important;
-}
+        <div class="manual-checkin-grid">
+          <div class="measure-field">
+            <label>Atividade / Modalidade</label>
+            <input type="text" id="mcActivity" placeholder="Ex: 🥋 Taekwondo" />
+          </div>
+          <div class="measure-field">
+            <label>Data</label>
+            <input type="date" id="mcDate" />
+          </div>
+          <div class="measure-field">
+            <label>Duração (min)</label>
+            <input type="number" id="mcDuration" placeholder="60" />
+          </div>
+          <div class="measure-field">
+            <label>Observação</label>
+            <input type="text" id="mcNote" placeholder="Ex: Treino de chutes" />
+          </div>
+        </div>
 
-.workout-title {
-  font-size: 22px !important;
-  line-height: 1 !important;
-  white-space: nowrap !important;
-}
+        <div class="photo-attach-box">
+          <label class="photo-attach-btn" for="manualPhotoInput">
+            📷 TIRAR OU ESCOLHER FOTO DO CHECK-IN
+          </label>
+          <div class="photo-preview-wrap" id="manualPhotoPreviewWrap">
+            <img id="manualPhotoPreviewImg" src="" alt="Prévia da foto" />
+            <button
+              type="button"
+              class="btn-remove-photo"
+              onclick="clearPendingPhoto('manual')"
+            >
+              ✕ REMOVER
+            </button>
+          </div>
+        </div>
 
-.hud-telemetry-badges {
-  display: flex !important;
-  align-items: center !important;
-  gap: 5px !important;
-  flex-shrink: 0 !important;
-}
+        <button
+          type="button"
+          class="btn-backup export"
+          style="width: 100%; padding: 11px"
+          onclick="saveManualCheckin()"
+        >
+          ✓ REGISTRAR CHECK-IN NO CALENDÁRIO
+        </button>
+      </div>
 
-.volume-badge,
-.progress-badge {
-  font-size: 10px !important;
-  padding: 5px 8px !important;
-  white-space: nowrap !important;
-}
+      <div class="dash-section-card">
+        <div class="dash-section-title">📏 FICHA DE MEDIDAS (EM JEJUM)</div>
+        <div class="measures-form-grid">
+          <div class="measure-field">
+            <label>Peso (kg)</label>
+            <input type="number" step="0.1" id="mPeso" placeholder="82.5" />
+          </div>
+          <div class="measure-field">
+            <label>Cintura (cm)</label>
+            <input type="number" step="0.5" id="mCintura" placeholder="93" />
+          </div>
+          <div class="measure-field">
+            <label>Abdômen (cm)</label>
+            <input type="number" step="0.5" id="mAbdomen" placeholder="90" />
+          </div>
+          <div class="measure-field">
+            <label>Tórax (cm)</label>
+            <input type="number" step="0.5" id="mTorax" placeholder="101" />
+          </div>
+          <div class="measure-field">
+            <label>Braço D. (cm)</label>
+            <input type="number" step="0.5" id="mBraco" placeholder="40" />
+          </div>
+          <div class="measure-field">
+            <label>Coxa D. (cm)</label>
+            <input type="number" step="0.5" id="mCoxa" placeholder="60" />
+          </div>
+        </div>
+        <button
+          type="button"
+          class="btn-backup export"
+          style="width: 100%; padding: 11px; margin-bottom: 10px"
+          onclick="saveMeasurements()"
+        >
+          + REGISTRAR MEDIDAS ATUAIS
+        </button>
+        <div class="pr-summary-list" id="measuresHistoryList"></div>
+      </div>
 
-/* =========================================================
-   4. CARDS DE EXERCÍCIO E TABELA DE SÉRIES (ALINHAMENTO PERFEITO)
-   ========================================================= */
-.workout-container {
-  padding: 12px 12px 20px 12px !important;
-  gap: 14px !important;
-}
+      <div class="dash-section-card">
+        <div class="dash-section-title">🏆 RECORDES PESSOAIS (PRs)</div>
+        <div class="pr-summary-list" id="prSummaryList"></div>
+      </div>
 
-.exercise-card {
-  padding: 14px !important;
-  border-radius: 16px !important;
-  background: linear-gradient(
-    160deg,
-    rgba(13, 23, 38, 0.96) 0%,
-    rgba(8, 14, 24, 0.98) 100%
-  ) !important;
-  border: 1px solid rgba(0, 229, 255, 0.18) !important;
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4) !important;
-}
+      <div class="dash-section-card">
+        <div class="dash-section-title">💾 BACKUP & SINCRONIZAÇÃO</div>
+        <p class="dash-desc">
+          Exporte seus recordes, check-ins, medidas e dieta para guardar
+          segurança ou transferir para outro aparelho.
+        </p>
+        <div class="backup-actions">
+          <button class="btn-backup export" onclick="exportBackup()">
+            📋 EXPORTAR JSON
+          </button>
+          <button class="btn-backup import" onclick="openImportModal()">
+            📥 IMPORTAR JSON
+          </button>
+        </div>
+      </div>
+    </div>
 
-.exercise-header-top {
-  display: flex !important;
-  align-items: flex-start !important;
-  justify-content: space-between !important;
-  gap: 10px !important;
-  margin-bottom: 12px !important;
-}
+    <!-- TELA 4: TREINO ATIVO -->
+    <div id="workoutScreen" class="app-screen">
+      <div class="workout-hud-header">
+        <div class="workout-nav-row">
+          <div class="workout-title-group">
+            <button class="btn-back" onclick="goHome()">❮ MENU</button>
+            <div class="workout-title" id="workoutTitleDisplay">Treino A</div>
+          </div>
+          <div class="hud-telemetry-badges">
+            <div class="volume-badge" id="volumeBadge">⚡ 0 KG</div>
+            <div class="progress-badge" id="progressBadge">0/0 • 0%</div>
+          </div>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </div>
 
-.exercise-title-col {
-  flex: 1 !important;
-  min-width: 0 !important;
-}
+      <div class="workout-container" id="workoutView"></div>
+    </div>
 
-.exercise-name {
-  font-size: 20px !important;
-  line-height: 1.12 !important;
-  word-break: break-word !important;
-}
+    <!-- DOCK INFERIOR FLUTUANTE (TIMER DE DESCANSO) -->
+    <div class="floating-dock" id="floatingDock">
+      <div class="dock-inner">
+        <div class="mini-timer-bar">
+          <div class="timer-display" id="timerDisplay">00:00:00</div>
+          <div class="timer-pills">
+            <button class="timer-pill" onclick="startTimer(45)">45s</button>
+            <button class="timer-pill" onclick="startTimer(60)">60s</button>
+            <button class="timer-pill" onclick="startTimer(90)">90s</button>
+            <button class="timer-pill" onclick="startTimer(120)">2m</button>
+            <button class="timer-pill stop" onclick="stopTimer()">✕</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
-.exercise-actions-col {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: flex-end !important;
-  gap: 6px !important;
-  flex-shrink: 0 !important;
-}
+    <!-- BOTTOM NAV HOME -->
+    <div class="main-nav-container" id="mainNavContainer">
+      <div
+        class="nav-tab active"
+        id="tabTreinos"
+        onclick="switchMainTab('homeScreen', this)"
+      >
+        <svg viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7" rx="1.5" />
+          <rect x="14" y="3" width="7" height="7" rx="1.5" />
+          <rect x="3" y="14" width="7" height="7" rx="1.5" />
+          <rect x="14" y="14" width="7" height="7" rx="1.5" />
+        </svg>
+        <span class="nav-label">TREINOS</span>
+      </div>
+      <div
+        class="nav-tab"
+        id="tabTkd"
+        onclick="switchMainTab('tkdScreen', this)"
+      >
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="5" r="2.2" />
+          <path d="M9 11l3-2 4 2" />
+          <path d="M12 9v5l-3 6" />
+          <path d="M12 14l7-3" />
+        </svg>
+        <span class="nav-label">TKD</span>
+      </div>
+      <div
+        class="nav-tab"
+        id="tabDieta"
+        onclick="switchMainTab('dietScreen', this)"
+      >
+        <svg viewBox="0 0 24 24">
+          <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
+          <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
+          <line x1="6" y1="1" x2="6" y2="4" />
+          <line x1="10" y1="1" x2="10" y2="4" />
+          <line x1="14" y1="1" x2="14" y2="4" />
+        </svg>
+        <span class="nav-label">DIETA</span>
+      </div>
+      <div
+        class="nav-tab"
+        id="tabEvolucao"
+        onclick="switchMainTab('dashboardScreen', this)"
+      >
+        <svg viewBox="0 0 24 24">
+          <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+          <polyline points="16 7 22 7 22 13" />
+        </svg>
+        <span class="nav-label">EVOLUÇÃO</span>
+      </div>
+    </div>
 
-.action-mini-row {
-  display: flex !important;
-  align-items: center !important;
-  gap: 5px !important;
-}
+    <!-- MODAIS -->
+    <div class="modal-overlay" id="historyModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title" id="historyTitle">Histórico</div>
+          <button class="close-btn" onclick="closeHistory()">&times;</button>
+        </div>
 
-.btn-plates,
-.btn-img-toggle,
-.btn-history {
-  padding: 5px 8px !important;
-  font-size: 9.5px !important;
-  border-radius: 7px !important;
-  white-space: nowrap !important;
-}
+        <div class="input-history-box">
+          <label>Registrar Nova Carga Manualmente (KG):</label>
+          <div class="input-row-flex">
+            <input
+              type="number"
+              id="manualKgInput"
+              placeholder="Ex: 55"
+              step="1"
+            />
+            <button class="btn-add-weight" onclick="addManualWeight()">
+              + GRAVAR
+            </button>
+          </div>
+        </div>
 
-.sets-header,
-.set-row {
-  display: grid !important;
-  grid-template-columns: 32px 1fr 1fr 38px !important;
-  align-items: center !important;
-  gap: 6px !important;
-}
+        <div class="history-list-title">Evolução Registrada:</div>
+        <div class="history-list" id="historyList"></div>
+      </div>
+    </div>
 
-.sets-header {
-  padding: 0 4px 6px 4px !important;
-  font-size: 9.5px !important;
-  text-align: center !important;
-}
+    <div class="modal-overlay" id="plateModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title" id="plateModalTitle">
+            Calculadora de Anilhas
+          </div>
+          <button class="close-btn" onclick="closePlateModal()">&times;</button>
+        </div>
 
-.set-row {
-  padding: 7px 6px !important;
-  border-radius: 11px !important;
-  margin-bottom: 7px !important;
-}
+        <div class="input-history-box">
+          <label>Carga Total Alvo (KG) e Peso da Barra:</label>
+          <div class="input-row-flex">
+            <input
+              type="number"
+              id="plateTargetInput"
+              placeholder="Total KG"
+              oninput="calculatePlates()"
+            />
+            <select id="barWeightSelect" onchange="calculatePlates()">
+              <option value="20">Barra 20kg</option>
+              <option value="15">Barra 15kg</option>
+              <option value="12">Barra W 12kg</option>
+              <option value="0">Sem Barra (0kg)</option>
+            </select>
+          </div>
+        </div>
 
-.set-label {
-  width: 28px !important;
-  height: 28px !important;
-  margin: 0 auto !important;
-  font-size: 12px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
+        <div class="plate-result-box" id="plateResultBox"></div>
+      </div>
+    </div>
 
-.control-group {
-  display: grid !important;
-  grid-template-columns: 28px 1fr 28px !important;
-  align-items: center !important;
-  height: 36px !important;
-  padding: 0 2px !important;
-  border-radius: 9px !important;
-  width: 100% !important;
-  box-sizing: border-box !important;
-}
+    <div class="modal-overlay" id="importModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title">Restaurar Backup</div>
+          <button class="close-btn" onclick="closeImportModal()">
+            &times;
+          </button>
+        </div>
+        <div class="input-history-box">
+          <label>Cole o código JSON copiado anteriormente:</label>
+          <textarea
+            id="importJsonArea"
+            rows="4"
+            placeholder='{"gh_Supino Reto Barra":"[...]"}'
+          ></textarea>
+        </div>
+        <button
+          class="btn-backup export"
+          style="width: 100%; padding: 12px"
+          onclick="importBackup()"
+        >
+          RESTAURAR DADOS AGORA
+        </button>
+      </div>
+    </div>
 
-.btn-adjust {
-  width: 28px !important;
-  height: 32px !important;
-  font-size: 16px !important;
-  padding: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
+    <div class="modal-overlay" id="baselineModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title">Saldo Anual de Check-ins</div>
+          <button class="close-btn" onclick="closeBaselineModal()">
+            &times;
+          </button>
+        </div>
+        <p class="dash-desc" style="margin-bottom: 10px">
+          Defina quantos check-ins você já tinha acumulado antes de migrar para
+          o app. Na virada de cada ano (01/01), o contador principal zera
+          automaticamente e arquiva a temporada anterior.
+        </p>
+        <div class="input-history-box">
+          <label>Ano e Quantidade Base (GymRats):</label>
+          <div class="input-row-flex">
+            <input
+              type="number"
+              id="baselineYearInput"
+              value="2026"
+              min="2020"
+              max="2100"
+              oninput="onBaselineYearChange()"
+            />
+            <input
+              type="number"
+              id="baselineCountInput"
+              value="241"
+              min="0"
+              placeholder="Ex: 241"
+            />
+          </div>
+        </div>
+        <button
+          type="button"
+          class="btn-backup export"
+          style="width: 100%; padding: 12px"
+          onclick="saveBaselineFromModal()"
+        >
+          SALVAR SALDO DA TEMPORADA
+        </button>
+      </div>
+    </div>
 
-.val-input {
-  width: 100% !important;
-  min-width: 0 !important;
-  padding: 0 !important;
-  text-align: center !important;
-  font-size: 16px !important;
-  font-weight: 800 !important;
-}
+    <div
+      class="modal-overlay"
+      id="photoLightboxModal"
+      onclick="closePhotoLightbox(event)"
+    >
+      <div class="modal-content lightbox-modal-content">
+        <div class="modal-header">
+          <div class="modal-title" id="lightboxTitle">Registro</div>
+          <button class="close-btn" onclick="closePhotoLightbox()">
+            &times;
+          </button>
+        </div>
+        <div class="lightbox-img-wrap">
+          <img id="lightboxImg" src="" alt="Foto do Check-in" />
+        </div>
+        <div class="lightbox-caption" id="lightboxCaption"></div>
+      </div>
+    </div>
 
-.check-btn {
-  width: 36px !important;
-  height: 36px !important;
-  margin: 0 auto !important;
-  border-radius: 9px !important;
-  font-size: 15px !important;
-}
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+    <script src="script.js?v=4.0.0"></script>
+    <script src="tkd.js"></script>
 
-/* =========================================================
-   5. OUTRAS TELAS (TKD, DIETA, EVOLUÇÃO) + NAVEGAÇÃO INFERIOR
-   ========================================================= */
-#tkdScreen,
-#dietScreen,
-#dashboardScreen {
-  padding-top: 6px !important;
-  padding-bottom: calc(86px + var(--safe-bottom)) !important;
-  padding-left: 14px !important;
-  padding-right: 14px !important;
-}
-
-.main-nav-container {
-  padding-bottom: calc(6px + var(--safe-bottom)) !important;
-  padding-top: 8px !important;
-  background: rgba(6, 12, 22, 0.96) !important;
-  backdrop-filter: blur(14px) !important;
-  -webkit-backdrop-filter: blur(14px) !important;
-  border-top: 1px solid rgba(0, 229, 255, 0.2) !important;
-}
-
-.floating-dock {
-  bottom: calc(10px + var(--safe-bottom)) !important;
-  padding-left: 12px !important;
-  padding-right: 12px !important;
-}
-
-#toast {
-  top: calc(var(--safe-top) + 12px) !important;
-}
+    <input
+      type="file"
+      id="workoutPhotoInput"
+      accept="image/*"
+      style="display: none"
+      onchange="handlePhotoFileSelect(this, 'workout')"
+    />
+    <input
+      type="file"
+      id="manualPhotoInput"
+      accept="image/*"
+      style="display: none"
+      onchange="handlePhotoFileSelect(this, 'manual')"
+    />
+    <input
+      type="file"
+      id="tkdPhotoInput"
+      accept="image/*"
+      style="display: none"
+      onchange="handlePhotoFileSelect(this, 'tkd')"
+    />
+  </body>
+</html>
