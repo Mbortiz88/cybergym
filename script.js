@@ -459,11 +459,46 @@ const cardioModalities = [
   },
 ];
 
+/* =========================================================
+   ARQUITETURA V4: INDEXEDDB + FIRESTORE SUBCOLEÇÕES INDIVIDUAIS
+   ========================================================= */
+const DB_NAME = "CyberGymMatheusDB_v4";
+const DB_VERSION = 1;
+
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAoT05zjZH9W9fdmNeCGCppJwGeEJTxXos",
+  authDomain: "cybergym-matheus-ortiz.firebaseapp.com",
+  projectId: "cybergym-matheus-ortiz",
+  storageBucket: "cybergym-matheus-ortiz.firebasestorage.app",
+  messagingSenderId: "867243931319",
+  appId: "1:867243931319:web:e666e71d57ab6e024a7f32",
+  measurementId: "G-Z5Q9Q7D83K",
+};
+
+let fbApp = null;
+let fbAuth = null;
+let fbDb = null;
+let currentCloudUser = null;
+let unsubCheckins = null;
+let unsubMeasures = null;
+let unsubState = null;
+let isSyncingNow = false;
+let isSavingSession = false;
+let lastSyncTimestamp = 0;
+
+/* Espelho em memória do usuário ativo (isolado por uid) */
+let userCache = {
+  userId: "local",
+  checkins: [],
+  measures: [],
+  kv: {}, // { [key]: { key, value, updatedAt } }
+};
+
 let currentDay = null;
 let currentEx = "";
 let wakeLock = null;
 let audioCtx = null;
-let cloudSyncDebounce = null;
+let kvSyncDebounce = null;
 
 const pendingPhotos = {
   workout: null,
@@ -471,7 +506,823 @@ const pendingPhotos = {
   tkd: null,
 };
 
-function compressImageToDataUrl(file, maxDim = 640, quality = 0.65) {
+function escapeHTML(str) {
+  if (str === null || str === undefined) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function generateUID() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return (
+    "id_" +
+    Date.now().toString(36) +
+    "_" +
+    Math.random().toString(36).substring(2, 10)
+  );
+}
+
+function getActiveUserId() {
+  return currentCloudUser && currentCloudUser.uid
+    ? currentCloudUser.uid
+    : "local";
+}
+
+function getTodayISO() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function isoToBR(iso) {
+  if (!iso || typeof iso !== "string" || !iso.includes("-")) return iso || "";
+  const [y, m, d] = iso.split("-");
+  return `${d}/${m}/${y}`;
+}
+
+function brToISO(br) {
+  if (!br || typeof br !== "string") return "";
+  if (br.includes("-")) return br;
+  const parts = br.split("/");
+  if (parts.length !== 3) return "";
+  return `${parts[2]}-${parts[1].padStart(2, "0")}-${parts[0].padStart(2, "0")}`;
+}
+
+function formatSyncTimestamp(ts) {
+  if (!ts) return "";
+  const d = new Date(Number(ts));
+  if (isNaN(d.getTime())) return "";
+  const dateStr = d.toLocaleDateString("pt-BR");
+  const timeStr = d.toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return `${dateStr} às ${timeStr}`;
+}
+
+/* =========================================================
+   CAMADA 1: INDEXEDDB ISOLADO POR USUÁRIO
+   ========================================================= */
+let dbPromise = null;
+
+function openLocalDB() {
+  if (dbPromise) return dbPromise;
+  dbPromise = new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains("checkins")) {
+        const s = db.createObjectStore("checkins", { keyPath: ["userId", "id"] });
+        s.createIndex("by_user", "userId", { unique: false });
+      }
+      if (!db.objectStoreNames.contains("measures")) {
+        const s = db.createObjectStore("measures", { keyPath: ["userId", "id"] });
+        s.createIndex("by_user", "userId", { unique: false });
+      }
+      if (!db.objectStoreNames.contains("kv_state")) {
+        const s = db.createObjectStore("kv_state", { keyPath: ["userId", "key"] });
+        s.createIndex("by_user", "userId", { unique: false });
+      }
+      if (!db.objectStoreNames.contains("tombstones")) {
+        const s = db.createObjectStore("tombstones", { keyPath: ["userId", "id"] });
+        s.createIndex("by_user", "userId", { unique: false });
+      }
+      if (!db.objectStoreNames.contains("sync_queue")) {
+        const s = db.createObjectStore("sync_queue", {
+          keyPath: ["userId", "queueKey"],
+        });
+        s.createIndex("by_user", "userId", { unique: false });
+      }
+      if (!db.objectStoreNames.contains("meta")) {
+        db.createObjectStore("meta", { keyPath: "key" });
+      }
+    };
+
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+  return dbPromise;
+}
+
+async function idbGetAllByUser(storeName, userId) {
+  const db = await openLocalDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, "readonly");
+    const idx = tx.objectStore(storeName).index("by_user");
+    const req = idx.getAll(userId);
+    req.onsuccess = () => resolve(req.result || []);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function idbGet(storeName, key) {
+  const db = await openLocalDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, "readonly");
+    const req = tx.objectStore(storeName).get(key);
+    req.onsuccess = () => resolve(req.result || null);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function idbPut(storeName, record) {
+  const db = await openLocalDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, "readwrite");
+    const req = tx.objectStore(storeName).put(record);
+    req.onsuccess = () => resolve(true);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function idbDelete(storeName, key) {
+  const db = await openLocalDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, "readwrite");
+    const req = tx.objectStore(storeName).delete(key);
+    req.onsuccess = () => resolve(true);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+/* Sincroniza espelho no localStorage para compatibilidade total com tkd.js */
+function syncMirrorToLocalStorage() {
+  try {
+    localStorage.setItem(
+      "g_checkin_history",
+      JSON.stringify(userCache.checkins || []),
+    );
+    localStorage.setItem(
+      "g_measures_list",
+      JSON.stringify(userCache.measures || []),
+    );
+    Object.values(userCache.kv || {}).forEach((entry) => {
+      if (entry && entry.key && typeof entry.value === "string") {
+        localStorage.setItem(entry.key, entry.value);
+      }
+    });
+  } catch (e) {}
+}
+
+async function loadUserStateFromIDB(userId) {
+  const [checkins, measures, kvList] = await Promise.all([
+    idbGetAllByUser("checkins", userId),
+    idbGetAllByUser("measures", userId),
+    idbGetAllByUser("kv_state", userId),
+  ]);
+
+  checkins.sort((a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0));
+  measures.sort((a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0));
+
+  const kvMap = {};
+  kvList.forEach((item) => {
+    kvMap[item.key] = item;
+  });
+
+  userCache = {
+    userId,
+    checkins,
+    measures,
+    kv: kvMap,
+  };
+
+  syncMirrorToLocalStorage();
+}
+
+/* Helpers de leitura/escrita para chaves individuais (cargas, PRs, dieta, TKD) */
+function getStateValue(key) {
+  if (userCache.kv && userCache.kv[key] !== undefined) {
+    return userCache.kv[key].value;
+  }
+  return localStorage.getItem(key);
+}
+
+async function setStateValue(key, rawValue, immediateSync = false) {
+  const strVal =
+    typeof rawValue === "string" ? rawValue : JSON.stringify(rawValue);
+  localStorage.setItem(key, strVal);
+
+  const userId = getActiveUserId();
+  const record = {
+    userId,
+    key,
+    value: strVal,
+    updatedAt: Date.now(),
+  };
+
+  userCache.kv[key] = record;
+  await idbPut("kv_state", record);
+
+  if (userId !== "local") {
+    const safeDocId = encodeURIComponent(key).replace(/%/g, "_");
+    await enqueueSyncOp(userId, "state", safeDocId, "upsert", record);
+    if (immediateSync) {
+      await flushSyncQueue();
+    } else {
+      scheduleCloudSync();
+    }
+  }
+}
+
+async function removeStateValue(key) {
+  localStorage.removeItem(key);
+  const userId = getActiveUserId();
+  delete userCache.kv[key];
+  await idbDelete("kv_state", [userId, key]);
+
+  if (userId !== "local") {
+    const safeDocId = encodeURIComponent(key).replace(/%/g, "_");
+    await enqueueSyncOp(userId, "state", safeDocId, "delete", null);
+    scheduleCloudSync();
+  }
+}
+
+/* =========================================================
+   CAMADA 2: FILA OFFLINE & SUBCOLEÇÕES FIRESTORE
+   ========================================================= */
+async function enqueueSyncOp(userId, collectionName, docId, opType, payload) {
+  if (!userId || userId === "local") return;
+  const queueKey = `${collectionName}:${docId}`;
+  await idbPut("sync_queue", {
+    userId,
+    queueKey,
+    collectionName,
+    docId,
+    opType,
+    payload,
+    updatedAt: Date.now(),
+  });
+}
+
+function scheduleCloudSync() {
+  clearTimeout(kvSyncDebounce);
+  kvSyncDebounce = setTimeout(() => {
+    if (currentCloudUser) {
+      flushSyncQueue();
+    }
+  }, 1200);
+}
+
+async function flushSyncQueue() {
+  if (!fbDb || !currentCloudUser) return false;
+  if (isSyncingNow) return false;
+  if (typeof navigator !== "undefined" && navigator.onLine === false) return false;
+
+  const userId = currentCloudUser.uid;
+  const queue = await idbGetAllByUser("sync_queue", userId);
+  if (!queue.length) return true;
+
+  isSyncingNow = true;
+  try {
+    const userDocRef = fbDb.collection("users").doc(userId);
+    await userDocRef.set(
+      {
+        displayName: currentCloudUser.displayName || "",
+        email: currentCloudUser.email || "",
+        schemaVersion: 4,
+        lastActiveAt: Date.now(),
+      },
+      { merge: true },
+    );
+
+    const BATCH_LIMIT = 25;
+    for (let i = 0; i < queue.length; i += BATCH_LIMIT) {
+      const slice = queue.slice(i, i + BATCH_LIMIT);
+      const batch = fbDb.batch();
+
+      slice.forEach((item) => {
+        const docRef = userDocRef.collection(item.collectionName).doc(item.docId);
+        if (item.opType === "delete") {
+          batch.delete(docRef);
+        } else {
+          const cleanPayload = { ...item.payload };
+          delete cleanPayload.userId;
+          batch.set(docRef, cleanPayload, { merge: true });
+        }
+      });
+
+      await batch.commit();
+
+      for (const item of slice) {
+        await idbDelete("sync_queue", [userId, item.queueKey]);
+      }
+    }
+
+    lastSyncTimestamp = Date.now();
+    await idbPut("meta", {
+      key: `last_sync_${userId}`,
+      value: lastSyncTimestamp,
+    });
+    renderConnectedCloudBanner(lastSyncTimestamp);
+    return true;
+  } catch (err) {
+    console.warn("Erro na fila de sincronização:", err);
+    const errCode = err && err.code ? err.code : "erro-rede";
+    const userLabel =
+      currentCloudUser.displayName || currentCloudUser.email || "Conta Google";
+    updateCloudUI(
+      "PENDENTE / OFFLINE",
+      `${userLabel} • Alterações salvas localmente (${errCode}).`,
+      true,
+      true,
+    );
+    return false;
+  } finally {
+    isSyncingNow = false;
+  }
+}
+
+async function pullRemoteSubcollections(userId) {
+  if (!fbDb || !userId || userId === "local") return;
+  const userDocRef = fbDb.collection("users").doc(userId);
+
+  const [checkinsSnap, measuresSnap, stateSnap, tombstonesSnap] =
+    await Promise.all([
+      userDocRef.collection("checkins").get(),
+      userDocRef.collection("measures").get(),
+      userDocRef.collection("state").get(),
+      userDocRef.collection("tombstones").get(),
+    ]);
+
+  // 1. Tombstones (exclusões explícitas)
+  const deletedIds = new Set();
+  const localTombs = await idbGetAllByUser("tombstones", userId);
+  localTombs.forEach((t) => deletedIds.add(t.id));
+
+  for (const doc of tombstonesSnap.docs) {
+    const data = doc.data() || {};
+    const targetId = data.targetId || doc.id;
+    deletedIds.add(targetId);
+    await idbPut("tombstones", {
+      userId,
+      id: targetId,
+      deletedAt: data.deletedAt || Date.now(),
+    });
+    await idbDelete("checkins", [userId, targetId]);
+    await idbDelete("measures", [userId, targetId]);
+  }
+
+  // 2. Check-ins individuais
+  for (const doc of checkinsSnap.docs) {
+    if (deletedIds.has(doc.id)) continue;
+    const remote = doc.data() || {};
+    const local = await idbGet("checkins", [userId, doc.id]);
+    const rUpd = Number(remote.updatedAt) || Number(remote.createdAt) || 0;
+    const lUpd = local
+      ? Number(local.updatedAt) || Number(local.createdAt) || 0
+      : -1;
+
+    if (!local || rUpd > lUpd) {
+      await idbPut("checkins", { ...remote, userId, id: doc.id });
+    }
+  }
+
+  // 3. Medidas individuais
+  for (const doc of measuresSnap.docs) {
+    if (deletedIds.has(doc.id)) continue;
+    const remote = doc.data() || {};
+    const local = await idbGet("measures", [userId, doc.id]);
+    const rUpd = Number(remote.updatedAt) || Number(remote.createdAt) || 0;
+    const lUpd = local
+      ? Number(local.updatedAt) || Number(local.createdAt) || 0
+      : -1;
+
+    if (!local || rUpd > lUpd) {
+      await idbPut("measures", { ...remote, userId, id: doc.id });
+    }
+  }
+
+  // 4. Chaves de estado (cargas, PRs, dieta, saldo anual, TKD)
+  for (const doc of stateSnap.docs) {
+    const remote = doc.data() || {};
+    if (!remote.key || typeof remote.value !== "string") continue;
+    const local = await idbGet("kv_state", [userId, remote.key]);
+    const rUpd = Number(remote.updatedAt) || 0;
+    const lUpd = local ? Number(local.updatedAt) || 0 : -1;
+
+    if (!local || rUpd > lUpd) {
+      await idbPut("kv_state", {
+        userId,
+        key: remote.key,
+        value: remote.value,
+        updatedAt: rUpd,
+      });
+    }
+  }
+}
+
+/* =========================================================
+   CAMADA 3: MIGRAÇÃO AUTOMÁTICA (LEGADO LOCAL E CLOUD + G_TRAINING_*)
+   ========================================================= */
+function normalizeLegacyKey(rawKey) {
+  if (!rawKey) return rawKey;
+  if (rawKey.startsWith("g_TRAINING_")) {
+    return rawKey.replace("g_TRAINING_", "g_TREINO_");
+  }
+  return rawKey;
+}
+
+async function migrateLegacyDataIfNeeded(userId) {
+  // A) Migração do localStorage antigo
+  const localMigMeta = await idbGet("meta", "v4_localstorage_migrated");
+  if (!localMigMeta) {
+    const now = Date.now();
+    const oldHistoryRaw = localStorage.getItem("g_checkin_history");
+    if (oldHistoryRaw) {
+      try {
+        const arr = JSON.parse(oldHistoryRaw);
+        if (Array.isArray(arr)) {
+          for (let i = 0; i < arr.length; i++) {
+            const item = arr[i];
+            if (!item) continue;
+            const id = item.id || generateUID();
+            const ts = now - i * 1000;
+            const rec = {
+              ...item,
+              userId,
+              id,
+              createdAt: item.createdAt || ts,
+              updatedAt: item.updatedAt || ts,
+            };
+            await idbPut("checkins", rec);
+            if (userId !== "local") {
+              await enqueueSyncOp(userId, "checkins", id, "upsert", rec);
+            }
+          }
+        }
+      } catch (e) {}
+    }
+
+    const oldMeasuresRaw = localStorage.getItem("g_measures_list");
+    if (oldMeasuresRaw) {
+      try {
+        const arr = JSON.parse(oldMeasuresRaw);
+        if (Array.isArray(arr)) {
+          for (let i = 0; i < arr.length; i++) {
+            const m = arr[i];
+            if (!m) continue;
+            const id = m.id || generateUID();
+            const ts = now - i * 1000;
+            const rec = {
+              ...m,
+              userId,
+              id,
+              createdAt: m.createdAt || ts,
+              updatedAt: m.updatedAt || ts,
+            };
+            await idbPut("measures", rec);
+            if (userId !== "local") {
+              await enqueueSyncOp(userId, "measures", id, "upsert", rec);
+            }
+          }
+        }
+      } catch (e) {}
+    }
+
+    for (let i = 0; i < localStorage.length; i++) {
+      const rawKey = localStorage.key(i);
+      if (!rawKey) continue;
+      if (
+        rawKey === "g_checkin_history" ||
+        rawKey === "g_measures_list" ||
+        rawKey === "g_last_local_update" ||
+        rawKey === "g_last_cloud_sync_time"
+      ) {
+        continue;
+      }
+      if (rawKey.startsWith("g_") || rawKey.startsWith("gh_")) {
+        const cleanKey = normalizeLegacyKey(rawKey);
+        const val = localStorage.getItem(rawKey);
+        if (typeof val === "string") {
+          const rec = { userId, key: cleanKey, value: val, updatedAt: now };
+          await idbPut("kv_state", rec);
+          if (userId !== "local") {
+            const safeDocId = encodeURIComponent(cleanKey).replace(/%/g, "_");
+            await enqueueSyncOp(userId, "state", safeDocId, "upsert", rec);
+          }
+        }
+      }
+    }
+
+    await idbPut("meta", { key: "v4_localstorage_migrated", value: true });
+  }
+
+  // B) Incorpora dados criados no modo "local" ao logar no Google
+  if (userId !== "local") {
+    const [locCheckins, locMeasures, locKv] = await Promise.all([
+      idbGetAllByUser("checkins", "local"),
+      idbGetAllByUser("measures", "local"),
+      idbGetAllByUser("kv_state", "local"),
+    ]);
+
+    for (const c of locCheckins) {
+      const migrated = { ...c, userId };
+      await idbPut("checkins", migrated);
+      await enqueueSyncOp(userId, "checkins", c.id, "upsert", migrated);
+      await idbDelete("checkins", ["local", c.id]);
+    }
+
+    for (const m of locMeasures) {
+      const migrated = { ...m, userId };
+      await idbPut("measures", migrated);
+      await enqueueSyncOp(userId, "measures", m.id, "upsert", migrated);
+      await idbDelete("measures", ["local", m.id]);
+    }
+
+    for (const kv of locKv) {
+      const migrated = { ...kv, userId };
+      await idbPut("kv_state", migrated);
+      const safeDocId = encodeURIComponent(kv.key).replace(/%/g, "_");
+      await enqueueSyncOp(userId, "state", safeDocId, "upsert", migrated);
+      await idbDelete("kv_state", ["local", kv.key]);
+    }
+  }
+
+  // C) Migra documento legado users/{uid} do Firestore (data / payload) para subcoleções
+  if (userId !== "local" && fbDb) {
+    const cloudMigMeta = await idbGet("meta", `v4_cloud_migrated_${userId}`);
+    if (!cloudMigMeta) {
+      try {
+        const userDocRef = fbDb.collection("users").doc(userId);
+        const rootSnap = await userDocRef.get();
+        if (rootSnap.exists) {
+          const rootData = rootSnap.data() || {};
+          const legacyBlob = rootData.data || rootData.payload || null;
+
+          if (legacyBlob && typeof legacyBlob === "object" && !rootData.v4Migrated) {
+            const now = Date.now();
+
+            if (typeof legacyBlob.g_checkin_history === "string") {
+              const arr = JSON.parse(legacyBlob.g_checkin_history);
+              if (Array.isArray(arr)) {
+                for (let i = 0; i < arr.length; i++) {
+                  const item = arr[i];
+                  if (!item) continue;
+                  const id =
+                    item.id ||
+                    `leg_c_${i}_${(item.isoDate || "").replace(/-/g, "")}`;
+                  const existing = await idbGet("checkins", [userId, id]);
+                  if (!existing) {
+                    const ts = now - i * 1000;
+                    const rec = {
+                      ...item,
+                      userId,
+                      id,
+                      createdAt: item.createdAt || ts,
+                      updatedAt: item.updatedAt || ts,
+                    };
+                    await idbPut("checkins", rec);
+                    await enqueueSyncOp(userId, "checkins", id, "upsert", rec);
+                  }
+                }
+              }
+            }
+
+            if (typeof legacyBlob.g_measures_list === "string") {
+              const arr = JSON.parse(legacyBlob.g_measures_list);
+              if (Array.isArray(arr)) {
+                for (let i = 0; i < arr.length; i++) {
+                  const m = arr[i];
+                  if (!m) continue;
+                  const id =
+                    m.id ||
+                    `leg_m_${i}_${(m.date || "").replace(/\//g, "")}`;
+                  const existing = await idbGet("measures", [userId, id]);
+                  if (!existing) {
+                    const ts = now - i * 1000;
+                    const rec = {
+                      ...m,
+                      userId,
+                      id,
+                      createdAt: m.createdAt || ts,
+                      updatedAt: m.updatedAt || ts,
+                    };
+                    await idbPut("measures", rec);
+                    await enqueueSyncOp(userId, "measures", id, "upsert", rec);
+                  }
+                }
+              }
+            }
+
+            for (const [rawKey, val] of Object.entries(legacyBlob)) {
+              if (
+                rawKey === "g_checkin_history" ||
+                rawKey === "g_measures_list" ||
+                rawKey === "g_last_local_update" ||
+                rawKey === "g_last_cloud_sync_time"
+              ) {
+                continue;
+              }
+              if (
+                (rawKey.startsWith("g_") || rawKey.startsWith("gh_")) &&
+                typeof val === "string"
+              ) {
+                const cleanKey = normalizeLegacyKey(rawKey);
+                const existing = await idbGet("kv_state", [userId, cleanKey]);
+                if (!existing) {
+                  const rec = {
+                    userId,
+                    key: cleanKey,
+                    value: val,
+                    updatedAt: now,
+                  };
+                  await idbPut("kv_state", rec);
+                  const safeDocId = encodeURIComponent(cleanKey).replace(
+                    /%/g,
+                    "_",
+                  );
+                  await enqueueSyncOp(userId, "state", safeDocId, "upsert", rec);
+                }
+              }
+            }
+
+            await flushSyncQueue();
+            await userDocRef.set({ v4Migrated: true }, { merge: true });
+          }
+        }
+        await idbPut("meta", {
+          key: `v4_cloud_migrated_${userId}`,
+          value: true,
+        });
+      } catch (err) {
+        console.warn("Aviso na migração legada do Firestore:", err);
+      }
+    }
+  }
+}
+
+/* =========================================================
+   LISTENERS EM TEMPO REAL (FIRESTORE)
+   ========================================================= */
+function detachFirestoreListeners() {
+  if (typeof unsubCheckins === "function") {
+    unsubCheckins();
+    unsubCheckins = null;
+  }
+  if (typeof unsubMeasures === "function") {
+    unsubMeasures();
+    unsubMeasures = null;
+  }
+  if (typeof unsubState === "function") {
+    unsubState();
+    unsubState = null;
+  }
+}
+
+function attachFirestoreRealtimeListeners(userId) {
+  if (!fbDb || !userId || userId === "local") return;
+  detachFirestoreListeners();
+
+  const userDocRef = fbDb.collection("users").doc(userId);
+
+  unsubCheckins = userDocRef.collection("checkins").onSnapshot(
+    async (snap) => {
+      if (isSyncingNow || getActiveUserId() !== userId) return;
+      let changed = false;
+      for (const change of snap.docChanges()) {
+        const docId = change.doc.id;
+        if (change.type === "removed") {
+          await idbDelete("checkins", [userId, docId]);
+          changed = true;
+        } else {
+          const remote = change.doc.data() || {};
+          const local = await idbGet("checkins", [userId, docId]);
+          const rUpd = Number(remote.updatedAt) || Number(remote.createdAt) || 0;
+          const lUpd = local
+            ? Number(local.updatedAt) || Number(local.createdAt) || 0
+            : -1;
+          if (!local || rUpd > lUpd) {
+            await idbPut("checkins", { ...remote, userId, id: docId });
+            changed = true;
+          }
+        }
+      }
+      if (changed) {
+        await loadUserStateFromIDB(userId);
+        renderDashboard();
+      }
+    },
+    (err) => console.warn("Listener checkins:", err && err.code),
+  );
+
+  unsubMeasures = userDocRef.collection("measures").onSnapshot(
+    async (snap) => {
+      if (isSyncingNow || getActiveUserId() !== userId) return;
+      let changed = false;
+      for (const change of snap.docChanges()) {
+        const docId = change.doc.id;
+        if (change.type === "removed") {
+          await idbDelete("measures", [userId, docId]);
+          changed = true;
+        } else {
+          const remote = change.doc.data() || {};
+          const local = await idbGet("measures", [userId, docId]);
+          const rUpd = Number(remote.updatedAt) || Number(remote.createdAt) || 0;
+          const lUpd = local
+            ? Number(local.updatedAt) || Number(local.createdAt) || 0
+            : -1;
+          if (!local || rUpd > lUpd) {
+            await idbPut("measures", { ...remote, userId, id: docId });
+            changed = true;
+          }
+        }
+      }
+      if (changed) {
+        await loadUserStateFromIDB(userId);
+        renderDashboard();
+      }
+    },
+    (err) => console.warn("Listener measures:", err && err.code),
+  );
+
+  unsubState = userDocRef.collection("state").onSnapshot(
+    async (snap) => {
+      if (isSyncingNow || getActiveUserId() !== userId) return;
+      let changed = false;
+      for (const change of snap.docChanges()) {
+        const remote = change.doc.data() || {};
+        if (!remote.key || typeof remote.value !== "string") continue;
+        const local = await idbGet("kv_state", [userId, remote.key]);
+        const rUpd = Number(remote.updatedAt) || 0;
+        const lUpd = local ? Number(local.updatedAt) || 0 : -1;
+        if (!local || rUpd > lUpd) {
+          await idbPut("kv_state", {
+            userId,
+            key: remote.key,
+            value: remote.value,
+            updatedAt: rUpd,
+          });
+          changed = true;
+        }
+      }
+      if (changed) {
+        await loadUserStateFromIDB(userId);
+        renderDietScreen();
+        renderDashboard();
+        if (typeof renderTkdScreen === "function") {
+          renderTkdScreen();
+        }
+      }
+    },
+    (err) => console.warn("Listener state:", err && err.code),
+  );
+}
+
+async function fullSyncCycle(silent = true) {
+  if (!fbDb || !currentCloudUser) return false;
+  const userId = currentCloudUser.uid;
+  try {
+    await migrateLegacyDataIfNeeded(userId);
+    await flushSyncQueue();
+    await pullRemoteSubcollections(userId);
+    await flushSyncQueue();
+    await loadUserStateFromIDB(userId);
+
+    renderDietScreen();
+    renderDashboard();
+    if (typeof renderTkdScreen === "function") {
+      renderTkdScreen();
+    }
+
+    lastSyncTimestamp = Date.now();
+    await idbPut("meta", {
+      key: `last_sync_${userId}`,
+      value: lastSyncTimestamp,
+    });
+    renderConnectedCloudBanner(lastSyncTimestamp);
+
+    if (!silent) {
+      showToast("NUVEM SINCRONIZADA ✓", 1800);
+    }
+    return true;
+  } catch (err) {
+    const errCode = err && err.code ? err.code : "erro-sync";
+    updateCloudUI(
+      "ERRO DE SINCRONIZAÇÃO",
+      `Falha ao sincronizar (${errCode}). Verifique sua conexão ou regras do Firestore.`,
+      true,
+      true,
+    );
+    if (!silent) {
+      showToast(`ERRO NUVEM: ${errCode.toUpperCase()}`, 2400);
+    }
+    return false;
+  }
+}
+
+/* =========================================================
+   FOTOS & LIGHTBOX
+   ========================================================= */
+function compressImageToDataUrl(file, maxDim = 720, quality = 0.72) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (ev) => {
@@ -539,58 +1390,13 @@ function openPhotoLightbox(checkinId) {
   document.getElementById("lightboxTitle").innerText = item.title || "Registro";
   document.getElementById("lightboxImg").src = item.photo;
   document.getElementById("lightboxCaption").innerHTML =
-    `<strong>${item.date}</strong><br/>${item.details || ""}`;
+    `<strong>${escapeHTML(item.date)}</strong><br/>${escapeHTML(item.details || "")}`;
   document.getElementById("photoLightboxModal").classList.add("active");
 }
 
 function closePhotoLightbox(ev) {
   if (ev && ev.target && ev.target.id !== "photoLightboxModal") return;
   document.getElementById("photoLightboxModal").classList.remove("active");
-}
-
-function scheduleCloudSync() {
-  localStorage.setItem("g_last_local_update", String(Date.now()));
-  clearTimeout(cloudSyncDebounce);
-  cloudSyncDebounce = setTimeout(() => {
-    if (typeof pushToFirestore === "function") {
-      pushToFirestore(true);
-    }
-  }, 1500);
-}
-
-function getTodayISO() {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  const d = String(now.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
-
-function isoToBR(iso) {
-  if (!iso || typeof iso !== "string" || !iso.includes("-")) return iso || "";
-  const [y, m, d] = iso.split("-");
-  return `${d}/${m}/${y}`;
-}
-
-function brToISO(br) {
-  if (!br || typeof br !== "string") return "";
-  if (br.includes("-")) return br;
-  const parts = br.split("/");
-  if (parts.length !== 3) return "";
-  return `${parts[2]}-${parts[1].padStart(2, "0")}-${parts[0].padStart(2, "0")}`;
-}
-
-function formatSyncTimestamp(ts) {
-  if (!ts) return "";
-  const d = new Date(Number(ts));
-  if (isNaN(d.getTime())) return "";
-  const dateStr = d.toLocaleDateString("pt-BR");
-  const timeStr = d.toLocaleTimeString("pt-BR", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
-  return `${dateStr} às ${timeStr}`;
 }
 
 let calViewYear = new Date().getFullYear();
@@ -657,16 +1463,24 @@ function releaseWakeLock() {
 }
 
 function getExercisePR(exName) {
-  const h = JSON.parse(localStorage.getItem(`gh_${exName}`)) || [];
-  if (!h.length) return 0;
-  return Math.max(...h.map((item) => Number(item.max) || 0));
+  try {
+    const raw = getStateValue(`gh_${exName}`);
+    const h = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(h) || !h.length) return 0;
+    return Math.max(...h.map((item) => Number(item.max) || 0));
+  } catch (e) {
+    return 0;
+  }
 }
 
 function getExerciseSetsList(k, exIndex) {
-  const custom = JSON.parse(localStorage.getItem(`g_${k}_e${exIndex}_sets`));
-  if (custom && Array.isArray(custom) && custom.length > 0) {
-    return custom;
-  }
+  try {
+    const raw = getStateValue(`g_${k}_e${exIndex}_sets`);
+    const custom = raw ? JSON.parse(raw) : null;
+    if (custom && Array.isArray(custom) && custom.length > 0) {
+      return custom;
+    }
+  } catch (e) {}
   return workoutData[k].exercises[exIndex].sets;
 }
 
@@ -681,7 +1495,7 @@ function toggleImgDrawer(drawerId, btnEl) {
 
 function handleImgError(imgEl, path) {
   const parent = imgEl.parentElement;
-  parent.innerHTML = `<div class="img-placeholder-msg">Ilustração ainda não adicionada.<br>Salve o arquivo no GitHub em:<br><code>${path}</code></div>`;
+  parent.innerHTML = `<div class="img-placeholder-msg">Ilustração ainda não adicionada.<br>Salve o arquivo no GitHub em:<br><code>${escapeHTML(path)}</code></div>`;
 }
 
 function checkLiveExercisePR(exIndex) {
@@ -777,7 +1591,13 @@ function updateTelemetryHUD() {
   }
 }
 
+/* =========================================================
+   CHECK-INS (GYMRATS + TKD + TREINOS) EM REGISTROS INDIVIDUAIS
+   ========================================================= */
 function getCheckinHistory() {
+  if (Array.isArray(userCache.checkins) && userCache.checkins.length > 0) {
+    return userCache.checkins;
+  }
   try {
     const raw = localStorage.getItem("g_checkin_history");
     if (raw) {
@@ -785,45 +1605,85 @@ function getCheckinHistory() {
       return Array.isArray(parsed) ? parsed : [];
     }
   } catch (e) {}
-
-  const legacyDates = new Set();
-  Object.values(workoutData).forEach((day) => {
-    day.exercises.forEach((ex) => {
-      const h = JSON.parse(localStorage.getItem(`gh_${ex.name}`)) || [];
-      h.forEach((entry) => {
-        if (entry && entry.date) legacyDates.add(entry.date);
-      });
-    });
-  });
-
-  if (legacyDates.size > 0) {
-    const migrated = Array.from(legacyDates).map((brDate, idx) => ({
-      id: `legacy_${idx}_${Date.now()}`,
-      isoDate: brToISO(brDate),
-      date: brDate,
-      badge: "✓",
-      title: "Treino Registrado",
-      details: "Histórico importado automaticamente",
-      isManual: false,
-      photo: null,
-    }));
-    localStorage.setItem("g_checkin_history", JSON.stringify(migrated));
-    return migrated;
-  }
-
   return [];
 }
 
-function saveCheckinHistory(list) {
-  try {
-    localStorage.setItem("g_checkin_history", JSON.stringify(list));
-  } catch (e) {
-    const trimmed = list.map((item, idx) =>
-      idx > 12 ? { ...item, photo: null } : item,
-    );
-    localStorage.setItem("g_checkin_history", JSON.stringify(trimmed));
+async function saveCheckinHistory(list) {
+  const userId = getActiveUserId();
+  const now = Date.now();
+  const normalizedList = (Array.isArray(list) ? list : []).map((item, idx) => ({
+    ...item,
+    userId,
+    id: item.id || generateUID(),
+    createdAt: item.createdAt || now - idx * 1000,
+    updatedAt: now,
+  }));
+
+  userCache.checkins = normalizedList;
+  syncMirrorToLocalStorage();
+
+  for (const rec of normalizedList) {
+    await idbPut("checkins", rec);
+    if (userId !== "local") {
+      await enqueueSyncOp(userId, "checkins", rec.id, "upsert", rec);
+    }
   }
-  scheduleCloudSync();
+
+  if (userId !== "local") {
+    scheduleCloudSync();
+  }
+}
+
+async function upsertSingleCheckin(entry) {
+  const userId = getActiveUserId();
+  const now = Date.now();
+  const record = {
+    ...entry,
+    userId,
+    id: entry.id || generateUID(),
+    createdAt: entry.createdAt || now,
+    updatedAt: now,
+  };
+
+  await idbPut("checkins", record);
+
+  const idx = userCache.checkins.findIndex((c) => c.id === record.id);
+  if (idx !== -1) {
+    userCache.checkins[idx] = record;
+  } else {
+    userCache.checkins.unshift(record);
+  }
+  syncMirrorToLocalStorage();
+
+  if (userId !== "local") {
+    await enqueueSyncOp(userId, "checkins", record.id, "upsert", record);
+    await flushSyncQueue();
+  }
+  return record;
+}
+
+async function deleteCheckinItem(checkinId) {
+  const userId = getActiveUserId();
+  const now = Date.now();
+
+  userCache.checkins = userCache.checkins.filter(
+    (item) => item.id !== checkinId,
+  );
+  syncMirrorToLocalStorage();
+
+  await idbDelete("checkins", [userId, checkinId]);
+  if (userId !== "local") {
+    await idbPut("tombstones", { userId, id: checkinId, deletedAt: now });
+    await enqueueSyncOp(userId, "checkins", checkinId, "delete", null);
+    await enqueueSyncOp(userId, "tombstones", checkinId, "upsert", {
+      targetId: checkinId,
+      deletedAt: now,
+    });
+    await flushSyncQueue();
+  }
+
+  renderDashboard();
+  showToast("CHECK-IN REMOVIDO", 1400);
 }
 
 function calculateStreak(history) {
@@ -889,7 +1749,9 @@ function applyQuickSport(name, icon) {
   input.focus();
 }
 
-function saveManualCheckin() {
+async function saveManualCheckin() {
+  if (isSavingSession) return;
+
   const rawActivity = document.getElementById("mcActivity").value.trim();
   const dateISO = document.getElementById("mcDate").value || getTodayISO();
   const duration = document.getElementById("mcDuration").value.trim();
@@ -901,52 +1763,47 @@ function saveManualCheckin() {
     return;
   }
 
-  const history = getCheckinHistory();
-  const cleanLabel =
-    rawActivity.replace(/^[^\wÀ-ú]+\s*/, "").trim() || rawActivity;
-  const badgeTag = cleanLabel.slice(0, 5).toUpperCase();
+  isSavingSession = true;
+  try {
+    const cleanLabel =
+      rawActivity.replace(/^[^\wÀ-ú]+\s*/, "").trim() || rawActivity;
+    const badgeTag = cleanLabel.slice(0, 5).toUpperCase();
 
-  const detailParts = [];
-  if (duration) detailParts.push(`${duration} min`);
-  if (note) detailParts.push(note);
-  const detailsText = detailParts.length
-    ? detailParts.join(" • ")
-    : "Check-in manual";
+    const detailParts = [];
+    if (duration) detailParts.push(`${duration} min`);
+    if (note) detailParts.push(note);
+    const detailsText = detailParts.length
+      ? detailParts.join(" • ")
+      : "Check-in manual";
 
-  history.unshift({
-    id: `chk_${Date.now()}`,
-    isoDate: dateISO,
-    date: isoToBR(dateISO),
-    badge: badgeTag,
-    title: rawActivity,
-    details: detailsText,
-    isManual: true,
-    photo: photoData,
-  });
+    await upsertSingleCheckin({
+      id: generateUID(),
+      isoDate: dateISO,
+      date: isoToBR(dateISO),
+      badge: badgeTag,
+      title: rawActivity,
+      details: detailsText,
+      isManual: true,
+      photo: photoData,
+    });
 
-  saveCheckinHistory(history);
+    document.getElementById("mcActivity").value = "";
+    document.getElementById("mcDuration").value = "";
+    document.getElementById("mcNote").value = "";
+    clearPendingPhoto("manual");
 
-  document.getElementById("mcActivity").value = "";
-  document.getElementById("mcDuration").value = "";
-  document.getElementById("mcNote").value = "";
-  clearPendingPhoto("manual");
+    const [y, m] = dateISO.split("-").map(Number);
+    if (y && m) {
+      calViewYear = y;
+      calViewMonth = m - 1;
+    }
+    selectedCalDateISO = dateISO;
 
-  const [y, m] = dateISO.split("-").map(Number);
-  if (y && m) {
-    calViewYear = y;
-    calViewMonth = m - 1;
+    renderDashboard();
+    showToast(`CHECK-IN "${cleanLabel.toUpperCase()}" SALVO ✓`, 2000);
+  } finally {
+    isSavingSession = false;
   }
-  selectedCalDateISO = dateISO;
-
-  renderDashboard();
-  showToast(`CHECK-IN "${cleanLabel.toUpperCase()}" SALVO ✓`, 2000);
-}
-
-function deleteCheckinItem(checkinId) {
-  const history = getCheckinHistory().filter((item) => item.id !== checkinId);
-  saveCheckinHistory(history);
-  renderDashboard();
-  showToast("CHECK-IN REMOVIDO", 1400);
 }
 
 function renderGymRatsCalendar() {
@@ -1007,7 +1864,7 @@ function renderGymRatsCalendar() {
 
     let badgeText = "";
     if (hasCheckin) {
-      badgeText = dayLogs.map((l) => l.badge || "✓").join("+");
+      badgeText = escapeHTML(dayLogs.map((l) => l.badge || "✓").join("+"));
     }
 
     cellsHtml += `
@@ -1040,14 +1897,14 @@ function renderGymRatsCalendar() {
         <div class="cdd-log-item">
           ${
             l.photo
-              ? `<img src="${l.photo}" alt="Foto" class="cdd-photo-thumb" onclick="openPhotoLightbox('${l.id}')" />`
+              ? `<img src="${l.photo}" alt="Foto" class="cdd-photo-thumb" onclick="openPhotoLightbox('${escapeHTML(l.id)}')" />`
               : ""
           }
           <div style="flex: 1">
-            <strong>${l.title}</strong><br/>
-            <span style="color:#8ea4bf;font-size:10px;">${l.details || ""}</span>
+            <strong>${escapeHTML(l.title)}</strong><br/>
+            <span style="color:#8ea4bf;font-size:10px;">${escapeHTML(l.details || "")}</span>
           </div>
-          <button type="button" class="btn-del-checkin" onclick="deleteCheckinItem('${l.id}')">✕</button>
+          <button type="button" class="btn-del-checkin" onclick="deleteCheckinItem('${escapeHTML(l.id)}')">✕</button>
         </div>`,
       )
       .join("");
@@ -1058,6 +1915,9 @@ function renderGymRatsCalendar() {
   }
 }
 
+/* =========================================================
+   DIETA & NUTRIÇÃO
+   ========================================================= */
 function getDietState() {
   const defaultState = {
     water: 0,
@@ -1065,7 +1925,8 @@ function getDietState() {
     selected: { cafe: 0, almoco: 0, lanche: 0, jantar: 0 },
   };
   try {
-    const saved = JSON.parse(localStorage.getItem("g_diet_state"));
+    const raw = getStateValue("g_diet_state");
+    const saved = raw ? JSON.parse(raw) : null;
     if (!saved) return defaultState;
     return {
       water: Number(saved.water) || 0,
@@ -1077,9 +1938,8 @@ function getDietState() {
   }
 }
 
-function saveDietState(state) {
-  localStorage.setItem("g_diet_state", JSON.stringify(state));
-  scheduleCloudSync();
+async function saveDietState(state) {
+  await setStateValue("g_diet_state", JSON.stringify(state));
 }
 
 function renderDietScreen() {
@@ -1099,7 +1959,7 @@ function renderDietScreen() {
     const optsHtml = meal.options
       .map(
         (opt, idx) =>
-          `<option value="${idx}" ${idx === selIdx ? "selected" : ""}>${opt.label}</option>`,
+          `<option value="${idx}" ${idx === selIdx ? "selected" : ""}>${escapeHTML(opt.label)}</option>`,
       )
       .join("");
 
@@ -1107,8 +1967,8 @@ function renderDietScreen() {
       <div class="diet-meal-card ${isDone ? "done" : ""}">
         <div class="diet-meal-top">
           <div>
-            <div class="diet-meal-time">${meal.time}</div>
-            <div class="diet-meal-sub">${meal.macros}</div>
+            <div class="diet-meal-time">${escapeHTML(meal.time)}</div>
+            <div class="diet-meal-sub">${escapeHTML(meal.macros)}</div>
           </div>
           <button type="button" class="diet-check-btn" onclick="toggleDietMeal('${meal.id}')">
             ${isDone ? "✓ FEITA" : "MARCAR"}
@@ -1117,7 +1977,7 @@ function renderDietScreen() {
         <select class="diet-option-select" onchange="changeDietOption('${meal.id}', this.value)">
           ${optsHtml}
         </select>
-        <div class="diet-meal-desc">${currentOpt.desc}</div>
+        <div class="diet-meal-desc">${escapeHTML(currentOpt.desc)}</div>
       </div>`;
   });
 
@@ -1128,10 +1988,10 @@ function renderDietScreen() {
   document.getElementById("waterProgressFill").style.width = `${pct}%`;
 }
 
-function toggleDietMeal(mealId) {
+async function toggleDietMeal(mealId) {
   const state = getDietState();
   state.checked[mealId] = !state.checked[mealId];
-  saveDietState(state);
+  await saveDietState(state);
   renderDietScreen();
   showToast(
     state.checked[mealId] ? "REFEIÇÃO REGISTRADA ✓" : "MARCAÇÃO REMOVIDA",
@@ -1139,17 +1999,17 @@ function toggleDietMeal(mealId) {
   );
 }
 
-function changeDietOption(mealId, idx) {
+async function changeDietOption(mealId, idx) {
   const state = getDietState();
   state.selected[mealId] = Number(idx) || 0;
-  saveDietState(state);
+  await saveDietState(state);
   renderDietScreen();
 }
 
-function addWater(liters) {
+async function addWater(liters) {
   const state = getDietState();
   state.water = Math.min(6, Number((state.water + liters).toFixed(2)));
-  saveDietState(state);
+  await saveDietState(state);
   renderDietScreen();
   showToast(`+${Math.round(liters * 1000)}ML DE ÁGUA 💧`, 1000);
 }
@@ -1158,11 +2018,11 @@ function resetWater() {
   resetDietDay();
 }
 
-function resetDietDay() {
+async function resetDietDay() {
   const state = getDietState();
   state.water = 0;
   state.checked = { cafe: false, almoco: false, lanche: false, jantar: false };
-  saveDietState(state);
+  await saveDietState(state);
   renderDietScreen();
   showToast("CONTROLE DIÁRIO ZERADO", 1300);
 }
@@ -1174,7 +2034,10 @@ function toggleEquivalenceDrawer() {
   if (arrow) arrow.innerText = isOpen ? "▴" : "▾";
 }
 
-function saveMeasurements() {
+/* =========================================================
+   MEDIDAS ANTROPOMÉTRICAS (REGISTROS INDIVIDUAIS)
+   ========================================================= */
+async function saveMeasurements() {
   const peso = document.getElementById("mPeso").value.trim();
   const cintura = document.getElementById("mCintura").value.trim();
   const abdomen = document.getElementById("mAbdomen").value.trim();
@@ -1187,8 +2050,12 @@ function saveMeasurements() {
     return;
   }
 
-  const list = JSON.parse(localStorage.getItem("g_measures_list")) || [];
-  list.unshift({
+  const userId = getActiveUserId();
+  const now = Date.now();
+  const id = generateUID();
+  const record = {
+    userId,
+    id,
     date: new Date().toLocaleDateString("pt-BR"),
     peso: peso || "-",
     cintura: cintura || "-",
@@ -1196,18 +2063,27 @@ function saveMeasurements() {
     torax: torax || "-",
     braco: braco || "-",
     coxa: coxa || "-",
-  });
+    createdAt: now,
+    updatedAt: now,
+  };
 
-  localStorage.setItem("g_measures_list", JSON.stringify(list));
-  scheduleCloudSync();
+  await idbPut("measures", record);
+  userCache.measures.unshift(record);
+  syncMirrorToLocalStorage();
+
   renderMeasurementsList();
   showToast("MEDIDAS ANTROPOMÉTRICAS SALVAS ✓", 1800);
+
+  if (userId !== "local") {
+    await enqueueSyncOp(userId, "measures", id, "upsert", record);
+    await flushSyncQueue();
+  }
 }
 
 function renderMeasurementsList() {
   const el = document.getElementById("measuresHistoryList");
   if (!el) return;
-  const list = JSON.parse(localStorage.getItem("g_measures_list")) || [];
+  const list = userCache.measures || [];
   if (!list.length) {
     el.innerHTML = `<div class="pr-summary-row" style="justify-content:center;color:#7a8fa8;">Nenhuma medição registrada ainda.</div>`;
     return;
@@ -1218,25 +2094,33 @@ function renderMeasurementsList() {
       (m) => `
       <div class="measure-history-card">
         <div class="measure-history-top">
-          <span>${m.date}</span>
-          <span>PESO: ${m.peso} KG</span>
+          <span>${escapeHTML(m.date)}</span>
+          <span>PESO: ${escapeHTML(m.peso)} KG</span>
         </div>
         <div class="measure-history-vals">
-          Cintura: <strong>${m.cintura}</strong> cm • Abdômen: <strong>${m.abdomen}</strong> cm • Tórax: <strong>${m.torax}</strong> cm<br/>
-          Braço D.: <strong>${m.braco}</strong> cm • Coxa D.: <strong>${m.coxa}</strong> cm
+          Cintura: <strong>${escapeHTML(m.cintura)}</strong> cm • Abdômen: <strong>${escapeHTML(m.abdomen)}</strong> cm • Tórax: <strong>${escapeHTML(m.torax)}</strong> cm<br/>
+          Braço D.: <strong>${escapeHTML(m.braco)}</strong> cm • Coxa D.: <strong>${escapeHTML(m.coxa)}</strong> cm
         </div>
       </div>`,
     )
     .join("");
 }
 
-function initApp() {
-  if (!localStorage.getItem("g_annual_checkin_baselines")) {
-    localStorage.setItem(
+/* =========================================================
+   INICIALIZAÇÃO & NAVEGAÇÃO
+   ========================================================= */
+async function initApp() {
+  await openLocalDB();
+  await migrateLegacyDataIfNeeded("local");
+  await loadUserStateFromIDB("local");
+
+  if (!getStateValue("g_annual_checkin_baselines")) {
+    await setStateValue(
       "g_annual_checkin_baselines",
       JSON.stringify(DEFAULT_ANNUAL_CHECKIN_BASELINES),
     );
   }
+
   const list = document.getElementById("menuList");
   list.innerHTML = "";
 
@@ -1251,9 +2135,9 @@ function initApp() {
     list.innerHTML += `
       <div class="menu-item" onclick="openDay('${k}')">
           <div class="menu-info">
-              <span class="menu-day-name">${d.dayName}</span>
+              <span class="menu-day-name">${escapeHTML(d.dayName)}</span>
               <div class="menu-tags">
-                  <span class="menu-region-badge">${d.region}</span>
+                  <span class="menu-region-badge">${escapeHTML(d.region)}</span>
                   <span class="menu-ex-count">${d.exercises.length} EXERCÍCIOS</span>
                   ${hasStretch ? '<span class="menu-stretch-badge">+ ELASTICIDADE CHUTES</span>' : ""}
               </div>
@@ -1264,6 +2148,9 @@ function initApp() {
 
   renderDietScreen();
   renderDashboard();
+  if (typeof renderTkdScreen === "function") {
+    renderTkdScreen();
+  }
 }
 
 function switchMainTab(id, tabEl) {
@@ -1292,14 +2179,16 @@ function switchMainTab(id, tabEl) {
   }, 150);
 }
 
-
+/* =========================================================
+   SALDO ANUAL (241 BASE) & DASHBOARD
+   ========================================================= */
 const DEFAULT_ANNUAL_CHECKIN_BASELINES = {
   2026: 241,
 };
 
 function getAnnualCheckinBaselines() {
   try {
-    const raw = localStorage.getItem("g_annual_checkin_baselines");
+    const raw = getStateValue("g_annual_checkin_baselines");
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed && typeof parsed === "object") {
@@ -1310,9 +2199,8 @@ function getAnnualCheckinBaselines() {
   return { ...DEFAULT_ANNUAL_CHECKIN_BASELINES };
 }
 
-function saveAnnualCheckinBaselines(map) {
-  localStorage.setItem("g_annual_checkin_baselines", JSON.stringify(map));
-  scheduleCloudSync();
+async function saveAnnualCheckinBaselines(map) {
+  await setStateValue("g_annual_checkin_baselines", JSON.stringify(map), true);
 }
 
 function getCheckinYear(item) {
@@ -1377,7 +2265,7 @@ function onBaselineYearChange() {
     !isNaN(year) && baselines[year] !== undefined ? baselines[year] : 0;
 }
 
-function saveBaselineFromModal() {
+async function saveBaselineFromModal() {
   const year = parseInt(document.getElementById("baselineYearInput").value, 10);
   const count = Math.max(
     0,
@@ -1389,7 +2277,7 @@ function saveBaselineFromModal() {
   }
   const baselines = getAnnualCheckinBaselines();
   baselines[year] = count;
-  saveAnnualCheckinBaselines(baselines);
+  await saveAnnualCheckinBaselines(baselines);
   closeBaselineModal();
   renderDashboard();
   showToast(`SALDO ${year} ATUALIZADO: ${count} CHECK-INS ✓`, 2200);
@@ -1413,15 +2301,12 @@ function renderDashboard() {
   });
 
   uniqueExercises.forEach((name) => {
-    const h = JSON.parse(localStorage.getItem(`gh_${name}`)) || [];
-    const maxKg = h.length
-      ? Math.max(...h.map((item) => Number(item.max) || 0))
-      : 0;
+    const maxKg = getExercisePR(name);
     if (maxKg > 0) {
       totalPRs++;
       prRowsHtml += `
         <div class="pr-summary-row">
-            <span>${name}</span>
+            <span>${escapeHTML(name)}</span>
             <span>${maxKg} KG</span>
         </div>`;
     }
@@ -1476,14 +2361,21 @@ function renderDashboard() {
     `<div class="pr-summary-row" style="justify-content:center;color:#7a8fa8;">Finalize um treino para exibir seus recordes aqui.</div>`;
 }
 
+/* =========================================================
+   BACKUP EXPORT / IMPORT
+   ========================================================= */
 function exportBackup() {
-  const backup = {};
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (key.startsWith("g_") || key.startsWith("gh_")) {
-      backup[key] = localStorage.getItem(key);
-    }
-  }
+  const backup = {
+    version: 4,
+    exportedAt: new Date().toISOString(),
+    checkins: userCache.checkins,
+    measures: userCache.measures,
+    kv: {},
+  };
+  Object.values(userCache.kv).forEach((entry) => {
+    backup.kv[entry.key] = entry.value;
+  });
+
   const jsonStr = JSON.stringify(backup);
   navigator.clipboard
     .writeText(jsonStr)
@@ -1502,30 +2394,96 @@ function closeImportModal() {
   document.getElementById("importModal").classList.remove("active");
 }
 
-function importBackup() {
+async function importBackup() {
   try {
     const raw = document.getElementById("importJsonArea").value.trim();
     const data = JSON.parse(raw);
+    const userId = getActiveUserId();
+    const now = Date.now();
     let count = 0;
-    Object.keys(data).forEach((key) => {
-      if (key.startsWith("g_") || key.startsWith("gh_")) {
-        localStorage.setItem(key, data[key]);
+
+    if (data.version === 4 && data.kv) {
+      if (Array.isArray(data.checkins)) {
+        for (const c of data.checkins) {
+          const id = c.id || generateUID();
+          const rec = { ...c, userId, id, updatedAt: now };
+          await idbPut("checkins", rec);
+          if (userId !== "local") {
+            await enqueueSyncOp(userId, "checkins", id, "upsert", rec);
+          }
+          count++;
+        }
+      }
+      if (Array.isArray(data.measures)) {
+        for (const m of data.measures) {
+          const id = m.id || generateUID();
+          const rec = { ...m, userId, id, updatedAt: now };
+          await idbPut("measures", rec);
+          if (userId !== "local") {
+            await enqueueSyncOp(userId, "measures", id, "upsert", rec);
+          }
+          count++;
+        }
+      }
+      for (const [k, v] of Object.entries(data.kv)) {
+        await setStateValue(k, v, false);
         count++;
       }
-    });
+    } else {
+      for (const [rawKey, val] of Object.entries(data)) {
+        if (rawKey === "g_checkin_history" && typeof val === "string") {
+          const arr = JSON.parse(val);
+          if (Array.isArray(arr)) {
+            for (const c of arr) {
+              const id = c.id || generateUID();
+              const rec = { ...c, userId, id, updatedAt: now };
+              await idbPut("checkins", rec);
+              if (userId !== "local") {
+                await enqueueSyncOp(userId, "checkins", id, "upsert", rec);
+              }
+              count++;
+            }
+          }
+        } else if (rawKey === "g_measures_list" && typeof val === "string") {
+          const arr = JSON.parse(val);
+          if (Array.isArray(arr)) {
+            for (const m of arr) {
+              const id = m.id || generateUID();
+              const rec = { ...m, userId, id, updatedAt: now };
+              await idbPut("measures", rec);
+              if (userId !== "local") {
+                await enqueueSyncOp(userId, "measures", id, "upsert", rec);
+              }
+              count++;
+            }
+          }
+        } else if (rawKey.startsWith("g_") || rawKey.startsWith("gh_")) {
+          const cleanKey = normalizeLegacyKey(rawKey);
+          await setStateValue(cleanKey, val, false);
+          count++;
+        }
+      }
+    }
+
+    await loadUserStateFromIDB(userId);
     closeImportModal();
     renderDietScreen();
     renderDashboard();
     if (typeof renderTkdScreen === "function") {
       renderTkdScreen();
     }
-    scheduleCloudSync();
+    if (userId !== "local") {
+      await flushSyncQueue();
+    }
     showToast(`BACKUP RESTAURADO (${count} ITENS) ✓`, 2500);
   } catch (e) {
     showToast("CÓDIGO JSON INVÁLIDO!", 2000);
   }
 }
 
+/* =========================================================
+   TREINO ATIVO, SÉRIES, CARDIO & FINALIZAÇÃO
+   ========================================================= */
 function openDay(k) {
   currentDay = k;
   document.getElementById("mainHeader").style.display = "none";
@@ -1584,20 +2542,20 @@ function buildStretchCard(title, items, prefix) {
         : "";
       const imgDrawer = st.img
         ? `<div class="img-drawer" id="${drawerId}" style="margin-top:6px;margin-bottom:0;">
-             <img src="${st.img}" alt="${st.title}" loading="lazy" onerror="handleImgError(this, '${st.img}')" />
+             <img src="${st.img}" alt="${escapeHTML(st.title)}" loading="lazy" onerror="handleImgError(this, '${escapeHTML(st.img)}')" />
            </div>`
         : "";
 
       return `
       <div class="stretch-item">
           <div class="stretch-item-title">
-              <span>${st.title}</span>
+              <span>${escapeHTML(st.title)}</span>
               <div class="stretch-badges-right">
-                  <span class="stretch-item-time">${st.time}</span>
+                  <span class="stretch-item-time">${escapeHTML(st.time)}</span>
                   ${imgBtn}
               </div>
           </div>
-          <div class="stretch-item-desc">${st.desc}</div>
+          <div class="stretch-item-desc">${escapeHTML(st.desc)}</div>
           ${imgDrawer}
       </div>`;
     })
@@ -1605,7 +2563,7 @@ function buildStretchCard(title, items, prefix) {
 
   return `
     <div class="stretch-card">
-        <div class="stretch-header">${title}</div>
+        <div class="stretch-header">${escapeHTML(title)}</div>
         <div class="stretch-list">${itemsHtml}</div>
     </div>`;
 }
@@ -1621,9 +2579,8 @@ function toggleCardioDrawer() {
   if (arrow) arrow.innerText = isOpen ? "▴" : "▾";
 }
 
-function selectCardioType(typeId) {
-  localStorage.setItem(`g_${currentDay}_c_type`, typeId);
-  scheduleCloudSync();
+async function selectCardioType(typeId) {
+  await setStateValue(`g_${currentDay}_c_type`, typeId);
   const mod =
     cardioModalities.find((m) => m.id === typeId) || cardioModalities[0];
 
@@ -1633,7 +2590,7 @@ function selectCardioType(typeId) {
 
   const selectedEl = document.getElementById("cardioSelectedDisplay");
   if (selectedEl) {
-    selectedEl.innerHTML = `<span class="cyber-mod-icon-wrap">${mod.icon}</span> <span>${mod.label.toUpperCase()}</span>`;
+    selectedEl.innerHTML = `<span class="cyber-mod-icon-wrap">${mod.icon}</span> <span>${escapeHTML(mod.label.toUpperCase())}</span>`;
   }
 
   toggleCardioDrawer();
@@ -1647,24 +2604,23 @@ function adjustCardioMetric(fieldId, delta) {
   saveC();
 }
 
-function saveC() {
+async function saveC() {
   const activeBtn = document.querySelector(".cardio-type-btn.active");
   const cType = activeBtn
     ? activeBtn.dataset.type
     : workoutData[currentDay].cardio.type;
-  localStorage.setItem(`g_${currentDay}_c_type`, cType);
-  localStorage.setItem(
+  await setStateValue(`g_${currentDay}_c_type`, cType);
+  await setStateValue(
     `g_${currentDay}_c_t`,
     document.getElementById("c_t").value,
   );
-  localStorage.setItem(
+  await setStateValue(
     `g_${currentDay}_c_k`,
     document.getElementById("c_k").value,
   );
-  scheduleCloudSync();
 }
 
-function addExtraSet(exIndex) {
+async function addExtraSet(exIndex) {
   const currentList = JSON.parse(
     JSON.stringify(getExerciseSetsList(currentDay, exIndex)),
   );
@@ -1682,17 +2638,16 @@ function addExtraSet(exIndex) {
     reps: lastRpEl ? parseInt(lastRpEl.value) || lastSet.reps : lastSet.reps,
   });
 
-  localStorage.setItem(
+  await setStateValue(
     `g_${currentDay}_e${exIndex}_sets`,
     JSON.stringify(currentList),
   );
-  scheduleCloudSync();
   renderWorkout(currentDay);
   updateTelemetryHUD();
   showToast("+1 SÉRIE ADICIONADA", 1100);
 }
 
-function removeExtraSet(exIndex) {
+async function removeExtraSet(exIndex) {
   const defaultLen = workoutData[currentDay].exercises[exIndex].sets.length;
   const currentList = JSON.parse(
     JSON.stringify(getExerciseSetsList(currentDay, exIndex)),
@@ -1701,12 +2656,11 @@ function removeExtraSet(exIndex) {
 
   const removedIdx = currentList.length - 1;
   currentList.pop();
-  localStorage.removeItem(`g_${currentDay}_e${exIndex}_s${removedIdx}`);
-  localStorage.setItem(
+  await removeStateValue(`g_${currentDay}_e${exIndex}_s${removedIdx}`);
+  await setStateValue(
     `g_${currentDay}_e${exIndex}_sets`,
     JSON.stringify(currentList),
   );
-  scheduleCloudSync();
   renderWorkout(currentDay);
   updateTelemetryHUD();
   showToast("SÉRIE EXTRA REMOVIDA", 1100);
@@ -1741,16 +2695,18 @@ function renderWorkout(k) {
       : "";
 
     const platesBtnHtml = ex.hasPlates
-      ? `<button type="button" class="btn-plates" onclick="openPlateModal('${ex.name}', ${i})">🏋️ ANILHAS</button>`
+      ? `<button type="button" class="btn-plates" onclick="openPlateModal('${escapeHTML(ex.name)}', ${i})">🏋️ ANILHAS</button>`
       : "";
 
     const imgDrawerHtml = ex.img
       ? `<div class="img-drawer" id="${drawerId}">
-           <img src="${ex.img}" alt="${ex.name}" loading="lazy" onerror="handleImgError(this, '${ex.img}')" />
+           <img src="${ex.img}" alt="${escapeHTML(ex.name)}" loading="lazy" onerror="handleImgError(this, '${escapeHTML(ex.img)}')" />
          </div>`
       : "";
 
-    let noteHtml = ex.note ? `<div class="exercise-note">${ex.note}</div>` : "";
+    let noteHtml = ex.note
+      ? `<div class="exercise-note">${escapeHTML(ex.note)}</div>`
+      : "";
 
     let sHtml = `
       <div class="sets-header">
@@ -1762,11 +2718,14 @@ function renderWorkout(k) {
       <div class="sets-list">`;
 
     setsArr.forEach((set, j) => {
-      const s = JSON.parse(localStorage.getItem(`g_${k}_e${i}_s${j}`)) || {
-        kg: set.kg,
-        reps: set.reps,
-        checked: false,
-      };
+      let s = null;
+      try {
+        const raw = getStateValue(`g_${k}_e${i}_s${j}`);
+        s = raw ? JSON.parse(raw) : null;
+      } catch (e) {}
+      if (!s) {
+        s = { kg: set.kg, reps: set.reps, checked: false };
+      }
 
       sHtml += `
         <div class="set-row ${s.checked ? "completed" : ""}" id="row_${i}_${j}">
@@ -1799,7 +2758,7 @@ function renderWorkout(k) {
           <div class="exercise-header-top">
               <div class="exercise-title-col">
                   <div class="exercise-name-row">
-                      <span class="exercise-name">${ex.name}</span>
+                      <span class="exercise-name">${escapeHTML(ex.name)}</span>
                       <span class="card-done-badge">✓ CONCLUÍDO</span>
                   </div>
                   ${prHtml}
@@ -1809,7 +2768,7 @@ function renderWorkout(k) {
                       ${platesBtnHtml}
                       ${imgBtnHtml}
                   </div>
-                  <button type="button" class="btn-history" onclick="showH('${ex.name}')">📈 HISTÓRICO</button>
+                  <button type="button" class="btn-history" onclick="showH('${escapeHTML(ex.name)}')">📈 HISTÓRICO</button>
               </div>
           </div>
           ${imgDrawerHtml}
@@ -1824,9 +2783,9 @@ function renderWorkout(k) {
     checkLiveExercisePR(i);
   });
 
-  const savedType = localStorage.getItem(`g_${k}_c_type`) || d.cardio.type;
-  const savedTime = localStorage.getItem(`g_${k}_c_t`) || d.cardio.time;
-  const savedKcal = localStorage.getItem(`g_${k}_c_k`) || d.cardio.kcal;
+  const savedType = getStateValue(`g_${k}_c_type`) || d.cardio.type;
+  const savedTime = getStateValue(`g_${k}_c_t`) || d.cardio.time;
+  const savedKcal = getStateValue(`g_${k}_c_k`) || d.cardio.kcal;
   const activeMod =
     cardioModalities.find((m) => m.id === savedType) || cardioModalities[0];
 
@@ -1852,7 +2811,7 @@ function renderWorkout(k) {
         
         <button type="button" class="cardio-drawer-trigger" id="cardioDrawerTrigger" onclick="toggleCardioDrawer()">
             <div class="cardio-selected-info" id="cardioSelectedDisplay">
-                <span class="cyber-mod-icon-wrap">${activeMod.icon}</span> <span>${activeMod.label.toUpperCase()}</span>
+                <span class="cyber-mod-icon-wrap">${activeMod.icon}</span> <span>${escapeHTML(activeMod.label.toUpperCase())}</span>
             </div>
             <span class="cardio-drawer-hint">MODALIDADE <span id="cardioDrawerArrow">▾</span></span>
         </button>
@@ -1952,7 +2911,6 @@ function renderWorkout(k) {
             </div>
         </div>
     </div>`;
-
 }
 
 function uV(i, j, f, d) {
@@ -1990,7 +2948,7 @@ function tC(i, j) {
   updateTelemetryHUD();
 }
 
-function saveS(i, j) {
+async function saveS(i, j) {
   const kg =
     parseFloat(
       document.getElementById(`k_${i}_${j}`).value.replace(",", "."),
@@ -1999,24 +2957,22 @@ function saveS(i, j) {
   const chk = document
     .getElementById(`c_${i}_${j}`)
     .classList.contains("checked");
-  localStorage.setItem(
+  await setStateValue(
     `g_${currentDay}_e${i}_s${j}`,
     JSON.stringify({ kg, reps, checked: chk }),
   );
-  scheduleCloudSync();
 }
 
-function resetWorkout() {
+async function resetWorkout() {
   if (
     confirm(
-      `Iniciar NOVA SESSÃO de ${workoutData[currentDay].dayName}?
-
-Isso desmarca os ✓ mantendo suas últimas cargas salvas.`,
+      `Iniciar NOVA SESSÃO de ${workoutData[currentDay].dayName}?\n\nIsso desmarca os ✓ mantendo suas últimas cargas salvas.`,
     )
   ) {
-    workoutData[currentDay].exercises.forEach((ex, i) => {
+    for (let i = 0; i < workoutData[currentDay].exercises.length; i++) {
       const setsArr = getExerciseSetsList(currentDay, i);
-      setsArr.forEach((s, j) => {
+      for (let j = 0; j < setsArr.length; j++) {
+        const s = setsArr[j];
         const currentKg =
           parseFloat(
             document.getElementById(`k_${i}_${j}`).value.replace(",", "."),
@@ -2024,14 +2980,13 @@ Isso desmarca os ✓ mantendo suas últimas cargas salvas.`,
         const currentReps =
           parseInt(document.getElementById(`r_${i}_${j}`).value) || s.reps;
 
-        localStorage.setItem(
+        await setStateValue(
           `g_${currentDay}_e${i}_s${j}`,
           JSON.stringify({ kg: currentKg, reps: currentReps, checked: false }),
         );
-      });
-    });
+      }
+    }
 
-    scheduleCloudSync();
     stopTimer();
     renderWorkout(currentDay);
     updateTelemetryHUD();
@@ -2040,21 +2995,18 @@ Isso desmarca os ✓ mantendo suas últimas cargas salvas.`,
 }
 
 function copyWorkoutReport() {
-  let r = `*HUD CYBERGYM: ${workoutData[currentDay].dayName.toUpperCase()}*
-`;
+  let r = `*HUD CYBERGYM: ${workoutData[currentDay].dayName.toUpperCase()}*\n`;
 
   workoutData[currentDay].exercises.forEach((ex, i) => {
     const setsArr = getExerciseSetsList(currentDay, i);
-    r += `
-- ${ex.name}:`;
+    r += `\n- ${ex.name}:`;
     setsArr.forEach((s, j) => {
       const done = document
         .getElementById(`c_${i}_${j}`)
         .classList.contains("checked")
         ? "✓"
         : "○";
-      r += `
-- S${j + 1}: ${document.getElementById(`k_${i}_${j}`).value}kg x ${document.getElementById(`r_${i}_${j}`).value} (${done})`;
+      r += `\n- S${j + 1}: ${document.getElementById(`k_${i}_${j}`).value}kg x ${document.getElementById(`r_${i}_${j}`).value} (${done})`;
     });
   });
 
@@ -2065,9 +3017,7 @@ function copyWorkoutReport() {
   const cTime = document.getElementById("c_t").value;
   const cKcal = document.getElementById("c_k").value;
 
-  r += `
-
-⚡ *Cardio Pós-Treino (${cType}):* ${cTime} min • ${cKcal} kcal`;
+  r += `\n\n⚡ *Cardio Pós-Treino (${cType}):* ${cTime} min • ${cKcal} kcal`;
 
   navigator.clipboard
     .writeText(r)
@@ -2075,33 +3025,38 @@ function copyWorkoutReport() {
 }
 
 async function finishCurrentWorkout() {
-  const photoData = getPendingPhoto("workout");
-  const saved = saveWorkoutHistory(photoData);
-  if (saved) {
-    clearPendingPhoto("workout");
-    if (currentCloudUser && typeof pushToFirestore === "function") {
-      clearTimeout(cloudSyncDebounce);
-      await pushToFirestore(false);
+  if (isSavingSession) return;
+  isSavingSession = true;
+  try {
+    const photoData = getPendingPhoto("workout");
+    const saved = await saveWorkoutHistory(photoData);
+    if (saved) {
+      clearPendingPhoto("workout");
     }
+  } finally {
+    isSavingSession = false;
   }
 }
 
-function saveWorkoutHistory(photoData = null) {
+async function saveWorkoutHistory(photoData = null) {
   const date = new Date().toLocaleDateString("pt-BR");
   const todayISO = getTodayISO();
   const d = workoutData[currentDay];
   let count = 0;
   let totalVolume = 0;
 
-  d.exercises.forEach((ex, i) => {
+  for (let i = 0; i < d.exercises.length; i++) {
+    const ex = d.exercises[i];
     const setsArr = getExerciseSetsList(currentDay, i);
-    let max = 0,
-      ok = false;
+    let max = 0;
+    let ok = false;
 
     setsArr.forEach((s, j) => {
-      const item = JSON.parse(
-        localStorage.getItem(`g_${currentDay}_e${i}_s${j}`),
-      );
+      let item = null;
+      try {
+        const raw = getStateValue(`g_${currentDay}_e${i}_s${j}`);
+        item = raw ? JSON.parse(raw) : null;
+      } catch (e) {}
       if (item && item.checked) {
         ok = true;
         if (item.kg > max) max = item.kg;
@@ -2110,7 +3065,11 @@ function saveWorkoutHistory(photoData = null) {
     });
 
     if (ok) {
-      let h = JSON.parse(localStorage.getItem(`gh_${ex.name}`)) || [];
+      let h = [];
+      try {
+        const rawH = getStateValue(`gh_${ex.name}`);
+        h = rawH ? JSON.parse(rawH) : [];
+      } catch (e) {}
       let t = h.find((e) => e.date === date);
 
       if (t) {
@@ -2119,11 +3078,11 @@ function saveWorkoutHistory(photoData = null) {
         h.push({ date: date, max: max });
       }
 
-      localStorage.setItem(`gh_${ex.name}`, JSON.stringify(h));
+      await setStateValue(`gh_${ex.name}`, JSON.stringify(h));
       checkLiveExercisePR(i);
       count++;
     }
-  });
+  }
 
   if (count > 0) {
     const activeBtn = document.querySelector(".cardio-type-btn.active");
@@ -2135,18 +3094,14 @@ function saveWorkoutHistory(photoData = null) {
     const badgeLetter = letterMatch ? letterMatch[1].toUpperCase() : "✓";
 
     const checkinHistory = getCheckinHistory();
-    const existingIdx = checkinHistory.findIndex(
+    const existing = checkinHistory.find(
       (c) => c.isoDate === todayISO && c.badge === badgeLetter && !c.isManual,
     );
 
-    const prevPhoto =
-      existingIdx !== -1 ? checkinHistory[existingIdx].photo || null : null;
+    const prevPhoto = existing ? existing.photo || null : null;
 
-    const entryData = {
-      id:
-        existingIdx !== -1
-          ? checkinHistory[existingIdx].id
-          : `chk_${Date.now()}`,
+    await upsertSingleCheckin({
+      id: existing ? existing.id : generateUID(),
       isoDate: todayISO,
       date: date,
       badge: badgeLetter,
@@ -2154,14 +3109,8 @@ function saveWorkoutHistory(photoData = null) {
       details: `${count} exercícios • ${totalVolume.toLocaleString("pt-BR")} kg movidos • Cardio: ${cType} (${cTime} min)`,
       isManual: false,
       photo: photoData || prevPhoto,
-    };
-
-    if (existingIdx !== -1) {
-      checkinHistory[existingIdx] = entryData;
-    } else {
-      checkinHistory.unshift(entryData);
-    }
-    saveCheckinHistory(checkinHistory);
+      createdAt: existing ? existing.createdAt : Date.now(),
+    });
 
     selectedCalDateISO = todayISO;
     calViewYear = new Date().getFullYear();
@@ -2175,6 +3124,9 @@ function saveWorkoutHistory(photoData = null) {
   }
 }
 
+/* =========================================================
+   CALCULADORA DE ANILHAS & HISTÓRICO DE EXERCÍCIO
+   ========================================================= */
 function openPlateModal(exName, exIndex) {
   document.getElementById("plateModalTitle").innerText = exName;
   const setsArr = getExerciseSetsList(currentDay, exIndex);
@@ -2231,7 +3183,11 @@ function showH(name) {
   document.getElementById("historyTitle").innerText = name;
   document.getElementById("manualKgInput").value = "";
 
-  const h = JSON.parse(localStorage.getItem(`gh_${name}`)) || [];
+  let h = [];
+  try {
+    const raw = getStateValue(`gh_${name}`);
+    h = raw ? JSON.parse(raw) : [];
+  } catch (e) {}
   const list = document.getElementById("historyList");
   list.innerHTML = "";
 
@@ -2240,14 +3196,14 @@ function showH(name) {
       '<div class="history-item" style="justify-content:center;color:#7a8fa8;">Sem registros ainda</div>';
   } else {
     [...h].reverse().forEach((e) => {
-      list.innerHTML += `<div class="history-item"><span>${e.date}</span><span>${e.max} KG</span></div>`;
+      list.innerHTML += `<div class="history-item"><span>${escapeHTML(e.date)}</span><span>${Number(e.max)} KG</span></div>`;
     });
   }
 
   document.getElementById("historyModal").classList.add("active");
 }
 
-function addManualWeight() {
+async function addManualWeight() {
   const v = parseFloat(
     document.getElementById("manualKgInput").value.replace(",", "."),
   );
@@ -2257,7 +3213,11 @@ function addManualWeight() {
   }
 
   const date = new Date().toLocaleDateString("pt-BR");
-  let h = JSON.parse(localStorage.getItem(`gh_${currentEx}`)) || [];
+  let h = [];
+  try {
+    const raw = getStateValue(`gh_${currentEx}`);
+    h = raw ? JSON.parse(raw) : [];
+  } catch (e) {}
   let t = h.find((e) => e.date === date);
 
   if (t) {
@@ -2266,8 +3226,7 @@ function addManualWeight() {
     h.push({ date: date, max: v });
   }
 
-  localStorage.setItem(`gh_${currentEx}`, JSON.stringify(h));
-  scheduleCloudSync();
+  await setStateValue(`gh_${currentEx}`, JSON.stringify(h), true);
   showToast(`CARGA DE ${v}KG GRAVADA!`, 2000);
   showH(currentEx);
 
@@ -2292,6 +3251,9 @@ function showToast(m, d = 1600) {
   setTimeout(() => t.classList.remove("show"), d);
 }
 
+/* =========================================================
+   TIMER DE DESCANSO (BASEADO NO RELÓGIO REAL Date.now())
+   ========================================================= */
 let tmr;
 let end = 0;
 
@@ -2349,21 +3311,9 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyAoT05zjZH9W9fdmNeCGCppJwGeEJTxXos",
-  authDomain: "cybergym-matheus-ortiz.firebaseapp.com",
-  projectId: "cybergym-matheus-ortiz",
-  storageBucket: "cybergym-matheus-ortiz.firebasestorage.app",
-  messagingSenderId: "867243931319",
-  appId: "1:867243931319:web:e666e71d57ab6e024a7f32",
-  measurementId: "G-Z5Q9Q7D83K",
-};
-
-let fbApp = null;
-let fbAuth = null;
-let fbDb = null;
-let currentCloudUser = null;
-
+/* =========================================================
+   FIREBASE AUTH & INTERFACE DO CARD DE NUVEM
+   ========================================================= */
 function isFirebaseConfigured() {
   return Boolean(
     FIREBASE_CONFIG &&
@@ -2408,12 +3358,10 @@ function renderConnectedCloudBanner(syncTs) {
   if (!currentCloudUser) return;
   const userLabel =
     currentCloudUser.displayName || currentCloudUser.email || "Usuário Google";
-  const lastSyncStr = formatSyncTimestamp(
-    syncTs || localStorage.getItem("g_last_cloud_sync_time"),
-  );
+  const lastSyncStr = formatSyncTimestamp(syncTs || lastSyncTimestamp);
   const infoMsg = lastSyncStr
     ? `Conta: ${userLabel} • Última sincronização: ${lastSyncStr}`
-    : `Conta: ${userLabel} • Sincronização automática ativa`;
+    : `Conta: ${userLabel} • Sincronização individual ativa`;
   updateCloudUI("ATIVO • SINCRONIZADO", infoMsg, true, false);
 }
 
@@ -2440,12 +3388,27 @@ function initFirebaseCloud() {
     fbAuth = window.firebase.auth();
     fbDb = window.firebase.firestore();
 
+    fbAuth.getRedirectResult().catch(() => {});
+
     fbAuth.onAuthStateChanged(async (user) => {
       currentCloudUser = user || null;
+      const activeUid = getActiveUserId();
+
+      await loadUserStateFromIDB(activeUid);
+      renderDietScreen();
+      renderDashboard();
+      if (typeof renderTkdScreen === "function") {
+        renderTkdScreen();
+      }
+
       if (user) {
-        renderConnectedCloudBanner();
-        await syncCloudOnAuth();
+        const metaSync = await idbGet("meta", `last_sync_${user.uid}`);
+        lastSyncTimestamp = metaSync ? Number(metaSync.value) || 0 : 0;
+        renderConnectedCloudBanner(lastSyncTimestamp);
+        await fullSyncCycle(true);
+        attachFirestoreRealtimeListeners(user.uid);
       } else {
+        detachFirestoreListeners();
         updateCloudUI(
           "OFFLINE / LOCAL",
           "Conecte sua conta Google para sincronizar treinos, Taekwondo, check-ins, fotos, PRs e medidas automaticamente entre dispositivos.",
@@ -2463,153 +3426,6 @@ function initFirebaseCloud() {
   }
 }
 
-function collectLocalAppData() {
-  const payload = {};
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (
-      key &&
-      key !== "g_last_local_update" &&
-      key !== "g_last_cloud_sync_time" &&
-      (key.startsWith("g_") || key.startsWith("gh_"))
-    ) {
-      payload[key] = localStorage.getItem(key);
-    }
-  }
-
-  // Proteção contra limite rígido de 1 MB do Firestore por documento
-  let serialized = JSON.stringify(payload);
-  if (serialized.length > 850000 && payload.g_checkin_history) {
-    try {
-      const hist = JSON.parse(payload.g_checkin_history);
-      if (Array.isArray(hist)) {
-        const trimmedHist = hist.map((item, idx) =>
-          idx >= 5 ? { ...item, photo: null } : item,
-        );
-        payload.g_checkin_history = JSON.stringify(trimmedHist);
-        serialized = JSON.stringify(payload);
-      }
-    } catch (e) {}
-  }
-
-  if (serialized.length > 920000 && payload.g_checkin_history) {
-    try {
-      const hist = JSON.parse(payload.g_checkin_history);
-      if (Array.isArray(hist)) {
-        payload.g_checkin_history = JSON.stringify(
-          hist.map((item) => ({ ...item, photo: null })),
-        );
-      }
-    } catch (e) {}
-  }
-
-  return payload;
-}
-
-function applyCloudDataToLocal(data) {
-  if (!data || typeof data !== "object") return;
-  Object.keys(data).forEach((key) => {
-    if (
-      key !== "g_last_local_update" &&
-      key !== "g_last_cloud_sync_time" &&
-      (key.startsWith("g_") || key.startsWith("gh_")) &&
-      typeof data[key] === "string"
-    ) {
-      localStorage.setItem(key, data[key]);
-    }
-  });
-  renderDietScreen();
-  renderDashboard();
-  if (typeof renderTkdScreen === "function") {
-    renderTkdScreen();
-  }
-}
-
-async function syncCloudOnAuth() {
-  if (!fbDb || !currentCloudUser) return false;
-  try {
-    const userDocRef = fbDb.collection("users").doc(currentCloudUser.uid);
-    const docSnap = await userDocRef.get();
-
-    const localUpdatedAt =
-      Number(localStorage.getItem("g_last_local_update")) || 0;
-
-    if (docSnap.exists) {
-      const remote = docSnap.data() || {};
-      const remoteData = remote.data || remote.payload || null;
-      const remoteUpdatedAt = Number(remote.updatedAt) || 0;
-
-      if (
-        localUpdatedAt > remoteUpdatedAt &&
-        Object.keys(collectLocalAppData()).length > 0
-      ) {
-        await pushToFirestore(true);
-      } else if (remoteData) {
-        applyCloudDataToLocal(remoteData);
-        const syncTime = remoteUpdatedAt || Date.now();
-        localStorage.setItem("g_last_local_update", String(syncTime));
-        localStorage.setItem("g_last_cloud_sync_time", String(syncTime));
-        renderConnectedCloudBanner(syncTime);
-      }
-    } else {
-      await pushToFirestore(true);
-    }
-    return true;
-  } catch (err) {
-    const errCode = err && err.code ? err.code : "erro-leitura";
-    updateCloudUI(
-      "ERRO DE PERMISSÃO",
-      `Falha ao ler nuvem (${errCode}). Verifique sua conta Google ou regras do Firestore.`,
-      true,
-      true,
-    );
-    return false;
-  }
-}
-
-async function pushToFirestore(silent = false) {
-  if (!fbDb || !currentCloudUser) return false;
-  try {
-    const data = collectLocalAppData();
-    const nowTs = Date.now();
-    await fbDb
-      .collection("users")
-      .doc(currentCloudUser.uid)
-      .set(
-        {
-          displayName: currentCloudUser.displayName || "",
-          email: currentCloudUser.email || "",
-          data,
-          updatedAt: nowTs,
-        },
-        { merge: true },
-      );
-
-    localStorage.setItem("g_last_local_update", String(nowTs));
-    localStorage.setItem("g_last_cloud_sync_time", String(nowTs));
-    renderConnectedCloudBanner(nowTs);
-
-    if (!silent) {
-      showToast("DADOS SINCRONIZADOS NA NUVEM ✓", 2000);
-    }
-    return true;
-  } catch (err) {
-    const errCode = err && err.code ? err.code : "erro-envio";
-    const userLabel =
-      currentCloudUser.displayName || currentCloudUser.email || "Conta Google";
-    updateCloudUI(
-      "ERRO AO SINCRONIZAR",
-      `${userLabel} • Falha (${errCode}). Toque em SINCRONIZAR AGORA.`,
-      true,
-      true,
-    );
-    if (!silent) {
-      showToast(`FALHA NA NUVEM: ${errCode.toUpperCase()}`, 2600);
-    }
-    return false;
-  }
-}
-
 async function loginWithGoogle() {
   if (!isFirebaseConfigured()) {
     showToast("CONFIGURE O FIREBASE_CONFIG NO SCRIPT.JS", 2600);
@@ -2619,22 +3435,41 @@ async function loginWithGoogle() {
   try {
     if (!fbAuth) initFirebaseCloud();
     const provider = new window.firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: "select_account" });
     await fbAuth.signInWithPopup(provider);
   } catch (err) {
     const errCode = err && err.code ? err.code : "";
+    if (
+      errCode === "auth/popup-blocked" ||
+      errCode === "auth/cancelled-popup-request" ||
+      errCode === "auth/operation-not-supported-in-this-environment"
+    ) {
+      try {
+        const provider = new window.firebase.auth.GoogleAuthProvider();
+        await fbAuth.signInWithRedirect(provider);
+        return;
+      } catch (e) {}
+    }
     showToast(`LOGIN GOOGLE BLOQUEADO ${errCode}`, 2400);
   }
 }
 
 async function logoutGoogle() {
   try {
+    detachFirestoreListeners();
     if (fbAuth) {
       await fbAuth.signOut();
     }
     currentCloudUser = null;
+    await loadUserStateFromIDB("local");
+    renderDietScreen();
+    renderDashboard();
+    if (typeof renderTkdScreen === "function") {
+      renderTkdScreen();
+    }
     updateCloudUI(
       "OFFLINE / LOCAL",
-      "Desconectado da conta Google. Seus dados continuam salvos neste aparelho.",
+      "Desconectado da conta Google. Seus dados continuam protegidos na sua conta.",
       false,
     );
     showToast("VOCÊ SAIU DA CONTA GOOGLE", 1800);
@@ -2648,7 +3483,38 @@ async function manualCloudSync() {
     showToast("ENTRE COM O GOOGLE PRIMEIRO", 1800);
     return;
   }
-  await pushToFirestore(false);
+  await fullSyncCycle(false);
+}
+
+/* Ponte de compatibilidade para tkd.js continuar sincronizando na nuvem */
+async function pushToFirestore(silent = false) {
+  const userId = getActiveUserId();
+  if (userId === "local") return false;
+  const now = Date.now();
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (!k) continue;
+    if (
+      k === "g_checkin_history" ||
+      k === "g_measures_list" ||
+      k === "g_last_local_update" ||
+      k === "g_last_cloud_sync_time"
+    ) {
+      continue;
+    }
+    if (k.startsWith("g_") || k.startsWith("gh_")) {
+      const val = localStorage.getItem(k);
+      const existing = userCache.kv[k];
+      if (!existing || existing.value !== val) {
+        const rec = { userId, key: k, value: val, updatedAt: now };
+        userCache.kv[k] = rec;
+        await idbPut("kv_state", rec);
+        const safeDocId = encodeURIComponent(k).replace(/%/g, "_");
+        await enqueueSyncOp(userId, "state", safeDocId, "upsert", rec);
+      }
+    }
+  }
+  return await flushSyncQueue();
 }
 
 window.loginWithGoogle = loginWithGoogle;
@@ -2656,7 +3522,13 @@ window.logoutGoogle = logoutGoogle;
 window.manualCloudSync = manualCloudSync;
 window.pushToFirestore = pushToFirestore;
 
-document.addEventListener("DOMContentLoaded", () => {
-  initApp();
+window.addEventListener("online", () => {
+  if (currentCloudUser) {
+    flushSyncQueue();
+  }
+});
+
+document.addEventListener("DOMContentLoaded", async () => {
+  await initApp();
   initFirebaseCloud();
 });
