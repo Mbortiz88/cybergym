@@ -1,12 +1,13 @@
-const CACHE_NAME = "cybergym-hud-v4.1.1";
+const CACHE_NAME = "cybergym-hud-v4.3.0";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
   "./style.css",
-  "./iphone-polish.css?v=4.1.1",
+  "./iphone-polish.css?v=4.3.0",
   "./script.js?v=4.0.0",
   "./tkd.css",
   "./tkd.js",
+  "./tkd-banner.jpg",
   "./manifest.json",
   "./icon-512.jpg",
 ];
