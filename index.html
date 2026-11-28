@@ -26,7 +26,7 @@
     />
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="tkd.css" />
-    <link rel="stylesheet" href="iphone-polish.css?v=4.1.0" />
+    <link rel="stylesheet" href="iphone-polish.css?v=4.1.1" />
   </head>
   <body>
     <div class="scanline"></div>
@@ -52,7 +52,6 @@
 
     <!-- TELA TKD: TAEKWONDO (GRADUAÇÃO, TÉCNICAS & EVOLUÇÃO) -->
     <div id="tkdScreen" class="app-screen">
-      <!-- CARD DE GRADUAÇÃO ATUAL E PRÓIMO NÍVEL -->
       <div class="dash-section-card tkd-belt-card" id="tkdBeltCard">
         <div class="cal-card-header">
           <div
@@ -84,7 +83,6 @@
           </div>
         </div>
 
-        <!-- BARRA DE PRONTIDÃO PARA O EXAME -->
         <div class="tkd-exam-progress-wrap">
           <div class="tkd-exam-progress-top">
             <span>PRONTIDÃO TÉCNICA PARA O EXAME</span>
@@ -99,7 +97,6 @@
           </div>
         </div>
 
-        <!-- CONTROLES DE GRADUAÇÃO -->
         <div class="tkd-belt-controls">
           <select
             id="tkdBeltSelect"
@@ -116,7 +113,6 @@
         </div>
       </div>
 
-      <!-- ESTATÍSTICAS DE AULAS E TÉCNICAS -->
       <div class="dash-stats-grid three-cols" id="tkdStatsGrid">
         <div class="dash-stat-box">
           <span class="dash-stat-label">Aulas na Faixa</span>
@@ -132,7 +128,6 @@
         </div>
       </div>
 
-      <!-- CHECK-IN RÁPIDO NO DOJANG -->
       <div class="dash-section-card">
         <div class="cal-card-header">
           <div
@@ -180,7 +175,6 @@
         </div>
       </div>
 
-      <!-- LINHA DO TEMPO COMPLETA DAS 12 GRADUAÇÕES -->
       <div class="dash-section-card">
         <button
           type="button"
@@ -195,7 +189,6 @@
         </div>
       </div>
 
-      <!-- CHECKLIST DE TÉCNICAS, CHUTES E POOMSAE DA GRADUAÇÃO -->
       <div class="dash-section-card">
         <div class="cal-card-header">
           <div
@@ -213,7 +206,6 @@
         </p>
         <div id="tkdChecklistContainer" class="tkd-checklist"></div>
 
-        <!-- ADICIONAR TÉCNICA PERSONALIZADA DO MESTRE -->
         <div class="tkd-add-custom-box">
           <input
             type="text"
@@ -340,7 +332,6 @@
     <!-- TELA 3: EVOLUÇÃO, CHECK-IN GYMRATS, MEDIDAS & BACKUP -->
     <div id="dashboardScreen" class="app-screen">
       <div class="dash-stats-grid three-cols" id="dashStatsGrid"></div>
-      <!-- SINCRONIZAÇÃO NUVEM (FIREBASE GOOGLE) -->
       <div class="dash-section-card" id="cloudSyncCard">
         <div class="cal-card-header">
           <div
@@ -387,7 +378,6 @@
         </div>
       </div>
 
-      <!-- CALENDÁRIO ESTILO GYMRATS -->
       <div class="dash-section-card">
         <div class="cal-card-header">
           <div
@@ -454,7 +444,6 @@
         <div class="annual-seasons-wrap" id="annualSeasonsBox"></div>
       </div>
 
-      <!-- REGISTRO MANUAL DE ATIVIDADE / ESPORTES (TAEKWONDO, CORRIDA, ETC.) -->
       <div class="dash-section-card">
         <div class="dash-section-title">
           ⚡ CHECK-IN MANUAL (OUTRAS ATIVIDADES)
@@ -535,7 +524,6 @@
         </button>
       </div>
 
-      <!-- FICHA DE MEDIDAS -->
       <div class="dash-section-card">
         <div class="dash-section-title">📏 FICHA DE MEDIDAS (EM JEJUM)</div>
         <div class="measures-form-grid">
@@ -575,13 +563,11 @@
         <div class="pr-summary-list" id="measuresHistoryList"></div>
       </div>
 
-      <!-- RECORDES PESSOAIS -->
       <div class="dash-section-card">
         <div class="dash-section-title">🏆 RECORDES PESSOAIS (PRs)</div>
         <div class="pr-summary-list" id="prSummaryList"></div>
       </div>
 
-      <!-- BACKUP -->
       <div class="dash-section-card">
         <div class="dash-section-title">💾 BACKUP & SINCRONIZAÇÃO</div>
         <p class="dash-desc">
@@ -636,7 +622,7 @@
       </div>
     </div>
 
-    <!-- BOTTOM NAV HOME (4 ABAS NO PADRÃO ORIGINAL) -->
+    <!-- BOTTOM NAV HOME -->
     <div class="main-nav-container" id="mainNavContainer">
       <div
         class="nav-tab active"
@@ -691,7 +677,7 @@
       </div>
     </div>
 
-    <!-- MODAL DE HISTÓRICO -->
+    <!-- MODAIS -->
     <div class="modal-overlay" id="historyModal">
       <div class="modal-content">
         <div class="modal-header">
@@ -719,7 +705,6 @@
       </div>
     </div>
 
-    <!-- MODAL DE CALCULADORA DE ANILHAS -->
     <div class="modal-overlay" id="plateModal">
       <div class="modal-content">
         <div class="modal-header">
@@ -751,7 +736,6 @@
       </div>
     </div>
 
-    <!-- MODAL DE IMPORTAÇÃO DE BACKUP -->
     <div class="modal-overlay" id="importModal">
       <div class="modal-content">
         <div class="modal-header">
@@ -778,7 +762,6 @@
       </div>
     </div>
 
-    <!-- MODAL DE SALDO INICIAL DE CHECK-INS POR ANO -->
     <div class="modal-overlay" id="baselineModal">
       <div class="modal-content">
         <div class="modal-header">
@@ -823,7 +806,6 @@
       </div>
     </div>
 
-    <!-- MODAL LIGHTBOX PARA VISUALIZAR FOTO DO CHECK-IN -->
     <div
       class="modal-overlay"
       id="photoLightboxModal"
@@ -849,7 +831,6 @@
     <script src="script.js?v=4.0.0"></script>
     <script src="tkd.js"></script>
 
-    <!-- Inputs ocultos para tirar/anexar foto (câmera ou galeria) -->
     <input
       type="file"
       id="workoutPhotoInput"
